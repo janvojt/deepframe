@@ -11,6 +11,9 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "log/Logger.h"
+#include "log4cpp/Category.hh"
+
 NetworkConfiguration::NetworkConfiguration() {
 }
 
@@ -38,8 +41,8 @@ void NetworkConfiguration::setLayers(int layers) {
 
 void NetworkConfiguration::setNeurons(int layer, int neurons) {
     if (layer+1 > layers || layer < 1) {
-        // ignoring invalid layer index
-        std::cerr << "Ignoring invalid layer index " << layer << "." << std::endl;
+        LOG().error("Provided %d as layer index, which is invalid for network with %d layers.", layer, layers);
+        return;
     } else if (!neuronConf) {
         initConf(layer);
     }

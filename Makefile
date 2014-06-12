@@ -7,9 +7,10 @@ TARGET=$(TARGETDIR)/xoraan
  
 SRCEXT=cpp
 SOURCES=$(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+SOURCEDIRS=$(shell find $(SRCDIR) -type d)
 OBJECTS=$(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CFLAGS=-g # -Wall
-LIB=-pthread
+LIB=-pthread -llog4cpp
 INC=-I include
 
 $(TARGET): $(OBJECTS)
@@ -20,7 +21,7 @@ $(TARGET): $(OBJECTS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@echo "Building..."
-	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(BUILDDIR) $(shell dirname $@)
 	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 

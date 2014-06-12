@@ -8,13 +8,20 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "NetworkConfiguration.h"
+
 using namespace std;
 
 /*
  * 
  */
 int main(int argc, char** argv) {
-    cout << "hello world!" << endl;
+    NetworkConfiguration* conf = new NetworkConfiguration();
+
+    conf->setLayers(3);
+    conf->setNeurons(0, 2);
+
+    delete conf;
     return 0;
 }
 
