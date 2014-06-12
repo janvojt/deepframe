@@ -16,17 +16,14 @@ INC=-I include
 $(TARGET): $(OBJECTS)
 	@echo "Linking..."
 	@mkdir -p $(TARGETDIR)
-	@echo " $(CC) $^ -o $(TARGET) $(LIB)"
 	$(CC) $^ -o $(TARGET) $(LIB)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@echo "Building..."
 	@mkdir -p $(BUILDDIR) $(shell dirname $@)
-	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 clean:
 	@echo " Cleaning..."; 
-	@echo " $(RM) -r $(BUILDDIR) $(TARGET)"
 	$(RM) -r $(BUILDDIR) $(TARGET)
 
