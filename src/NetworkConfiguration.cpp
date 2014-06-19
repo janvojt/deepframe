@@ -15,6 +15,7 @@
 #include "log4cpp/Category.hh"
 
 NetworkConfiguration::NetworkConfiguration() {
+    neuronConf = NULL;
 }
 
 NetworkConfiguration::NetworkConfiguration(const NetworkConfiguration& orig) {
@@ -40,11 +41,11 @@ void NetworkConfiguration::setLayers(int layers) {
 
 
 void NetworkConfiguration::setNeurons(int layer, int neurons) {
-    if (layer+1 > layers || layer < 1) {
+    if (layer > layers || layer < 1) {
         LOG()->error("Provided %d as layer index, which is invalid for network with %d layers.", layer, layers);
         return;
-    } else if (!neuronConf) {
-        initConf(layer);
+    } else if (neuronConf == NULL) {
+        initConf();
     }
     neuronConf[layer-1] = neurons;
 }
@@ -53,11 +54,13 @@ int NetworkConfiguration::getNeurons(int layer) {
     return neuronConf[layer];
 }
 
-void NetworkConfiguration::initConf(int layers) {
+void NetworkConfiguration::initConf() {
     // free memory if it was already assigned to the pointer
-    if (neuronConf) delete neuronConf;
+    if (neuronConf != NULL) {
+        delete neuronConf;
+    }
     // initialize configuration
-    int* neuronConf = new int[layers];
+    neuronConf = new int[layers];
     for (int i = 0; i<layers; i++) {
         neuronConf[i] = 0;
     }

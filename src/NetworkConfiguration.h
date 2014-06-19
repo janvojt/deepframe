@@ -19,7 +19,7 @@ public:
     void setNeurons(int layer, int neurons);
     void setNeuronConf(int conf, int layers);
 private:
-    void initConf(int layers);
+    void initConf();
     /* number of layers in a network */
     int layers;
     /* number of neurons in each network layer */

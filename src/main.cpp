@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "NetworkConfiguration.h"
+#include "Network.h"
 
 using namespace std;
 
@@ -16,12 +17,16 @@ using namespace std;
  * 
  */
 int main(int argc, char** argv) {
-    NetworkConfiguration* conf = new NetworkConfiguration();
+    NetworkConfiguration conf = NetworkConfiguration();
 
-    conf->setLayers(3);
-    conf->setNeurons(0, 2);
+    conf.setLayers(3);
+    conf.setNeurons(1, 2);
+    conf.setNeurons(2, 3);
+    conf.setNeurons(3, 2);
+    
+    Network* net = new Network(conf);
 
-    delete conf;
+    delete net;
     return 0;
 }
 
