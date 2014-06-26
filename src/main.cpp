@@ -13,9 +13,7 @@
 
 using namespace std;
 
-/*
- * 
- */
+// entry point of the application
 int main(int argc, char** argv) {
     NetworkConfiguration conf = NetworkConfiguration();
 
