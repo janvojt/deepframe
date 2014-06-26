@@ -61,7 +61,4 @@ void NetworkConfiguration::initConf() {
     }
     // initialize configuration
     neuronConf = new int[layers];
-    for (int i = 0; i<layers; i++) {
-        neuronConf[i] = 0;
-    }
 }
