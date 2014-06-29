@@ -51,7 +51,7 @@ void NetworkConfiguration::setNeurons(int layer, int neurons) {
 }
 
 int NetworkConfiguration::getNeurons(int layer) {
-    return neuronConf[layer];
+    return neuronConf[layer-1];
 }
 
 void NetworkConfiguration::initConf() {
