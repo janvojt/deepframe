@@ -7,6 +7,8 @@
 
 #include "Network.h"
 
+#include <cstring>
+
 Network::Network(NetworkConfiguration *conf) {
     this->conf = conf;
     initWeights();
@@ -49,8 +51,5 @@ void Network::initInputs() {
 }
 
 void Network::setInput(float* input) {
-    // TODO use memcpy instead of for loop
-    for (int i = 0; i<conf->getNeurons(1); i++) {
-        inputs[i] = input[i];
-    }
+    std::memcpy(inputs, input, sizeof(float) * conf->getNeurons(1));
 }
