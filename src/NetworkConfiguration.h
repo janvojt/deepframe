@@ -26,7 +26,7 @@ private:
     // number of layers in a network
     int layers;
     // number of neurons in each network layer
-    int* neuronConf;
+    int *neuronConf;
 };
 
 #endif	/* NETWORKCONFIGURATION_H */

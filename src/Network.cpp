@@ -30,7 +30,7 @@ void Network::initWeights() {
     int noWeights = 0;
     int pLayer = 1;
     for (int i = 1; i<=noLayers; i++) {
-        noWeights += pLayer * this->conf->getNeurons(i);
+        noWeights += pLayer *this->conf->getNeurons(i);
     }
     weights = new float[noWeights];
     

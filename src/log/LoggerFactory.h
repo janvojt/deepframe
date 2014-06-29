@@ -19,12 +19,12 @@ namespace Log {
     class LoggerFactory {
         
     public:
-        static log4cpp::Category* getLogger();
-        static log4cpp::Category* create();
+        static log4cpp::Category *getLogger();
+        static log4cpp::Category *create();
 
     private:
         static bool isCreated;
-        static log4cpp::Category* instance;
+        static log4cpp::Category *instance;
         LoggerFactory();
         LoggerFactory(const LoggerFactory&);
         LoggerFactory(LoggerFactory&);

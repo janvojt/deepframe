@@ -10,15 +10,15 @@
 using namespace Log;
 
 bool LoggerFactory::isCreated = false;
-log4cpp::Category* LoggerFactory::instance;
+log4cpp::Category *LoggerFactory::instance;
 
 LoggerFactory::LoggerFactory() {}
 
 /* Factory for a simple log4cpp logger. */
 log4cpp::Category* LoggerFactory::create() {
-    log4cpp::Category* logger = &log4cpp::Category::getRoot();
-    log4cpp::Appender* p_appender = new log4cpp::OstreamAppender("console", &std::cout);
-    log4cpp::PatternLayout* layout = new log4cpp::PatternLayout();
+    log4cpp::Category *logger = &log4cpp::Category::getRoot();
+    log4cpp::Appender *p_appender = new log4cpp::OstreamAppender("console", &std::cout);
+    log4cpp::PatternLayout *layout = new log4cpp::PatternLayout();
     layout->setConversionPattern("%d{%Y-%m-%d %H:%M:%S} [%p] %c: %m%n");
     p_appender->setLayout(layout);
 
@@ -28,7 +28,7 @@ log4cpp::Category* LoggerFactory::create() {
 }
 
 /* Returns a singleton root logger. */
-log4cpp::Category* LoggerFactory::getLogger() {
+log4cpp::Category *LoggerFactory::getLogger() {
     if (!isCreated) {
         isCreated = true;
         instance = create();

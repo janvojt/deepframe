@@ -13,14 +13,14 @@
 
 class Network {
 public:
-    Network(NetworkConfiguration* conf);
+    Network(NetworkConfiguration *conf);
     Network(const Network& orig);
     virtual ~Network();
     // Returns the network configuration.
-    NetworkConfiguration* getConfiguration();
+    NetworkConfiguration *getConfiguration();
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
-    void setInput(float* input);
+    void setInput(float *input);
 private:
     // initialize network weights
     void initWeights();
@@ -29,15 +29,15 @@ private:
     // Number of layers in the network.
     int noLayers;
     // Network configuration.
-    NetworkConfiguration* conf;
+    NetworkConfiguration *conf;
     // Array representing weights for each edge in the neural network.
     // The zero-layer weights are for edges coming into input neurons,
     // therefore always initialized to 1.
-    float* weights;
+    float *weights;
     // Array representing the potential coming into each neuron.
     // The potential coming into input neurons is also represented
     // and set when #setInput is called.
-    float* inputs;
+    float *inputs;
     // Network bias.
     float bias;
 };
