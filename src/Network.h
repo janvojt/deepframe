@@ -34,6 +34,9 @@ private:
     void initWeights();
     // initialize input potential for neurons
     void initInputs();
+    // Clears neuron potentials in given layer
+    // (zero index represents input layer).
+    void clearLayer(float *inputPtr, int layerSize);
     // Number of layers in the network.
     int noLayers;
     // Total number of neurons in the network.

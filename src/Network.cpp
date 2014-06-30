@@ -8,6 +8,7 @@
 #include "Network.h"
 
 #include <cstring>
+#include <string>
 
 Network::Network(NetworkConfiguration *conf) {
     this->conf = conf;
@@ -59,11 +60,13 @@ void Network::setInput(float* input) {
 }
 
 void Network::run() {
-    // for every layer
+    // number of neurons in so far processed layers
     int nPrevLayers = 0;
+    // for every layer
     for (int l = 0; l<noLayers; l++) {
         int nThisLayer = conf->getNeurons(l);
         int nNextLayer = conf->getNeurons(l+1);
+        clearLayer(inputs + nPrevLayers + nThisLayer, nNextLayer);
         // for every neuron in (l)th layer
         for (int i = 0; i<nThisLayer; i++) {
             // for every neuron in (l+1)th layer
@@ -76,6 +79,11 @@ void Network::run() {
         nPrevLayers += nThisLayer;
     }
 }
+
+void Network::clearLayer(float *inputPtr, int layerSize) {
+    std::fill_n(inputPtr, layerSize, 0);
+}
+
 
 float* Network::getOutput() {
     return inputs + noNeurons - getOutputNeurons();
