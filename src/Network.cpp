@@ -62,6 +62,7 @@ void Network::setInput(float* input) {
 void Network::run() {
     // number of neurons in so far processed layers
     int nPrevLayers = 0;
+    float *weighPtr = weights + getInputNeurons();
     // for every layer
     for (int l = 0; l<noLayers; l++) {
         int nThisLayer = conf->getNeurons(l);
@@ -73,7 +74,8 @@ void Network::run() {
             for (int j = 0; j<nNextLayer; j++) {
                 int indexFrom = nPrevLayers + i;
                 int indexTo = nPrevLayers + nThisLayer + j;
-                inputs[indexTo] += inputs[indexFrom];
+                inputs[indexTo] += *weighPtr * inputs[indexFrom];
+                weighPtr++;
             }
         }
         nPrevLayers += nThisLayer;
