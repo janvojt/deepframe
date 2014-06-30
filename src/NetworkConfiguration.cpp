@@ -41,17 +41,17 @@ void NetworkConfiguration::setLayers(int layers) {
 
 
 void NetworkConfiguration::setNeurons(int layer, int neurons) {
-    if (layer > layers || layer < 1) {
+    if (layer > layers || layer < 0) {
         LOG()->error("Provided %d as layer index, which is invalid for network with %d layers.", layer, layers);
         return;
     } else if (neuronConf == NULL) {
         initConf();
     }
-    neuronConf[layer-1] = neurons;
+    neuronConf[layer] = neurons;
 }
 
 int NetworkConfiguration::getNeurons(int layer) {
-    return neuronConf[layer-1];
+    return neuronConf[layer];
 }
 
 void NetworkConfiguration::initConf() {

@@ -21,6 +21,14 @@ public:
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
     void setInput(float *input);
+    // run the network
+    void run();
+    // Returns pointer to the beginning of the output array.
+    float* getOutput();
+    // Returns number of neurons in the first layer.
+    int getInputNeurons();
+    // Returns number of neurons in the last layer.
+    int getOutputNeurons();
 private:
     // initialize network weights
     void initWeights();
@@ -28,6 +36,8 @@ private:
     void initInputs();
     // Number of layers in the network.
     int noLayers;
+    // Total number of neurons in the network.
+    int noNeurons;
     // Network configuration.
     NetworkConfiguration *conf;
     // Array representing weights for each edge in the neural network.
