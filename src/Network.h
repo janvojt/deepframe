@@ -13,6 +13,8 @@
 
 class Network {
 public:
+    // Builds artificial neural network from network configuration
+    // given in the constructor argument.
     Network(NetworkConfiguration *conf);
     Network(const Network& orig);
     virtual ~Network();

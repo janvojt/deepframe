@@ -78,6 +78,9 @@ void Network::run() {
                 weighPtr++;
             }
         }
+        // Run through activation function
+        conf->activationFnc(inputs+nPrevLayers, nThisLayer);
+        
         nPrevLayers += nThisLayer;
     }
 }

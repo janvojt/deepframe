@@ -21,6 +21,8 @@ public:
     int getNeurons(int layer);
     // Sets number of neurons in given layer, layer being indexed from 1.
     void setNeurons(int layer, int neurons);
+    // Pointer to activation function normalizing the neurons potential.
+    void (*activationFnc)(float *inputPtr, int layerSize);
 private:
     void initConf();
     // number of layers in a network

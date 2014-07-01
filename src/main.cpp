@@ -10,6 +10,7 @@
 
 #include "NetworkConfiguration.h"
 #include "Network.h"
+#include "activationFunctions.h"
 
 using namespace std;
 
@@ -59,6 +60,7 @@ int main(int argc, char **argv) {
     conf->setNeurons(0, 2);
     conf->setNeurons(1, 3);
     conf->setNeurons(2, 2);
+    conf->activationFnc = sigmoidFunction;
     
     Network *net = new Network(conf);
     runXorTest(net);
