@@ -7,7 +7,7 @@
 
 #include "LabeledDataset.h"
 
-LabeledDataset::LabeledDataset(int dimension) : InputDataset(dimension) {
+LabeledDataset::LabeledDataset() : InputDataset() {
 }
 
 LabeledDataset::LabeledDataset(const LabeledDataset& orig) : InputDataset(orig) {

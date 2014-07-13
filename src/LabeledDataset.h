@@ -13,9 +13,10 @@
 
 class LabeledDataset : public InputDataset {
 public:
-    LabeledDataset(int dimension);
+    LabeledDataset();
     LabeledDataset(const LabeledDataset& orig);
     virtual ~LabeledDataset();
+    virtual int getOutputDimension() = 0;
 private:
 
 };

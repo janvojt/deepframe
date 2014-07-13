@@ -10,18 +10,15 @@
 
 class InputDataset {
 public:
-    InputDataset(int dimension);
+    InputDataset();
     InputDataset(const InputDataset& orig);
     virtual ~InputDataset();
-    float *next();
-    bool hasNext();
-    void addInput(float *input);
+    virtual float *next() = 0;
+    virtual bool hasNext() = 0;
+    virtual void reset() = 0;
+    virtual int getInputDimension() = 0;
 private:
-    void initDataset();
-    int dimension;
-    int cursor;
-    int size;
-    float *data;
+    
 };
 
 #endif	/* INPUTDATASET_H */
