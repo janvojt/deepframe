@@ -10,7 +10,8 @@
 
 #include "InputDataset.h"
 
-
+// Class used for construction of small datasets
+// with input data to be processed by the network.
 class SimpleInputDataset : InputDataset {
 public:
     SimpleInputDataset(int dimension, int size);
@@ -20,6 +21,7 @@ public:
     bool hasNext();
     void reset();
     int getInputDimension();
+    // Adds a single input pattern to be processed by the network.
     void addInput(float *input);
 private:
     void initDataset();

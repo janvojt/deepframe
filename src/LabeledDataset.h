@@ -10,12 +10,14 @@
 
 #include "InputDataset.h"
 
-
+// Represents the dataset with labeled input patterns
+// to be used for supervised learning.
 class LabeledDataset : public InputDataset {
 public:
     LabeledDataset();
     LabeledDataset(const LabeledDataset& orig);
     virtual ~LabeledDataset();
+    // Returns the dimension of labels for input data.
     virtual int getOutputDimension() = 0;
 private:
 
