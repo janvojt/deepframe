@@ -101,3 +101,8 @@ int Network::getInputNeurons() {
 int Network::getOutputNeurons() {
     return conf->getNeurons(noLayers-1);
 }
+
+int Network::getAllNeurons() {
+    return noNeurons;
+}
+

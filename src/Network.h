@@ -31,6 +31,8 @@ public:
     int getInputNeurons();
     // Returns number of neurons in the last layer.
     int getOutputNeurons();
+    // Returns the total number of all neurons in all layers.
+    int getAllNeurons();
 private:
     // initialize network weights
     void initWeights();
