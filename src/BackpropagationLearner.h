@@ -9,6 +9,7 @@
 #define	BACKPROPAGATIONLEARNER_H
 
 #include "Network.h"
+#include "LabeledDataset.h"
 #include <limits>
 
 class BackpropagationLearner {
@@ -17,18 +18,20 @@ public:
     BackpropagationLearner(const BackpropagationLearner& orig);
     virtual ~BackpropagationLearner();
     // Launches the learning process.
-    void learn();
+    void train(LabeledDataset *dataset);
 private:
-    void initInputs();
-    void initPotentials();
+    // Validates input dataset provided for learning against neural network.
+    void validate(LabeledDataset *dataset);
+    // We cannot reuse the forward run from the network's implementation,
+    // because additional meta results need to be kept for backpropagation
+    // algorithm.
+    void doForwardPhase(float *input);
+    // Backward phase optimizing network parameters in the learning process.
+    void doBackwardPhase(float *output);
+    // Helper method for clearing network layer.
     void clearLayer(float *inputPtr, int layerSize);
     // ANN itself. Used for accessing configuration and tuning weights.
     Network *network;
-    // Array representing the potential coming into each neuron.
-    float *inputs;
-    // Array representing the potential coming into each neuron before it is
-    // processed by activation function.
-    float *potentials;
     // Learning parameter. Intended to be decreasing during learning process.
     float learningRate;
     // Represents average error of the current network configuration.

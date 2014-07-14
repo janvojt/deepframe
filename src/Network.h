@@ -40,6 +40,11 @@ public:
     // Returns pointer to the beginning of array with neuron inputs
     // (potential after being processed by the activation function).
     float *getInputValues();
+    // Returns pointer to the beginning of array with weights
+    // for neuron connections.
+    // This internal network property is usually needed
+    // in the process of learning.
+    float *getWeights();
 private:
     // initialize network weights
     void initWeights();

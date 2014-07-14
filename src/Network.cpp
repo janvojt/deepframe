@@ -118,3 +118,7 @@ float* Network::getPotentialValues() {
 float* Network::getInputValues() {
     return inputs;
 }
+
+float* Network::getWeights() {
+    return weights;
+}
