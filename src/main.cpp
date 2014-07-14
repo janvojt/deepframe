@@ -61,6 +61,7 @@ int main(int argc, char **argv) {
     conf->setNeurons(1, 3);
     conf->setNeurons(2, 2);
     conf->activationFnc = sigmoidFunction;
+    conf->dActivationFnc = dSigmoidFunction;
     
     Network *net = new Network(conf);
     runXorTest(net);

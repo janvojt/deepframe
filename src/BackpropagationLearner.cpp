@@ -33,20 +33,55 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
         epochCounter++;
         while (dataset->hasNext()) {
             float *pattern = dataset->next();
+            float *output = pattern + dataset->getInputDimension();
             doForwardPhase(pattern);
-            doBackwardPhase(pattern + dataset->getInputDimension());
+            doBackwardPhase(output);
         }
-    } while (errorTotal < errorPrev);
+    } while (errorTotal < errorPrev); // TODO not applicable without validation set
 }
 
-void BackpropagationLearner::doForwardPhase(float* input) {
+void BackpropagationLearner::doForwardPhase(float *input) {
     network->setInput(input);
     network->run();
 }
 
-void BackpropagationLearner::doBackwardPhase(float* output) {
-    // TODO
+void BackpropagationLearner::doBackwardPhase(float *expectedOutput) {
+    computeOutputLayer(expectedOutput);
+    computeHiddenLayers();
+    adjustWeights();
 }
+
+void BackpropagationLearner::computeOutputLayer(float *expectedOutput) {
+    int on = network->getOutputNeurons();
+    int noLayers = network->getConfiguration()->getLayers();
+    float *localGradient = new float[on];
+    float *output = network->getOutput();
+    void (*daf) (float*,float*,int) = network->getConfiguration()->dActivationFnc;
+    
+    // compute local gradients
+    float *dv = new float[network->getOutputNeurons()];
+    daf(network->getPotentialValues() + network->getPotentialIndex(noLayers), dv, on);
+    for (int i = 0; i<on; i++) {
+        localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
+    }
+    
+    // compute total differential for weights
+    int wc = network->getWeightsIndex(noLayers) - network->getWeightsIndex(noLayers-1);
+    float *inputs = network->getInputValues() + network->getPotentialIndex(noLayers-1);
+    float *wdiff = weightDiffs + network->getWeightsIndex(noLayers-1);
+    for (int i = 0; i<wc; i++) {
+        wdiff[i] = -learningRate * localGradient[i%on] * inputs[i/on];
+    }
+}
+
+void BackpropagationLearner::computeHiddenLayers() {
+    //TODO
+}
+
+void BackpropagationLearner::adjustWeights() {
+    //TODO
+}
+
 
 void BackpropagationLearner::clearLayer(float *inputPtr, int layerSize) {
     std::fill_n(inputPtr, layerSize, 0);

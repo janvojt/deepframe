@@ -37,6 +37,9 @@ public:
     // This internal network property is usually needed
     // in the process of learning.
     float *getPotentialValues();
+    // Returns offset where the potential array index starts for given layer.
+    // Layer index starts at one.
+    int getPotentialIndex(int layer);
     // Returns pointer to the beginning of array with neuron inputs
     // (potential after being processed by the activation function).
     float *getInputValues();
@@ -45,6 +48,9 @@ public:
     // This internal network property is usually needed
     // in the process of learning.
     float *getWeights();
+    // Returns offset where the weight array index starts for given layer.
+    // Layer index starts at one.
+    int getWeightsIndex(int layer);
 private:
     // initialize network weights
     void initWeights();
@@ -72,6 +78,12 @@ private:
     float *inputs;
     // Network bias.
     float bias;
+    // Cache of number of neurons up to the layer determined by the array index.
+    // Used for optimization of calculating indexes for inputs and potentials.
+    int *neuronsUpToLayerCache;
+    // Cache of number of weights up to the layer determined by the array index.
+    // Used for optimization of calculating indexes for weights.
+    int *weightsUpToLayerCache;
 };
 
 #endif	/* NETWORK_H */

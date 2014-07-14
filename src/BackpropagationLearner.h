@@ -27,7 +27,13 @@ private:
     // algorithm.
     void doForwardPhase(float *input);
     // Backward phase optimizing network parameters in the learning process.
-    void doBackwardPhase(float *output);
+    void doBackwardPhase(float *expectedOutput);
+    // Computes total differential for weights in output layer.
+    void computeOutputLayer(float *expectedOutput);
+    // Computes total differential for weights in hidden layers.
+    void computeHiddenLayers();
+    // Adjust network weights according to computed total differentials.
+    void adjustWeights();
     // Helper method for clearing network layer.
     void clearLayer(float *inputPtr, int layerSize);
     // ANN itself. Used for accessing configuration and tuning weights.
@@ -38,6 +44,8 @@ private:
     float errorTotal;
     // Counter of epochs, incremented right before new epoch is started.
     int epochCounter;
+    // Total differential for weight adjustment.
+    float *weightDiffs;
 };
 
 #endif	/* BACKPROPAGATIONLEARNER_H */

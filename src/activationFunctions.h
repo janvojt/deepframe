@@ -14,5 +14,8 @@
 // to save some memory.
 void sigmoidFunction(float *inputPtr, float *targetPtr, int layerSize);
 
+// Derivative of the sigmoid function.
+void dSigmoidFunction(float *inputPtr, float *targetPtr, int layerSize);
+
 #endif	/* ACTIVATIONFUNCTIONS_H */
 

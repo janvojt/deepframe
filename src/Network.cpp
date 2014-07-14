@@ -33,9 +33,11 @@ NetworkConfiguration* Network::getConfiguration() {
 void Network::initWeights() {
     int noWeights = 0;
     int pLayer = 1; // neurons in previous layer
+    int *weightsUpToLayerCache = new int[noLayers];
     for (int i = 0; i<noLayers; i++) {
         int tLayer = this->conf->getNeurons(i);
         noWeights += pLayer * tLayer;
+        weightsUpToLayerCache[i] = noWeights;
         pLayer = tLayer;
     }
     weights = new float[noWeights];
@@ -48,8 +50,10 @@ void Network::initWeights() {
 
 void Network::initInputs() {
     int noNeurons = 0;
+    neuronsUpToLayerCache = new int[noLayers];
     for (int i = 0; i<noLayers; i++) {
         noNeurons += conf->getNeurons(i);
+        neuronsUpToLayerCache[i] = noNeurons;
     }
     this->noNeurons = noNeurons;
     potentials = new float[noNeurons];
@@ -115,10 +119,18 @@ float* Network::getPotentialValues() {
     return potentials;
 }
 
+int Network::getPotentialIndex(int layer) {
+    return neuronsUpToLayerCache[layer-1];
+}
+
 float* Network::getInputValues() {
     return inputs;
 }
 
 float* Network::getWeights() {
     return weights;
+}
+
+int Network::getWeightsIndex(int layer) {
+    return weightsUpToLayerCache[layer-1];
 }

@@ -16,3 +16,11 @@ void sigmoidFunction(float *inputPtr, float *targetPtr, int layerSize) {
         targetPtr++;
     }
 }
+
+void dSigmoidFunction(float* inputPtr, float* targetPtr, int layerSize) {
+    for (int i = 0; i < layerSize; i++) {
+        *targetPtr = exp(*inputPtr) / pow(1 + exp(*inputPtr), 2);
+        inputPtr++;
+        targetPtr++;
+    }
+}

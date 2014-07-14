@@ -27,6 +27,8 @@ public:
     // the same pointer for input and target for in-place computation
     // saving some memory.
     void (*activationFnc)(float *inputPtr, float *targetPtr, int layerSize);
+    // Derivative of activation function.
+    void (*dActivationFnc)(float *inputPtr, float *targetPtr, int layerSize);
 private:
     void initConf();
     // number of layers in a network
