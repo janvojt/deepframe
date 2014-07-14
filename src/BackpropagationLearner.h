@@ -36,6 +36,8 @@ private:
     void adjustWeights();
     // Helper method for clearing network layer.
     void clearLayer(float *inputPtr, int layerSize);
+    // Allocates memory for caching variables.
+    void allocateCache();
     // ANN itself. Used for accessing configuration and tuning weights.
     Network *network;
     // Learning parameter. Intended to be decreasing during learning process.
@@ -46,6 +48,8 @@ private:
     int epochCounter;
     // Total differential for weight adjustment.
     float *weightDiffs;
+    // Cache for local gradients of respective neurons.
+    float *localGradients;
 };
 
 #endif	/* BACKPROPAGATIONLEARNER_H */

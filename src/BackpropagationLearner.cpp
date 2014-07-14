@@ -27,6 +27,11 @@ BackpropagationLearner::~BackpropagationLearner() {
     
 }
 
+void BackpropagationLearner::allocateCache() {
+    weightDiffs = new float[network->getWeightsIndex(network->getConfiguration()->getLayers())];
+    localGradients = new float[network->getAllNeurons()];
+}
+
 void BackpropagationLearner::train(LabeledDataset *dataset) {
     float errorPrev = 0;
     do {
@@ -54,7 +59,7 @@ void BackpropagationLearner::doBackwardPhase(float *expectedOutput) {
 void BackpropagationLearner::computeOutputLayer(float *expectedOutput) {
     int on = network->getOutputNeurons();
     int noLayers = network->getConfiguration()->getLayers();
-    float *localGradient = new float[on];
+    float *localGradient = localGradients + network->getPotentialIndex(noLayers);
     float *output = network->getOutput();
     void (*daf) (float*,float*,int) = network->getConfiguration()->dActivationFnc;
     
