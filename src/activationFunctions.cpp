@@ -9,10 +9,10 @@
 
 #include <math.h>
 
-// Computes sigmoid function on given neuron potentials.
-void sigmoidFunction(float *inputPtr, int layerSize) {
+void sigmoidFunction(float *inputPtr, float *targetPtr, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        *inputPtr = 1 / (1 + exp(-*inputPtr));
+        *targetPtr = 1 / (1 + exp(-*inputPtr));
         inputPtr++;
+        targetPtr++;
     }
 }

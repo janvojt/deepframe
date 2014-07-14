@@ -8,7 +8,11 @@
 #ifndef ACTIVATIONFUNCTIONS_H
 #define	ACTIVATIONFUNCTIONS_H
 
-void sigmoidFunction(float *inputPtr, int layerSize);
+// Computes sigmoid function for each value in the input array,
+// putting the result in the target array. For in-place computation
+// it is possible to provide the same pointer for input and target
+// to save some memory.
+void sigmoidFunction(float *inputPtr, float *targetPtr, int layerSize);
 
 #endif	/* ACTIVATIONFUNCTIONS_H */
 

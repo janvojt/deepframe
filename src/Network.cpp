@@ -52,6 +52,7 @@ void Network::initInputs() {
         noNeurons += conf->getNeurons(i);
     }
     this->noNeurons = noNeurons;
+    potentials = new float[noNeurons];
     inputs = new float[noNeurons];
 }
 
@@ -67,19 +68,23 @@ void Network::run() {
     for (int l = 0; l<noLayers; l++) {
         int nThisLayer = conf->getNeurons(l);
         int nNextLayer = conf->getNeurons(l+1);
+        
+        // clear the following layer just before working with it
+        clearLayer(potentials + nPrevLayers + nThisLayer, nNextLayer);
         clearLayer(inputs + nPrevLayers + nThisLayer, nNextLayer);
+        
         // for every neuron in (l)th layer
         for (int i = 0; i<nThisLayer; i++) {
             // for every neuron in (l+1)th layer
             for (int j = 0; j<nNextLayer; j++) {
                 int indexFrom = nPrevLayers + i;
                 int indexTo = nPrevLayers + nThisLayer + j;
-                inputs[indexTo] += *weighPtr * inputs[indexFrom];
+                potentials[indexTo] += *weighPtr * inputs[indexFrom];
                 weighPtr++;
             }
         }
         // Run through activation function
-        conf->activationFnc(inputs+nPrevLayers, nThisLayer);
+        conf->activationFnc(potentials+nPrevLayers, inputs+nPrevLayers, nThisLayer);
         
         nPrevLayers += nThisLayer;
     }
@@ -106,3 +111,10 @@ int Network::getAllNeurons() {
     return noNeurons;
 }
 
+float* Network::getPotentialValues() {
+    return potentials;
+}
+
+float* Network::getInputValues() {
+    return inputs;
+}

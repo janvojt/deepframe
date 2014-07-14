@@ -22,7 +22,11 @@ public:
     // Sets number of neurons in given layer, layer being indexed from 1.
     void setNeurons(int layer, int neurons);
     // Pointer to activation function normalizing the neurons potential.
-    void (*activationFnc)(float *inputPtr, int layerSize);
+    // Input potential is preserved and the normalized value
+    // is put into the target array. It is also possible to provide
+    // the same pointer for input and target for in-place computation
+    // saving some memory.
+    void (*activationFnc)(float *inputPtr, float *targetPtr, int layerSize);
 private:
     void initConf();
     // number of layers in a network
