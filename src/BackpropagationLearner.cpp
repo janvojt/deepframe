@@ -18,6 +18,7 @@ BackpropagationLearner::BackpropagationLearner(Network *network) {
     learningRate = 1;
     epochCounter = 0;
     errorTotal = std::numeric_limits<float>::infinity();
+    allocateCache();
 }
 
 BackpropagationLearner::BackpropagationLearner(const BackpropagationLearner &orig) {
@@ -82,8 +83,8 @@ void BackpropagationLearner::computeWeightDifferentials() {
         float *thisLocalGradient = localGradients + thisPotentialIndex;
         int nextPotentialIndex = network->getPotentialIndex(l);
         float *nextLocalGradient = localGradients + nextPotentialIndex;
-        int thisNeurons = network->getConfiguration()->getNeurons(l);
-        int nextNeurons = network->getConfiguration()->getNeurons(l+1);
+        int thisNeurons = network->getConfiguration()->getNeurons(l-1);
+        int nextNeurons = network->getConfiguration()->getNeurons(l);
         float *thisPotential = network->getPotentialValues() + thisPotentialIndex;
         float *weights = network->getWeights() + network->getWeightsIndex(l-1);
         

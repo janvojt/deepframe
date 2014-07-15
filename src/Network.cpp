@@ -70,7 +70,7 @@ void Network::run() {
     int nPrevLayers = 0;
     float *weighPtr = weights + getInputNeurons();
     // for every layer
-    for (int l = 0; l<noLayers; l++) {
+    for (int l = 0; l<noLayers-1; l++) {
         int nThisLayer = conf->getNeurons(l);
         int nNextLayer = conf->getNeurons(l+1);
         
@@ -133,5 +133,5 @@ float* Network::getWeights() {
 }
 
 int Network::getWeightsIndex(int layer) {
-    return weightsUpToLayerCache[layer];
+    return weightsUpToLayerCache[layer-1];
 }

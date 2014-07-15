@@ -11,18 +11,21 @@
 #include "log4cpp/Category.hh"
 
 SimpleLabeledDataset::SimpleLabeledDataset(int inputDimension, int outputDimension, int size) {
+    addedCounter = 0;
     inDimension = inputDimension;
     outDimension = outputDimension;
     this->size = size;
+    data = new float[(inputDimension + outputDimension) * size];
 }
 
 SimpleLabeledDataset::SimpleLabeledDataset(const SimpleLabeledDataset& orig) {
 }
 
 SimpleLabeledDataset::~SimpleLabeledDataset() {
+    delete data;
 }
 
-void SimpleLabeledDataset::addPattern(float *input, float *output) {
+void SimpleLabeledDataset::addPattern(const float *input, const float *output) {
     
     if (addedCounter >= size) {
         LOG()->error("Trying to add %d learning patterns while the dataset size is only %d.", addedCounter+1, size);
@@ -30,8 +33,8 @@ void SimpleLabeledDataset::addPattern(float *input, float *output) {
     
     int inputSize = sizeof(float) * inDimension;
     int outputSize = sizeof(float) * outDimension;
-    int patternSize = inputSize + outputSize;
-    float *dataPtr = data + (size * patternSize);
+    int patternSize = inDimension + outDimension;
+    float *dataPtr = data + (addedCounter * patternSize);
     std::memcpy(dataPtr, input, inputSize);
     std::memcpy(dataPtr + inDimension, output, outputSize);
     addedCounter++;

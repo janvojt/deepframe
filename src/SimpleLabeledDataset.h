@@ -26,7 +26,7 @@ public:
     bool hasNext();
     void reset();
     // Adds a single input vector with its label.
-    void addPattern(float *input, float *output);
+    void addPattern(const float *input, const float *output);
 private:
     void initDataset();
     int inDimension;

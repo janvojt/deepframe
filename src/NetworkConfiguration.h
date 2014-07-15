@@ -17,9 +17,9 @@ public:
     // including input and output layer.
     int getLayers();
     void setLayers(int layers);
-    // Returns number of neurons indexed from 1.
+    // Returns number of neurons indexed from zero.
     int getNeurons(int layer);
-    // Sets number of neurons in given layer, layer being indexed from 1.
+    // Sets number of neurons in given layer, layer being indexed from zero.
     void setNeurons(int layer, int neurons);
     // Pointer to activation function normalizing the neurons potential.
     // Input potential is preserved and the normalized value
