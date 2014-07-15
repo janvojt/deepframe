@@ -11,6 +11,8 @@
 #include "NetworkConfiguration.h"
 #include "Network.h"
 #include "activationFunctions.h"
+#include "BackpropagationLearner.h"
+#include "SimpleLabeledDataset.h"
 
 using namespace std;
 
@@ -26,6 +28,12 @@ void printOutput(Network *net) {
         out++;
     }
     cout << " ]" << endl;
+}
+
+void printSeperator() {
+    cout << endl;
+    cout << "################################################################################" << endl;
+    cout << endl;
 }
 
 void runXorTest(Network *net) {
@@ -52,6 +60,17 @@ void runXorTest(Network *net) {
     
 }
 
+LabeledDataset* createXorDataset() {
+    SimpleLabeledDataset *ds = new SimpleLabeledDataset(2, 1, 4);
+    
+    ds->addPattern((const float[2]){0.0f, 0.0f}, (const float[1]){0.0f});
+    ds->addPattern((const float[2]){0.0f, 1.0f}, (const float[1]){1.0f});
+    ds->addPattern((const float[2]){1.0f, 0.0f}, (const float[1]){1.0f});
+    ds->addPattern((const float[2]){1.0f, 1.0f}, (const float[1]){0.0f});
+    
+    return (LabeledDataset*)ds;
+}
+
 // entry point of the application
 int main(int argc, char **argv) {
     NetworkConfiguration *conf = new NetworkConfiguration();
@@ -64,8 +83,19 @@ int main(int argc, char **argv) {
     conf->dActivationFnc = dSigmoidFunction;
     
     Network *net = new Network(conf);
+    
     runXorTest(net);
-
+    
+    printSeperator();
+    
+    LabeledDataset *ds = createXorDataset();
+    BackpropagationLearner *bp = new BackpropagationLearner(net);
+    bp->train(ds);
+    
+    runXorTest(net);
+    
+    delete bp;
+    delete ds;
     delete conf;
     delete net;
     return 0;
