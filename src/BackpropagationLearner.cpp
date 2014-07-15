@@ -51,36 +51,75 @@ void BackpropagationLearner::doForwardPhase(float *input) {
 }
 
 void BackpropagationLearner::doBackwardPhase(float *expectedOutput) {
-    computeOutputLayer(expectedOutput);
+    computeOutputGradients(expectedOutput);
     computeHiddenLayers();
     adjustWeights();
 }
 
-void BackpropagationLearner::computeOutputLayer(float *expectedOutput) {
+void BackpropagationLearner::computeOutputGradients(float *expectedOutput) {
     int on = network->getOutputNeurons();
     int noLayers = network->getConfiguration()->getLayers();
-    float *localGradient = localGradients + network->getPotentialIndex(noLayers);
+    float *localGradient = localGradients + network->getPotentialIndex(noLayers-1);
     float *output = network->getOutput();
     void (*daf) (float*,float*,int) = network->getConfiguration()->dActivationFnc;
     
     // compute local gradients
     float *dv = new float[network->getOutputNeurons()];
-    daf(network->getPotentialValues() + network->getPotentialIndex(noLayers), dv, on);
+    daf(network->getPotentialValues() + network->getPotentialIndex(noLayers-1), dv, on);
     for (int i = 0; i<on; i++) {
         localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
     }
     
     // compute total differential for weights
-    int wc = network->getWeightsIndex(noLayers) - network->getWeightsIndex(noLayers-1);
-    float *inputs = network->getInputValues() + network->getPotentialIndex(noLayers-1);
-    float *wdiff = weightDiffs + network->getWeightsIndex(noLayers-1);
-    for (int i = 0; i<wc; i++) {
-        wdiff[i] = -learningRate * localGradient[i%on] * inputs[i/on];
-    }
+//    int wc = network->getWeightsIndex(noLayers) - network->getWeightsIndex(noLayers-1);
+//    float *inputs = network->getInputValues() + network->getPotentialIndex(noLayers-1);
+//    float *wdiff = weightDiffs + network->getWeightsIndex(noLayers-1);
+//    for (int i = 0; i<wc; i++) {
+//        wdiff[i] = -learningRate * localGradient[i%on] * inputs[i/on];
+//    }
 }
 
-void BackpropagationLearner::computeHiddenLayers() {
-    //TODO
+void BackpropagationLearner::computeWeightDifferentials() {
+    int noLayers = network->getConfiguration()->getLayers();
+    void (*daf) (float*,float*,int) = network->getConfiguration()->dActivationFnc;
+    
+    for (int l = noLayers-1; l>0; l--) {
+        
+        // INITIALIZE HELPER VARIABLES
+        int thisPotentialIndex = network->getPotentialIndex(l-1);
+        float *thisLocalGradient = localGradients + thisPotentialIndex;
+        int nextPotentialIndex = network->getPotentialIndex(l);
+        float *nextLocalGradient = localGradients + nextPotentialIndex;
+        int thisNeurons = network->getConfiguration()->getNeurons(l);
+        int nextNeurons = network->getConfiguration()->getNeurons(l+1);
+        float *thisPotential = network->getPotentialValues() + thisPotentialIndex;
+        float *weights = network->getWeights() + network->getWeightsIndex(l-1);
+        
+        
+        // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
+        int wc = network->getWeightsIndex(l+1) - network->getWeightsIndex(l);
+        float *thisInputs = network->getInputValues() + network->getPotentialIndex(l-1);
+        float *wdiff = weightDiffs + network->getWeightsIndex(l);
+        for (int i = 0; i<wc; i++) {
+            wdiff[i] = -learningRate * nextLocalGradient[i%nextNeurons] * thisInputs[i/nextNeurons];
+        }
+        
+        
+        // COMPUTE LOCAL GRADIENTS for layer l
+        
+        // compute derivatives of neuron potentials in layer l
+        float *thisPotentialDerivatives = new float[thisNeurons];
+        daf(thisPotential, thisPotentialDerivatives, thisNeurons);
+        
+        // compute local gradients for layer l
+        for (int i = 0; i<thisNeurons; i++) {
+            float sumNextGradient = 0;
+            for (int j = 0; j<nextNeurons; j++) {
+                sumNextGradient += nextLocalGradient[j] * weights[i * thisNeurons + j];
+            }
+            *thisLocalGradient = sumNextGradient * thisPotentialDerivatives[i];
+        }
+    }
 }
 
 void BackpropagationLearner::adjustWeights() {

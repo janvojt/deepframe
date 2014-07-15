@@ -28,10 +28,11 @@ private:
     void doForwardPhase(float *input);
     // Backward phase optimizing network parameters in the learning process.
     void doBackwardPhase(float *expectedOutput);
-    // Computes total differential for weights in output layer.
-    void computeOutputLayer(float *expectedOutput);
-    // Computes total differential for weights in hidden layers.
-    void computeHiddenLayers();
+    // Computes local gradients for output neurons.
+    void computeOutputGradients(float *expectedOutput);
+    // Computes total differential for all weights
+    // and local gradients for hidden neurons.
+    void computeWeightDifferentials();
     // Adjust network weights according to computed total differentials.
     void adjustWeights();
     // Helper method for clearing network layer.
