@@ -52,7 +52,7 @@ void BackpropagationLearner::doForwardPhase(float *input) {
 
 void BackpropagationLearner::doBackwardPhase(float *expectedOutput) {
     computeOutputGradients(expectedOutput);
-    computeHiddenLayers();
+    computeWeightDifferentials();
     adjustWeights();
 }
 
@@ -69,14 +69,6 @@ void BackpropagationLearner::computeOutputGradients(float *expectedOutput) {
     for (int i = 0; i<on; i++) {
         localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
     }
-    
-    // compute total differential for weights
-//    int wc = network->getWeightsIndex(noLayers) - network->getWeightsIndex(noLayers-1);
-//    float *inputs = network->getInputValues() + network->getPotentialIndex(noLayers-1);
-//    float *wdiff = weightDiffs + network->getWeightsIndex(noLayers-1);
-//    for (int i = 0; i<wc; i++) {
-//        wdiff[i] = -learningRate * localGradient[i%on] * inputs[i/on];
-//    }
 }
 
 void BackpropagationLearner::computeWeightDifferentials() {
@@ -123,9 +115,13 @@ void BackpropagationLearner::computeWeightDifferentials() {
 }
 
 void BackpropagationLearner::adjustWeights() {
-    //TODO
+    int wc = network->getWeightsIndex(network->getConfiguration()->getLayers());
+    float *weights = network->getWeights();
+    // we should skip the garbage in zero-layer weights
+    for(int i = network->getWeightsIndex(0); i<wc; i++) {
+        weights[i] -= weightDiffs[i];
+    }
 }
-
 
 void BackpropagationLearner::clearLayer(float *inputPtr, int layerSize) {
     std::fill_n(inputPtr, layerSize, 0);
