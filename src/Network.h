@@ -80,9 +80,13 @@ private:
     float bias;
     // Cache of number of neurons up to the layer determined by the array index.
     // Used for optimization of calculating indexes for inputs and potentials.
+    // Method returns zero neurons in zero-th layer.
     int *neuronsUpToLayerCache;
     // Cache of number of weights up to the layer determined by the array index.
     // Used for optimization of calculating indexes for weights.
+    // Method returns number of input neurons for first layer.
+    // Method further returns number of weights between input and the first
+    // hidden layer for layer 2 (weights between first and second layer).
     int *weightsUpToLayerCache;
 };
 

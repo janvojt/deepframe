@@ -119,7 +119,7 @@ void BackpropagationLearner::adjustWeights() {
     int wc = network->getWeightsIndex(network->getConfiguration()->getLayers());
     float *weights = network->getWeights();
     // we should skip the garbage in zero-layer weights
-    for(int i = network->getWeightsIndex(0); i<wc; i++) {
+    for(int i = network->getWeightsIndex(1); i<wc; i++) {
         weights[i] -= weightDiffs[i];
     }
 }
@@ -135,4 +135,8 @@ void BackpropagationLearner::validate(LabeledDataset *dataset) {
     if (dataset->getOutputDimension() != network->getOutputNeurons()) {
         throw new std::invalid_argument("Provided dataset must have the same output dimension as the number of output neurons!");
     }
+}
+
+void BackpropagationLearner::setEpochLimit(int limit) {
+    epochLimit = limit;
 }
