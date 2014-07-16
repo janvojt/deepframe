@@ -48,7 +48,7 @@ void printSeperator() {
     cout << endl;
 }
 
-void runXorTest(Network *net) {
+void runTest(Network *net) {
     
     float input[] = {0, 0};
     net->setInput(input);
@@ -83,28 +83,40 @@ LabeledDataset* createXorDataset() {
     return (LabeledDataset*)ds;
 }
 
+LabeledDataset* createAndDataset() {
+    SimpleLabeledDataset *ds = new SimpleLabeledDataset(2, 1, 4);
+    
+    ds->addPattern((const float[2]){0.0f, 0.0f}, (const float[1]){0.0f});
+    ds->addPattern((const float[2]){0.0f, 1.0f}, (const float[1]){0.0f});
+    ds->addPattern((const float[2]){1.0f, 0.0f}, (const float[1]){0.0f});
+    ds->addPattern((const float[2]){1.0f, 1.0f}, (const float[1]){1.0f});
+    
+    return (LabeledDataset*)ds;
+}
+
 // entry point of the application
 int main(int argc, char **argv) {
     NetworkConfiguration *conf = new NetworkConfiguration();
 
     conf->setLayers(3);
     conf->setNeurons(0, 2);
-    conf->setNeurons(1, 3);
-    conf->setNeurons(2, 2);
+    conf->setNeurons(1, 2);
+    conf->setNeurons(2, 1);
     conf->activationFnc = sigmoidFunction;
     conf->dActivationFnc = dSigmoidFunction;
     
     Network *net = new Network(conf);
     
-    runXorTest(net);
+    runTest(net);
     
     printSeperator();
     
-    LabeledDataset *ds = createXorDataset();
+    LabeledDataset *ds = createAndDataset();
     BackpropagationLearner *bp = new BackpropagationLearner(net);
+    bp->setEpochLimit(2);
     bp->train(ds);
     
-    runXorTest(net);
+    runTest(net);
     
     delete bp;
     delete ds;
