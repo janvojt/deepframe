@@ -17,6 +17,7 @@ BackpropagationLearner::BackpropagationLearner(Network *network) {
     this->network = network;
     learningRate = 1;
     epochCounter = 0;
+    epochLimit = 1000;
     errorTotal = std::numeric_limits<float>::infinity();
     allocateCache();
 }
@@ -34,7 +35,6 @@ void BackpropagationLearner::allocateCache() {
 }
 
 void BackpropagationLearner::train(LabeledDataset *dataset) {
-    float errorPrev = 0;
     do {
         epochCounter++;
         while (dataset->hasNext()) {
@@ -43,7 +43,7 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
             doForwardPhase(pattern);
             doBackwardPhase(output);
         }
-    } while (errorTotal < errorPrev); // TODO not applicable without validation set
+    } while (epochCounter < epochLimit);
 }
 
 void BackpropagationLearner::doForwardPhase(float *input) {

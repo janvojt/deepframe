@@ -19,6 +19,8 @@ public:
     virtual ~BackpropagationLearner();
     // Launches the learning process.
     void train(LabeledDataset *dataset);
+    // Sets the maximum number of epochs.
+    void setEpochLimit(int limit);
 private:
     // Validates input dataset provided for learning against neural network.
     void validate(LabeledDataset *dataset);
@@ -47,6 +49,8 @@ private:
     float errorTotal;
     // Counter of epochs, incremented right before new epoch is started.
     int epochCounter;
+    // Stop learning when given number of epochs passes.
+    int epochLimit;
     // Total differential for weight adjustment.
     float *weightDiffs;
     // Cache for local gradients of respective neurons.
