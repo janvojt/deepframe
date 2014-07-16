@@ -89,7 +89,7 @@ void Network::run() {
             }
         }
         // Run through activation function
-        conf->activationFnc(potentials+nPrevLayers, inputs+nPrevLayers, nThisLayer);
+        conf->activationFnc(potentials+nPrevLayers+nThisLayer, inputs+nPrevLayers+nThisLayer, nNextLayer);
         
         nPrevLayers += nThisLayer;
     }

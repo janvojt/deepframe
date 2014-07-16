@@ -17,12 +17,24 @@
 using namespace std;
 
 void printOutput(Network *net) {
+    
+    // print input
+    cout << "[ ";
+    float *in = net->getInputValues();
+    int iNeurons = net->getInputNeurons();
+    cout << *in++;
+    for (int i = 1; i<iNeurons; i++) {
+        cout << ", " << *in;
+        in++;
+    }
+    cout << " ] -> ";
+    
+    // print output
     cout << "[ ";
     float *out = net->getOutput();
     int oNeurons = net->getOutputNeurons();
     
-    cout << *out;
-    out++;
+    cout << *out++;
     for (int i = 1; i<oNeurons; i++) {
         cout << ", " << *out;
         out++;
