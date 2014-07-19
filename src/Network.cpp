@@ -42,10 +42,8 @@ void Network::initWeights() {
     }
     weights = new float[noWeights];
     
-    // initialize weights for input layer to 1
-    for (int i = 0; i<getInputNeurons(); i++) {
-        weights[i] = 1;
-    }
+    // initialize weights to 1
+    std::fill_n(weights, noWeights, 1);
 }
 
 void Network::initInputs() {
