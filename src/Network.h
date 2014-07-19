@@ -20,11 +20,13 @@ public:
     virtual ~Network();
     // Returns the network configuration.
     NetworkConfiguration *getConfiguration();
+    // run the network
+    void run();
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
     void setInput(float *input);
-    // run the network
-    void run();
+    // Returns pointer to the array with original network input.
+    float *getInput();
     // Returns pointer to the beginning of the output array.
     float *getOutput();
     // Returns number of neurons in the first layer.

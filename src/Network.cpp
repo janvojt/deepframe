@@ -59,14 +59,14 @@ void Network::initInputs() {
     inputs = new float[noNeurons];
 }
 
-void Network::setInput(float* input) {
-    std::memcpy(inputs, input, sizeof(float) * getInputNeurons());
-}
-
 void Network::run() {
     // number of neurons in so far processed layers
     int nPrevLayers = 0;
     float *weighPtr = weights + getInputNeurons();
+    
+    // first normalize inputs using activation function
+    conf->activationFnc(potentials, inputs, getInputNeurons());
+    
     // for every layer
     for (int l = 0; l<noLayers-1; l++) {
         int nThisLayer = conf->getNeurons(l);
@@ -97,8 +97,15 @@ void Network::clearLayer(float *inputPtr, int layerSize) {
     std::fill_n(inputPtr, layerSize, 0);
 }
 
+void Network::setInput(float* input) {
+    std::memcpy(potentials, input, sizeof(float) * getInputNeurons());
+}
 
-float* Network::getOutput() {
+float *Network::getInput() {
+    return potentials;
+}
+
+float *Network::getOutput() {
     return inputs + noNeurons - getOutputNeurons();
 }
 

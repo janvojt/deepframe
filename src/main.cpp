@@ -20,7 +20,7 @@ void printOutput(Network *net) {
     
     // print input
     cout << "[ ";
-    float *in = net->getInputValues();
+    float *in = net->getInput();
     int iNeurons = net->getInputNeurons();
     cout << *in++;
     for (int i = 1; i<iNeurons; i++) {
