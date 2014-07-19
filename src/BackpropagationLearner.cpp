@@ -12,6 +12,8 @@
 #include <string>
 #include <stdexcept>
 
+#include "log/LoggerFactory.h"
+#include "log4cpp/Category.hh"
 
 BackpropagationLearner::BackpropagationLearner(Network *network) {
     this->network = network;
@@ -37,13 +39,18 @@ void BackpropagationLearner::allocateCache() {
 void BackpropagationLearner::train(LabeledDataset *dataset) {
     do {
         epochCounter++;
+        LOG()->debug("Starting epoch %d.", epochCounter);
+        dataset->reset();
         while (dataset->hasNext()) {
             float *pattern = dataset->next();
             float *output = pattern + dataset->getInputDimension();
+            LOG()->debug("Learning pattern [%f, %f] -> [%f].", pattern[0], pattern[1], output[0]);
             doForwardPhase(pattern);
             doBackwardPhase(output);
         }
+        LOG()->debug("Finished epoch %d.", epochCounter);
     } while (epochCounter < epochLimit);
+    LOG()->debug("Finished training.");
 }
 
 void BackpropagationLearner::doForwardPhase(float *input) {
@@ -118,6 +125,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
 void BackpropagationLearner::adjustWeights() {
     int wc = network->getWeightsIndex(network->getConfiguration()->getLayers());
     float *weights = network->getWeights();
+    LOG()->debug("Adjusting weights by: [[%f, %f, %f, %f], [%f, %f]].", weightDiffs[2], weightDiffs[3], weightDiffs[4], weightDiffs[5], weightDiffs[6], weightDiffs[7]);
     // we should skip the garbage in zero-layer weights
     for(int i = network->getWeightsIndex(1); i<wc; i++) {
         weights[i] -= weightDiffs[i];
