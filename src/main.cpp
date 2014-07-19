@@ -95,7 +95,13 @@ LabeledDataset* createAndDataset() {
 }
 
 // entry point of the application
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
+    
+    int epochLimit = 100;
+    if (argc == 2) {
+        epochLimit = atoi(argv[1]);
+    }
+    
     NetworkConfiguration *conf = new NetworkConfiguration();
 
     conf->setLayers(3);
@@ -113,7 +119,7 @@ int main(int argc, char **argv) {
     
     LabeledDataset *ds = createAndDataset();
     BackpropagationLearner *bp = new BackpropagationLearner(net);
-    bp->setEpochLimit(2);
+    bp->setEpochLimit(epochLimit);
     bp->train(ds);
     
     runTest(net);
