@@ -128,7 +128,7 @@ void BackpropagationLearner::adjustWeights() {
     LOG()->debug("Adjusting weights by: [[%f, %f, %f, %f], [%f, %f]].", weightDiffs[2], weightDiffs[3], weightDiffs[4], weightDiffs[5], weightDiffs[6], weightDiffs[7]);
     // we should skip the garbage in zero-layer weights
     for(int i = network->getWeightsIndex(1); i<wc; i++) {
-        weights[i] -= weightDiffs[i];
+        weights[i] += weightDiffs[i];
     }
 }
 
