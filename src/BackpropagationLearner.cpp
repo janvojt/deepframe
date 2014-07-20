@@ -122,7 +122,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
             for (int j = 0; j<nextNeurons; j++) {
                 sumNextGradient += nextLocalGradient[j] * weights[i * thisNeurons + j];
             }
-            *thisLocalGradient = sumNextGradient * thisPotentialDerivatives[i];
+            thisLocalGradient[i] = sumNextGradient * thisPotentialDerivatives[i];
         }
     }
 }
