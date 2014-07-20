@@ -98,9 +98,9 @@ LabeledDataset* createAndDataset() {
 // entry point of the application
 int main(int argc, char *argv[]) {
     
-    int epochLimit = 100;
+    float targetMse = .0001;
     if (argc == 2) {
-        epochLimit = atoi(argv[1]);
+        targetMse = atoi(argv[1]);
     }
     
     NetworkConfiguration *conf = new NetworkConfiguration();
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
     
     LabeledDataset *ds = createAndDataset();
     BackpropagationLearner *bp = new BackpropagationLearner(net);
-    bp->setEpochLimit(epochLimit);
+    bp->setTargetMse(targetMse);
     bp->setErrorComputer(new MseErrorComputer());
     bp->train(ds);
     

@@ -24,6 +24,8 @@ public:
     void setEpochLimit(int limit);
     // Sets object for computing network error.
     void setErrorComputer(ErrorComputer *errorComputer);
+    // Set target Mean Square Error. When it is reached, training is finished.
+    void setTargetMse(float mse);
 private:
     // Validates input dataset provided for learning against neural network.
     void validate(LabeledDataset *dataset);
@@ -54,6 +56,8 @@ private:
     int epochCounter;
     // Stop learning when given number of epochs passes.
     int epochLimit;
+    // Target Mean Square Error. When it is reached, training is finished.
+    float targetMse;
     // Total differential for weight adjustment.
     float *weightDiffs;
     // Cache for local gradients of respective neurons.

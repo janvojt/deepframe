@@ -19,7 +19,8 @@ BackpropagationLearner::BackpropagationLearner(Network *network) {
     this->network = network;
     learningRate = 1;
     epochCounter = 0;
-    epochLimit = 1000;
+    epochLimit = 1000000;
+    targetMse = .0001;
     errorTotal = std::numeric_limits<float>::infinity();
     allocateCache();
 }
@@ -37,12 +38,14 @@ void BackpropagationLearner::allocateCache() {
 }
 
 void BackpropagationLearner::train(LabeledDataset *dataset) {
+    float mse;
+    LOG()->info("Started training with limits of %d epochs and target MSE of %f.", epochLimit, targetMse);
     do {
         epochCounter++;
         LOG()->debug("Starting epoch %d.", epochCounter);
         dataset->reset();
         int datasetSize = 0;
-        float mse = 0;
+        mse = 0;
         while (dataset->hasNext()) {
             datasetSize++;
             float *pattern = dataset->next();
@@ -54,8 +57,8 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
         }
         mse = mse / datasetSize;
         LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
-    } while (epochCounter < epochLimit);
-    LOG()->debug("Finished training.");
+    } while (mse > targetMse && epochCounter < epochLimit);
+    LOG()->info("Finished training after %d epochs with MSE of %f.", epochCounter, mse);
 }
 
 void BackpropagationLearner::doForwardPhase(float *input) {
@@ -156,4 +159,8 @@ void BackpropagationLearner::setEpochLimit(int limit) {
 
 void BackpropagationLearner::setErrorComputer(ErrorComputer* errorComputer) {
     this->errorComputer = errorComputer;
+}
+
+void BackpropagationLearner::setTargetMse(float mse) {
+    targetMse = mse;
 }
