@@ -41,14 +41,19 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
         epochCounter++;
         LOG()->debug("Starting epoch %d.", epochCounter);
         dataset->reset();
+        int datasetSize = 0;
+        float mse = 0;
         while (dataset->hasNext()) {
+            datasetSize++;
             float *pattern = dataset->next();
-            float *output = pattern + dataset->getInputDimension();
-            LOG()->debug("Learning pattern [%f, %f] -> [%f].", pattern[0], pattern[1], output[0]);
+            float *expOutput = pattern + dataset->getInputDimension();
+            LOG()->debug("Learning pattern [%f, %f] -> [%f].", pattern[0], pattern[1], expOutput[0]);
             doForwardPhase(pattern);
-            doBackwardPhase(output);
+            doBackwardPhase(expOutput);
+            mse += errorComputer->compute(network, expOutput);
         }
-        LOG()->debug("Finished epoch %d.", epochCounter);
+        mse = mse / datasetSize;
+        LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
     } while (epochCounter < epochLimit);
     LOG()->debug("Finished training.");
 }
@@ -147,4 +152,8 @@ void BackpropagationLearner::validate(LabeledDataset *dataset) {
 
 void BackpropagationLearner::setEpochLimit(int limit) {
     epochLimit = limit;
+}
+
+void BackpropagationLearner::setErrorComputer(ErrorComputer* errorComputer) {
+    this->errorComputer = errorComputer;
 }

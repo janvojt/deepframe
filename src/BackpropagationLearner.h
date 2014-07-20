@@ -10,6 +10,7 @@
 
 #include "Network.h"
 #include "LabeledDataset.h"
+#include "ErrorComputer.h"
 #include <limits>
 
 class BackpropagationLearner {
@@ -21,6 +22,8 @@ public:
     void train(LabeledDataset *dataset);
     // Sets the maximum number of epochs.
     void setEpochLimit(int limit);
+    // Sets object for computing network error.
+    void setErrorComputer(ErrorComputer *errorComputer);
 private:
     // Validates input dataset provided for learning against neural network.
     void validate(LabeledDataset *dataset);
@@ -55,6 +58,8 @@ private:
     float *weightDiffs;
     // Cache for local gradients of respective neurons.
     float *localGradients;
+    // Computes the Mean Square Error for the output produced in network.
+    ErrorComputer *errorComputer;
 };
 
 #endif	/* BACKPROPAGATIONLEARNER_H */

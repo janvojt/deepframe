@@ -13,6 +13,7 @@
 #include "activationFunctions.h"
 #include "BackpropagationLearner.h"
 #include "SimpleLabeledDataset.h"
+#include "MseErrorComputer.h"
 
 using namespace std;
 
@@ -120,6 +121,7 @@ int main(int argc, char *argv[]) {
     LabeledDataset *ds = createAndDataset();
     BackpropagationLearner *bp = new BackpropagationLearner(net);
     bp->setEpochLimit(epochLimit);
+    bp->setErrorComputer(new MseErrorComputer());
     bp->train(ds);
     
     runTest(net);
