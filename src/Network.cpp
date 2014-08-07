@@ -125,7 +125,7 @@ float* Network::getPotentialValues() {
     return potentials;
 }
 
-int Network::getPotentialIndex(int layer) {
+int Network::getPotentialOffset(int layer) {
     return neuronsUpToLayerCache[layer];
 }
 
@@ -137,6 +137,6 @@ float* Network::getWeights() {
     return weights;
 }
 
-int Network::getWeightsIndex(int layer) {
+int Network::getWeightsOffset(int layer) {
     return weightsUpToLayerCache[layer-1];
 }

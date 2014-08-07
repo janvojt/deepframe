@@ -41,7 +41,7 @@ public:
     float *getPotentialValues();
     // Returns offset where the potential array index starts for given layer.
     // Layer index starts at one.
-    int getPotentialIndex(int layer);
+    int getPotentialOffset(int layer);
     // Returns pointer to the beginning of array with neuron inputs
     // (potential after being processed by the activation function).
     float *getInputValues();
@@ -52,7 +52,7 @@ public:
     float *getWeights();
     // Returns offset where the weight array index starts for given layer.
     // Layer index starts at one.
-    int getWeightsIndex(int layer);
+    int getWeightsOffset(int layer);
 private:
     // initialize network weights
     void initWeights();
