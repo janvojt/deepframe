@@ -16,6 +16,7 @@
 
 NetworkConfiguration::NetworkConfiguration() {
     neuronConf = NULL;
+    bias = true;
 }
 
 NetworkConfiguration::NetworkConfiguration(const NetworkConfiguration& orig) {
@@ -52,6 +53,14 @@ void NetworkConfiguration::setNeurons(int layer, int neurons) {
 
 int NetworkConfiguration::getNeurons(int layer) {
     return neuronConf[layer];
+}
+
+void NetworkConfiguration::setBias(bool enabled) {
+    bias = enabled;
+}
+
+bool NetworkConfiguration::getBias() {
+    return bias;
 }
 
 void NetworkConfiguration::initConf() {

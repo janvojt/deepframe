@@ -16,6 +16,7 @@ Network::Network(NetworkConfiguration *conf) {
     this->bias = 0;
     initWeights();
     initInputs();
+    initBias();
 }
 
 Network::Network(const Network& orig) {
@@ -24,6 +25,7 @@ Network::Network(const Network& orig) {
 Network::~Network() {
     delete weights;
     delete inputs;
+    delete bias;
 }
 
 NetworkConfiguration* Network::getConfiguration() {
@@ -59,6 +61,15 @@ void Network::initInputs() {
     inputs = new float[noNeurons];
 }
 
+void Network::initBias() {
+    if (conf->getBias()) {
+        bias = new float[noNeurons];
+        std::fill_n(bias, noNeurons, 1);
+    } else {
+        bias = NULL;
+    }
+}
+
 void Network::run() {
     // number of neurons in so far processed layers
     int nPrevLayers = 0;
@@ -86,10 +97,21 @@ void Network::run() {
                 weighPtr++;
             }
         }
+
+        applyBias(l+1);
+        
         // Run through activation function
         conf->activationFnc(potentials+nPrevLayers+nThisLayer, inputs+nPrevLayers+nThisLayer, nNextLayer);
         
         nPrevLayers += nThisLayer;
+    }
+}
+
+void Network::applyBias(int l) {
+    int n = conf->getNeurons(l+1);
+    int potentialOffset = getPotentialOffset(l);
+    for (int i = 0; i<n; i++) {
+        potentials[potentialOffset + i] += bias[potentialOffset + i];
     }
 }
 

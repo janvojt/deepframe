@@ -21,6 +21,10 @@ public:
     int getNeurons(int layer);
     // Sets number of neurons in given layer, layer being indexed from zero.
     void setNeurons(int layer, int neurons);
+    // Enables or disables network bias.
+    void setBias(bool enabled);
+    // Returns whether bias is enabled.
+    bool getBias();
     // Pointer to activation function normalizing the neurons potential.
     // Input potential is preserved and the normalized value
     // is put into the target array. It is also possible to provide
@@ -35,6 +39,8 @@ private:
     int layers;
     // number of neurons in each network layer
     int *neuronConf;
+    // flag determining whether the network uses bias, true by default
+    bool bias;
 };
 
 #endif	/* NETWORKCONFIGURATION_H */

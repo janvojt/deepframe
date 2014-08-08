@@ -58,9 +58,13 @@ private:
     void initWeights();
     // initialize input potential for neurons
     void initInputs();
+    // Initialize bias if it is enabled in network configuration.
+    void initBias();
     // Clears neuron potentials in given layer
     // (zero index represents input layer).
     void clearLayer(float *inputPtr, int layerSize);
+    // Applies bias to layer l (if it is enabled, otherwise does nothing).
+    void applyBias(int l);
     // Number of layers in the network.
     int noLayers;
     // Total number of neurons in the network.
@@ -78,8 +82,8 @@ private:
     // The potential coming into input neurons is also represented
     // and set when #setInput is called.
     float *inputs;
-    // Network bias.
-    float bias;
+    // Network bias. Each neuron has its own bias.
+    float *bias;
     // Cache of number of neurons up to the layer determined by the array index.
     // Used for optimization of calculating indexes for inputs and potentials.
     // Method returns zero neurons in zero-th layer.
