@@ -78,9 +78,9 @@ void Network::run() {
         
         // for every neuron in (l)th layer
         for (int i = 0; i<nThisLayer; i++) {
+            int indexFrom = nPrevLayers + i;
             // for every neuron in (l+1)th layer
             for (int j = 0; j<nNextLayer; j++) {
-                int indexFrom = nPrevLayers + i;
                 int indexTo = nPrevLayers + nThisLayer + j;
                 potentials[indexTo] += *weighPtr * inputs[indexFrom];
                 weighPtr++;
