@@ -24,22 +24,22 @@ SimpleInputDataset::~SimpleInputDataset() {
 }
 
 void SimpleInputDataset::initDataset() {
-    data = new float[dimension * size];
+    data = new double[dimension * size];
 }
 
-void SimpleInputDataset::addInput(float* input) {
+void SimpleInputDataset::addInput(double* input) {
     
     if (addedCounter >= size) {
         LOG()->error("Trying to add %d input patterns while the dataset size is only %d.", addedCounter+1, size);
     }
     
-    int patternSize = sizeof(float) * dimension;
-    float *dataPtr = data + (size * patternSize);
+    int patternSize = sizeof(double) * dimension;
+    double *dataPtr = data + (size * patternSize);
     std::memcpy(dataPtr, input, patternSize);
     addedCounter++;
 }
 
-float* SimpleInputDataset::next() {
+double* SimpleInputDataset::next() {
     return data + (dimension * cursor++);
 }
 

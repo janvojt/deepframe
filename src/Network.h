@@ -24,11 +24,11 @@ public:
     void run();
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
-    void setInput(float *input);
+    void setInput(double *input);
     // Returns pointer to the array with original network input.
-    float *getInput();
+    double *getInput();
     // Returns pointer to the beginning of the output array.
-    float *getOutput();
+    double *getOutput();
     // Returns number of neurons in the first layer.
     int getInputNeurons();
     // Returns number of neurons in the last layer.
@@ -38,24 +38,24 @@ public:
     // Returns pointer to the beginning of array with neuron potentials.
     // This internal network property is usually needed
     // in the process of learning.
-    float *getPotentialValues();
+    double *getPotentialValues();
     // Returns offset where the potential array index starts for given layer.
     // Layer index starts at one.
     int getPotentialOffset(int layer);
     // Returns pointer to the beginning of array with neuron inputs
     // (potential after being processed by the activation function).
-    float *getInputValues();
+    double *getInputValues();
     // Returns pointer to the beginning of array with weights
     // for neuron connections.
     // This internal network property is usually needed
     // in the process of learning.
-    float *getWeights();
+    double *getWeights();
     // Returns offset where the weight array index starts for given layer.
     // Layer index starts at one.
     int getWeightsOffset(int layer);
     // Provides access to bias values,
     // so the learning algorithm may adjust them.
-    float *getBiasValues();
+    double *getBiasValues();
 private:
     // initialize network weights
     void initWeights();
@@ -65,7 +65,7 @@ private:
     void initBias();
     // Clears neuron potentials in given layer
     // (zero index represents input layer).
-    void clearLayer(float *inputPtr, int layerSize);
+    void clearLayer(double *inputPtr, int layerSize);
     // Applies bias to layer l (if it is enabled, otherwise does nothing).
     void applyBias(int l);
     // Number of layers in the network.
@@ -77,16 +77,16 @@ private:
     // Array representing weights for each edge in the neural network.
     // The zero-layer weights are for edges coming into input neurons,
     // therefore always initialized to 1.
-    float *weights;
+    double *weights;
     // Array representing the potential of a neuron
     // before reaching activation function.
-    float *potentials;
+    double *potentials;
     // Array representing input coming into each neuron.
     // The potential coming into input neurons is also represented
     // and set when #setInput is called.
-    float *inputs;
+    double *inputs;
     // Network bias. Each neuron has its own bias.
-    float *bias;
+    double *bias;
     // Cache of number of neurons up to the layer determined by the array index.
     // Used for optimization of calculating indexes for inputs and potentials.
     // Method returns zero neurons in zero-th layer.

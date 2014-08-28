@@ -21,7 +21,7 @@ void printOutput(Network *net) {
     
     // print input
     cout << "[ ";
-    float *in = net->getInput();
+    double *in = net->getInput();
     int iNeurons = net->getInputNeurons();
     cout << *in++;
     for (int i = 1; i<iNeurons; i++) {
@@ -32,7 +32,7 @@ void printOutput(Network *net) {
     
     // print output
     cout << "[ ";
-    float *out = net->getOutput();
+    double *out = net->getOutput();
     int oNeurons = net->getOutputNeurons();
     
     cout << *out++;
@@ -51,22 +51,22 @@ void printSeperator() {
 
 void runTest(Network *net) {
     
-    float input[] = {0, 0};
+    double input[] = {0, 0};
     net->setInput(input);
     net->run();
     printOutput(net);
     
-    float input2[] = {0, 1};
+    double input2[] = {0, 1};
     net->setInput(input2);
     net->run();
     printOutput(net);
     
-    float input3[] = {1, 0};
+    double input3[] = {1, 0};
     net->setInput(input3);
     net->run();
     printOutput(net);
     
-    float input4[] = {1, 1};
+    double input4[] = {1, 1};
     net->setInput(input4);
     net->run();
     printOutput(net);
@@ -76,10 +76,10 @@ void runTest(Network *net) {
 LabeledDataset* createXorDataset() {
     SimpleLabeledDataset *ds = new SimpleLabeledDataset(2, 1, 4);
     
-    ds->addPattern((const float[2]){0.0f, 0.0f}, (const float[1]){0.0f});
-    ds->addPattern((const float[2]){0.0f, 1.0f}, (const float[1]){1.0f});
-    ds->addPattern((const float[2]){1.0f, 0.0f}, (const float[1]){1.0f});
-    ds->addPattern((const float[2]){1.0f, 1.0f}, (const float[1]){0.0f});
+    ds->addPattern((const double[2]){0.0f, 0.0f}, (const double[1]){0.0f});
+    ds->addPattern((const double[2]){0.0f, 1.0f}, (const double[1]){1.0f});
+    ds->addPattern((const double[2]){1.0f, 0.0f}, (const double[1]){1.0f});
+    ds->addPattern((const double[2]){1.0f, 1.0f}, (const double[1]){0.0f});
     
     return (LabeledDataset*)ds;
 }
@@ -87,10 +87,10 @@ LabeledDataset* createXorDataset() {
 LabeledDataset* createAndDataset() {
     SimpleLabeledDataset *ds = new SimpleLabeledDataset(2, 1, 4);
     
-    ds->addPattern((const float[2]){0.0f, 0.0f}, (const float[1]){0.0f});
-    ds->addPattern((const float[2]){0.0f, 1.0f}, (const float[1]){0.0f});
-    ds->addPattern((const float[2]){1.0f, 0.0f}, (const float[1]){0.0f});
-    ds->addPattern((const float[2]){1.0f, 1.0f}, (const float[1]){1.0f});
+    ds->addPattern((const double[2]){0.0f, 0.0f}, (const double[1]){0.0f});
+    ds->addPattern((const double[2]){0.0f, 1.0f}, (const double[1]){0.0f});
+    ds->addPattern((const double[2]){1.0f, 0.0f}, (const double[1]){0.0f});
+    ds->addPattern((const double[2]){1.0f, 1.0f}, (const double[1]){1.0f});
     
     return (LabeledDataset*)ds;
 }
@@ -98,7 +98,7 @@ LabeledDataset* createAndDataset() {
 // entry point of the application
 int main(int argc, char *argv[]) {
     
-    float targetMse = .0001;
+    double targetMse = .0001;
     if (argc == 2) {
         targetMse = atoi(argv[1]);
     }

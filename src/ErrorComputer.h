@@ -16,7 +16,7 @@ public:
     ErrorComputer(const ErrorComputer& orig);
     virtual ~ErrorComputer();
     // Computes the error for given expected output.
-    virtual float compute(Network *net, float *expectedOutput) = 0;
+    virtual double compute(Network *net, double *expectedOutput) = 0;
 private:
 
 };

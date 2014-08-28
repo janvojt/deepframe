@@ -18,10 +18,10 @@ MseErrorComputer::MseErrorComputer(const MseErrorComputer& orig) {
 MseErrorComputer::~MseErrorComputer() {
 }
 
-float MseErrorComputer::compute(Network* net, float* expectedOutput) {
+double MseErrorComputer::compute(Network* net, double* expectedOutput) {
     int oNeurons = net->getOutputNeurons();
-    float *output = net->getOutput();
-    float mse = 0;
+    double *output = net->getOutput();
+    double mse = 0;
     for (int i = 0; i<oNeurons; i++) {
         mse += pow(output[i] - expectedOutput[i], 2);
     }

@@ -22,11 +22,11 @@ public:
     virtual ~SimpleLabeledDataset();
     int getInputDimension();
     int getOutputDimension();
-    float *next();
+    double *next();
     bool hasNext();
     void reset();
     // Adds a single input vector with its label.
-    void addPattern(const float *input, const float *output);
+    void addPattern(const double *input, const double *output);
 private:
     void initDataset();
     int inDimension;
@@ -34,7 +34,7 @@ private:
     int cursor;
     int addedCounter;
     int size;
-    float *data;
+    double *data;
 
 };
 

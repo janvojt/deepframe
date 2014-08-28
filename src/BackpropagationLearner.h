@@ -25,18 +25,18 @@ public:
     // Sets object for computing network error.
     void setErrorComputer(ErrorComputer *errorComputer);
     // Set target Mean Square Error. When it is reached, training is finished.
-    void setTargetMse(float mse);
+    void setTargetMse(double mse);
 private:
     // Validates input dataset provided for learning against neural network.
     void validate(LabeledDataset *dataset);
     // We cannot reuse the forward run from the network's implementation,
     // because additional meta results need to be kept for backpropagation
     // algorithm.
-    void doForwardPhase(float *input);
+    void doForwardPhase(double *input);
     // Backward phase optimizing network parameters in the learning process.
-    void doBackwardPhase(float *expectedOutput);
+    void doBackwardPhase(double *expectedOutput);
     // Computes local gradients for output neurons.
-    void computeOutputGradients(float *expectedOutput);
+    void computeOutputGradients(double *expectedOutput);
     // Computes total differential for all weights
     // and local gradients for hidden neurons.
     void computeWeightDifferentials();
@@ -45,27 +45,27 @@ private:
     // Adjust network bias according to computed total differentials.
     void adjustBias();
     // Helper method for clearing network layer.
-    void clearLayer(float *inputPtr, int layerSize);
+    void clearLayer(double *inputPtr, int layerSize);
     // Allocates memory for caching variables.
     void allocateCache();
     // ANN itself. Used for accessing configuration and tuning weights.
     Network *network;
     // Learning parameter. Intended to be decreasing during learning process.
-    float learningRate;
+    double learningRate;
     // Represents average error of the current network configuration.
-    float errorTotal;
+    double errorTotal;
     // Counter of epochs, incremented right before new epoch is started.
     int epochCounter;
     // Stop learning when given number of epochs passes.
     int epochLimit;
     // Target Mean Square Error. When it is reached, training is finished.
-    float targetMse;
+    double targetMse;
     // Total differential for weight adjustment.
-    float *weightDiffs;
+    double *weightDiffs;
     // Cache for local gradients of respective neurons.
-    float *localGradients;
+    double *localGradients;
     // Total differential for bias adjustment.
-    float *biasDiff;
+    double *biasDiff;
     // Whether to use bias.
     bool useBias;
     // Computes the Mean Square Error for the output produced in network.

@@ -17,7 +17,7 @@ public:
     virtual ~InputDataset();
     // Returns a pointer to an array of next input values in the dataset.
     // Method is virtual so it is implementation agnostic.
-    virtual float *next() = 0;
+    virtual double *next() = 0;
     // Tells whether the dataset contains more input patterns to process.
     virtual bool hasNext() = 0;
     // Resets the cursor to the beginning of dataset.

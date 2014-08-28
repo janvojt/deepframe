@@ -12,10 +12,10 @@
 // putting the result in the target array. For in-place computation
 // it is possible to provide the same pointer for input and target
 // to save some memory.
-void sigmoidFunction(float *inputPtr, float *targetPtr, int layerSize);
+void sigmoidFunction(double *inputPtr, double *targetPtr, int layerSize);
 
 // Derivative of the sigmoid function.
-void dSigmoidFunction(float *inputPtr, float *targetPtr, int layerSize);
+void dSigmoidFunction(double *inputPtr, double *targetPtr, int layerSize);
 
 #endif	/* ACTIVATIONFUNCTIONS_H */
 

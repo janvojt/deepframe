@@ -17,19 +17,19 @@ public:
     SimpleInputDataset(int dimension, int size);
     SimpleInputDataset(const SimpleInputDataset& orig);
     virtual ~SimpleInputDataset();
-    float *next();
+    double *next();
     bool hasNext();
     void reset();
     int getInputDimension();
     // Adds a single input pattern to be processed by the network.
-    void addInput(float *input);
+    void addInput(double *input);
 private:
     void initDataset();
     int dimension;
     int cursor;
     int addedCounter;
     int size;
-    float *data;
+    double *data;
 };
 
 #endif	/* SIMPLEINPUTDATASET_H */

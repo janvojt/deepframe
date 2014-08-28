@@ -30,9 +30,9 @@ public:
     // is put into the target array. It is also possible to provide
     // the same pointer for input and target for in-place computation
     // saving some memory.
-    void (*activationFnc)(float *inputPtr, float *targetPtr, int layerSize);
+    void (*activationFnc)(double *inputPtr, double *targetPtr, int layerSize);
     // Derivative of activation function.
-    void (*dActivationFnc)(float *inputPtr, float *targetPtr, int layerSize);
+    void (*dActivationFnc)(double *inputPtr, double *targetPtr, int layerSize);
 private:
     void initConf();
     // number of layers in a network

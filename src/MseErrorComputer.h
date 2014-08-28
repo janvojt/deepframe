@@ -16,7 +16,7 @@ public:
     MseErrorComputer(const MseErrorComputer& orig);
     virtual ~MseErrorComputer();
     // Computes the Mean Square Error for given expected output.
-    float compute(Network* net, float* expectedOutput);
+    double compute(Network* net, double* expectedOutput);
 private:
 
 };

@@ -41,7 +41,7 @@ void Network::initWeights() {
         weightsUpToLayerCache[i] = noWeights;
         pLayer = tLayer;
     }
-    weights = new float[noWeights];
+    weights = new double[noWeights];
     
     // initialize weights to 1
     std::fill_n(weights, noWeights, 1);
@@ -56,13 +56,13 @@ void Network::initInputs() {
         neuronsUpToLayerCache[i+1] = noNeurons;
     }
     this->noNeurons = noNeurons;
-    potentials = new float[noNeurons];
-    inputs = new float[noNeurons];
+    potentials = new double[noNeurons];
+    inputs = new double[noNeurons];
 }
 
 void Network::initBias() {
     if (conf->getBias()) {
-        bias = new float[noNeurons];
+        bias = new double[noNeurons];
         std::fill_n(bias, noNeurons, 1);
     } else {
         bias = NULL;
@@ -72,7 +72,7 @@ void Network::initBias() {
 void Network::run() {
     // number of neurons in so far processed layers
     int nPrevLayers = 0;
-    float *weighPtr = weights + getInputNeurons();
+    double *weighPtr = weights + getInputNeurons();
     
     // first normalize inputs using activation function
     conf->activationFnc(potentials, inputs, getInputNeurons());
@@ -114,19 +114,19 @@ void Network::applyBias(int l) {
     }
 }
 
-void Network::clearLayer(float *inputPtr, int layerSize) {
+void Network::clearLayer(double *inputPtr, int layerSize) {
     std::fill_n(inputPtr, layerSize, 0);
 }
 
-void Network::setInput(float* input) {
-    std::memcpy(potentials, input, sizeof(float) * getInputNeurons());
+void Network::setInput(double* input) {
+    std::memcpy(potentials, input, sizeof(double) * getInputNeurons());
 }
 
-float *Network::getInput() {
+double *Network::getInput() {
     return potentials;
 }
 
-float *Network::getOutput() {
+double *Network::getOutput() {
     return inputs + noNeurons - getOutputNeurons();
 }
 
@@ -142,7 +142,7 @@ int Network::getAllNeurons() {
     return noNeurons;
 }
 
-float* Network::getPotentialValues() {
+double* Network::getPotentialValues() {
     return potentials;
 }
 
@@ -150,11 +150,11 @@ int Network::getPotentialOffset(int layer) {
     return neuronsUpToLayerCache[layer];
 }
 
-float* Network::getInputValues() {
+double* Network::getInputValues() {
     return inputs;
 }
 
-float* Network::getWeights() {
+double* Network::getWeights() {
     return weights;
 }
 
@@ -162,6 +162,6 @@ int Network::getWeightsOffset(int layer) {
     return weightsUpToLayerCache[layer-1];
 }
 
-float* Network::getBiasValues() {
+double* Network::getBiasValues() {
     return bias;
 }

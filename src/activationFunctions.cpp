@@ -9,7 +9,7 @@
 
 #include <math.h>
 
-void sigmoidFunction(float *inputPtr, float *targetPtr, int layerSize) {
+void sigmoidFunction(double *inputPtr, double *targetPtr, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
         *targetPtr = 1 / (1 + exp(-*inputPtr));
         inputPtr++;
@@ -17,7 +17,7 @@ void sigmoidFunction(float *inputPtr, float *targetPtr, int layerSize) {
     }
 }
 
-void dSigmoidFunction(float* inputPtr, float* targetPtr, int layerSize) {
+void dSigmoidFunction(double* inputPtr, double* targetPtr, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
         *targetPtr = exp(*inputPtr) / pow(1 + exp(*inputPtr), 2);
         inputPtr++;
