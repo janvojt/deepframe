@@ -9,8 +9,14 @@
 
 #include <cstring>
 #include <string>
+#include <stdlib.h>
+#include <iostream>
 
 Network::Network(NetworkConfiguration *conf) {
+    
+    // Seed random generator before initializing weights.
+    srand(time(0));
+    
     this->conf = conf;
     this->noLayers = conf->getLayers();
     initWeights();
@@ -43,8 +49,10 @@ void Network::initWeights() {
     }
     weights = new double[noWeights];
     
-    // initialize weights to 1
-    std::fill_n(weights, noWeights, 1);
+    // randomly initialize weights between -1 and 1
+    for (int i = 0; i < noWeights; i++) {
+        weights[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
+    }
 }
 
 void Network::initInputs() {
@@ -63,7 +71,9 @@ void Network::initInputs() {
 void Network::initBias() {
     if (conf->getBias()) {
         bias = new double[noNeurons];
-        std::fill_n(bias, noNeurons, 1);
+        for (int i = 0; i < noNeurons; i++) {
+            bias[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
+        }
     } else {
         bias = NULL;
     }
