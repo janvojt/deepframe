@@ -35,6 +35,9 @@ BackpropagationLearner::~BackpropagationLearner() {
 void BackpropagationLearner::allocateCache() {
     weightDiffs = new float[network->getWeightsOffset(network->getConfiguration()->getLayers())];
     localGradients = new float[network->getAllNeurons()];
+    
+    useBias = network->getConfiguration()->getBias();
+    biasDiff = useBias ? new float[network->getAllNeurons()] : NULL;
 }
 
 void BackpropagationLearner::train(LabeledDataset *dataset) {
@@ -70,6 +73,7 @@ void BackpropagationLearner::doBackwardPhase(float *expectedOutput) {
     computeOutputGradients(expectedOutput);
     computeWeightDifferentials();
     adjustWeights();
+    adjustBias();
 }
 
 void BackpropagationLearner::computeOutputGradients(float *expectedOutput) {
@@ -112,6 +116,12 @@ void BackpropagationLearner::computeWeightDifferentials() {
             wdiff[i] = -learningRate * nextLocalGradient[i%nextNeurons] * thisInputs[i/nextNeurons];
         }
         
+        // COMPUTE BIAS DERIVATIVES for layer l+1
+        if (useBias) {
+            for (int i = 0; i<nextNeurons; i++) {
+                biasDiff[nextPotentialIndex + i] = -learningRate * nextLocalGradient[i];
+            }
+        }
         
         // COMPUTE LOCAL GRADIENTS for layer l
         
@@ -137,6 +147,14 @@ void BackpropagationLearner::adjustWeights() {
     // we should skip the garbage in zero-layer weights
     for(int i = network->getWeightsOffset(1); i<wc; i++) {
         weights[i] += weightDiffs[i];
+    }
+}
+
+void BackpropagationLearner::adjustBias() {
+    float *bias = network->getBiasValues();
+    int noNeurons = network->getAllNeurons();
+    for (int i = 0; i<noNeurons; i++) {
+        bias[i] += biasDiff[i];
     }
 }
 

@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
     
     printSeperator();
     
-    LabeledDataset *ds = createAndDataset();
+    LabeledDataset *ds = createXorDataset();
     BackpropagationLearner *bp = new BackpropagationLearner(net);
     bp->setTargetMse(targetMse);
     bp->setErrorComputer(new MseErrorComputer());

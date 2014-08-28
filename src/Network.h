@@ -53,6 +53,9 @@ public:
     // Returns offset where the weight array index starts for given layer.
     // Layer index starts at one.
     int getWeightsOffset(int layer);
+    // Provides access to bias values,
+    // so the learning algorithm may adjust them.
+    float *getBiasValues();
 private:
     // initialize network weights
     void initWeights();

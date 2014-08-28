@@ -13,7 +13,6 @@
 Network::Network(NetworkConfiguration *conf) {
     this->conf = conf;
     this->noLayers = conf->getLayers();
-    this->bias = 0;
     initWeights();
     initInputs();
     initBias();
@@ -108,7 +107,7 @@ void Network::run() {
 }
 
 void Network::applyBias(int l) {
-    int n = conf->getNeurons(l+1);
+    int n = conf->getNeurons(l);
     int potentialOffset = getPotentialOffset(l);
     for (int i = 0; i<n; i++) {
         potentials[potentialOffset + i] += bias[potentialOffset + i];
@@ -161,4 +160,8 @@ float* Network::getWeights() {
 
 int Network::getWeightsOffset(int layer) {
     return weightsUpToLayerCache[layer-1];
+}
+
+float* Network::getBiasValues() {
+    return bias;
 }

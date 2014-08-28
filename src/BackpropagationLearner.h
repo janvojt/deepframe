@@ -42,6 +42,8 @@ private:
     void computeWeightDifferentials();
     // Adjust network weights according to computed total differentials.
     void adjustWeights();
+    // Adjust network bias according to computed total differentials.
+    void adjustBias();
     // Helper method for clearing network layer.
     void clearLayer(float *inputPtr, int layerSize);
     // Allocates memory for caching variables.
@@ -62,6 +64,10 @@ private:
     float *weightDiffs;
     // Cache for local gradients of respective neurons.
     float *localGradients;
+    // Total differential for bias adjustment.
+    float *biasDiff;
+    // Whether to use bias.
+    bool useBias;
     // Computes the Mean Square Error for the output produced in network.
     ErrorComputer *errorComputer;
 };
