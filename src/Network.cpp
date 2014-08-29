@@ -107,7 +107,9 @@ void Network::run() {
             }
         }
 
-        applyBias(l+1);
+        if (conf->getBias()) {
+            applyBias(l+1);
+        }
         
         // Run through activation function
         conf->activationFnc(potentials+nPrevLayers+nThisLayer, inputs+nPrevLayers+nThisLayer, nNextLayer);

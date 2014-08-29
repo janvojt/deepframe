@@ -7,6 +7,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <getopt.h>
 
 #include "NetworkConfiguration.h"
 #include "Network.h"
@@ -15,7 +16,35 @@
 #include "SimpleLabeledDataset.h"
 #include "MseErrorComputer.h"
 
+// getopts constants
+#define no_argument 0
+#define required_argument 1 
+#define optional_argument 2
+
 using namespace std;
+
+/* Application long options. */
+const struct option optsLong[] = {
+    {"help", no_argument, 0, 'h'},
+    {"no-bias", no_argument, 0, 'b'},
+    {"mse", required_argument, 0, 'e'},
+    {"max-epochs", required_argument, 0, 'm'},
+    {0, 0, 0, 0},
+};
+
+/* Application short options. */
+const char* optsList = "hbe:m:";
+
+/* Application configuration. */
+struct config {
+    /* mean square error */
+    double mse = .0001;
+    /* use bias? */
+    bool bias = true;
+    /* epoch limit */
+    long maxEpochs = 1000000;
+};
+
 
 void printOutput(Network *net) {
     
@@ -95,24 +124,60 @@ LabeledDataset* createAndDataset() {
     return (LabeledDataset*)ds;
 }
 
-// entry point of the application
-int main(int argc, char *argv[]) {
+void printHelp() {
+    cout << "Usage: xoraan [OPTIONS]" << endl << endl;
+    cout << "Option      GNU long option       Meaning" << endl;
+    cout << "-h          --help                This help." << endl;
+    cout << "-b          --no-bias             Disables bias in neural network. Bias is enabled by default." << endl;
+    cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning." << endl;
+    cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met." << endl;
+}
+
+/* Process command line options and return generated configuration. */
+config* processOptions(int argc, char *argv[]) {
     
-    double targetMse = .0001;
-    if (argc == 2) {
-        targetMse = atoi(argv[1]);
+    config* conf = new config;
+    
+    int index;
+    int iarg = 0;
+    while (iarg != -1) {
+        iarg = getopt_long(argc, argv, optsList, optsLong, &index);
+
+        switch (iarg) {
+            case 'h':
+                printHelp();
+                exit(0);
+            case 'b':
+                conf->bias = false;
+                break;
+            case 'e':
+                conf->mse = atof(optarg);
+                break;
+            case 'm' :
+                conf->maxEpochs = atoi(optarg);
+                break;
+        }
     }
     
-    NetworkConfiguration *conf = new NetworkConfiguration();
+    return conf;
+}
 
-    conf->setLayers(3);
-    conf->setNeurons(0, 2);
-    conf->setNeurons(1, 2);
-    conf->setNeurons(2, 1);
-    conf->activationFnc = sigmoidFunction;
-    conf->dActivationFnc = dSigmoidFunction;
+/* Entry point of the application. */
+int main(int argc, char *argv[]) {
     
-    Network *net = new Network(conf);
+    config* conf = processOptions(argc, argv);
+    
+    NetworkConfiguration *netConf = new NetworkConfiguration();
+
+    netConf->setLayers(3);
+    netConf->setNeurons(0, 2);
+    netConf->setNeurons(1, 2);
+    netConf->setNeurons(2, 1);
+    netConf->activationFnc = sigmoidFunction;
+    netConf->dActivationFnc = dSigmoidFunction;
+    netConf->setBias(conf->bias);
+    
+    Network *net = new Network(netConf);
     
     runTest(net);
     
@@ -120,15 +185,16 @@ int main(int argc, char *argv[]) {
     
     LabeledDataset *ds = createXorDataset();
     BackpropagationLearner *bp = new BackpropagationLearner(net);
-    bp->setTargetMse(targetMse);
+    bp->setTargetMse(conf->mse);
     bp->setErrorComputer(new MseErrorComputer());
+    bp->setEpochLimit(conf->maxEpochs);
     bp->train(ds);
     
     runTest(net);
     
     delete bp;
     delete ds;
-    delete conf;
+    delete netConf;
     delete net;
     return 0;
 }

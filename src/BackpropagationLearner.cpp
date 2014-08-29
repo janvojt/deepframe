@@ -73,7 +73,9 @@ void BackpropagationLearner::doBackwardPhase(double *expectedOutput) {
     computeOutputGradients(expectedOutput);
     computeWeightDifferentials();
     adjustWeights();
-    adjustBias();
+    if (network->getConfiguration()->getBias()) {
+        adjustBias();
+    }
 }
 
 void BackpropagationLearner::computeOutputGradients(double *expectedOutput) {
