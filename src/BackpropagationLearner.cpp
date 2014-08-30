@@ -111,7 +111,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
         
         
         // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
-        int wc = network->getWeightsOffset(l+1) - network->getWeightsOffset(l);
+        int wc = network->getWeightsOffset(l+1) - network->getWeightsOffset(l) + 1;
         double *thisInputs = network->getInputValues() + network->getPotentialOffset(l-1);
         double *wdiff = weightDiffs + network->getWeightsOffset(l);
         for (int i = 0; i<wc; i++) {
@@ -143,9 +143,13 @@ void BackpropagationLearner::computeWeightDifferentials() {
 }
 
 void BackpropagationLearner::adjustWeights() {
-    int wc = network->getWeightsOffset(network->getConfiguration()->getLayers());
+    int wc = network->getWeightsOffset(network->getConfiguration()->getLayers()) + 1;
     double *weights = network->getWeights();
-    LOG()->debug("Adjusting weights by: [[%f, %f, %f, %f], [%f, %f]].", weightDiffs[2], weightDiffs[3], weightDiffs[4], weightDiffs[5], weightDiffs[6], weightDiffs[7]);
+    LOG()->debug("Adjusting weights by: [[%f, %f, %f], [%f, %f, %f], [%f, %f, %f]].",
+            weightDiffs[2], weightDiffs[3], weightDiffs[4],
+            weightDiffs[5], weightDiffs[6], weightDiffs[7], weightDiffs[8],
+            weightDiffs[9], weightDiffs[10]);
+    
     // we should skip the garbage in zero-layer weights
     for(int i = network->getWeightsOffset(1); i<wc; i++) {
         weights[i] += weightDiffs[i];
