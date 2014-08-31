@@ -25,7 +25,11 @@ public:
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
     void setInput(double *input);
-    // Returns pointer to the array with original network input.
+    // Returns pointer to the beginning of array with neuron inputs
+    // (potential after being processed by the activation function).
+    // Values at the beginning actually belong to the input layer. Activation
+    // function is not applied to these, therefore they can represent original
+    // network input.
     double *getInput();
     // Returns pointer to the beginning of the output array.
     double *getOutput();
@@ -39,19 +43,22 @@ public:
     // This internal network property is usually needed
     // in the process of learning.
     double *getPotentialValues();
-    // Returns offset where the potential array index starts for given layer.
-    // Layer index starts at one.
-    int getPotentialOffset(int layer);
-    // Returns pointer to the beginning of array with neuron inputs
-    // (potential after being processed by the activation function).
-    double *getInputValues();
+    // Returns offset where the input array index starts for given layer.
+    // Input layer has index zero, while its returned offset is also zero.
+    // Therefore offset for the output layer can be obtained by asking
+    // for layer index (number of layers - 1). Furthermore, if number of layers
+    // is provided as layer index, number of all neurons in the net is returned.
+    int getInputOffset(int layer);
     // Returns pointer to the beginning of array with weights
     // for neuron connections.
     // This internal network property is usually needed
     // in the process of learning.
     double *getWeights();
     // Returns offset where the weight array index starts for given layer.
-    // Layer index starts at one.
+    // Input layer has index zero, while its returned offset is also zero.
+    // Therefore offset for the output layer can be obtained by asking
+    // for layer index (number of layers - 1). Furthermore, if number of layers
+    // is provided as layer index, number of all weights in the net is returned.
     int getWeightsOffset(int layer);
     // Provides access to bias values,
     // so the learning algorithm may adjust them.

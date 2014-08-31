@@ -41,10 +41,11 @@ void Network::initWeights() {
     int noWeights = 0;
     int pLayer = 1; // neurons in previous layer
     weightsUpToLayerCache = new int[noLayers];
+    weightsUpToLayerCache[0] = noWeights;
     for (int i = 0; i<noLayers; i++) {
         int tLayer = this->conf->getNeurons(i);
         noWeights += pLayer * tLayer;
-        weightsUpToLayerCache[i] = noWeights;
+        weightsUpToLayerCache[i+1] = noWeights;
         pLayer = tLayer;
     }
     weights = new double[noWeights];
@@ -117,7 +118,7 @@ void Network::run() {
 
 void Network::applyBias(int l) {
     int n = conf->getNeurons(l);
-    int potentialOffset = getPotentialOffset(l);
+    int potentialOffset = getInputOffset(l);
     for (int i = 0; i<n; i++) {
         potentials[potentialOffset + i] += bias[potentialOffset + i];
     }
@@ -156,12 +157,8 @@ double* Network::getPotentialValues() {
     return potentials;
 }
 
-int Network::getPotentialOffset(int layer) {
+int Network::getInputOffset(int layer) {
     return neuronsUpToLayerCache[layer];
-}
-
-double* Network::getInputValues() {
-    return inputs;
 }
 
 double* Network::getWeights() {
@@ -169,7 +166,7 @@ double* Network::getWeights() {
 }
 
 int Network::getWeightsOffset(int layer) {
-    return weightsUpToLayerCache[layer-1];
+    return weightsUpToLayerCache[layer];
 }
 
 double* Network::getBiasValues() {

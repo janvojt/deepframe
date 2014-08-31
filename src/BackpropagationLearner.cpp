@@ -81,13 +81,13 @@ void BackpropagationLearner::doBackwardPhase(double *expectedOutput) {
 void BackpropagationLearner::computeOutputGradients(double *expectedOutput) {
     int on = network->getOutputNeurons();
     int noLayers = network->getConfiguration()->getLayers();
-    double *localGradient = localGradients + network->getPotentialOffset(noLayers-1);
+    double *localGradient = localGradients + network->getInputOffset(noLayers-1);
     double *output = network->getOutput();
     void (*daf) (double*,double*,int) = network->getConfiguration()->dActivationFnc;
     
     // compute local gradients
     double *dv = new double[network->getOutputNeurons()];
-    daf(network->getPotentialValues() + network->getPotentialOffset(noLayers-1), dv, on);
+    daf(network->getInput() + network->getInputOffset(noLayers-1), dv, on);
     for (int i = 0; i<on; i++) {
         localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
     }
@@ -100,36 +100,35 @@ void BackpropagationLearner::computeWeightDifferentials() {
     for (int l = noLayers-1; l>0; l--) {
         
         // INITIALIZE HELPER VARIABLES
-        int thisPotentialIndex = network->getPotentialOffset(l-1);
-        double *thisLocalGradient = localGradients + thisPotentialIndex;
-        int nextPotentialIndex = network->getPotentialOffset(l);
-        double *nextLocalGradient = localGradients + nextPotentialIndex;
+        int thisInputIdx = network->getInputOffset(l-1);
+        double *thisLocalGradient = localGradients + thisInputIdx;
+        int nextInputIdx = network->getInputOffset(l);
+        double *nextLocalGradient = localGradients + nextInputIdx;
         int thisNeurons = network->getConfiguration()->getNeurons(l-1);
         int nextNeurons = network->getConfiguration()->getNeurons(l);
-        double *thisPotential = network->getPotentialValues() + thisPotentialIndex;
+        double *thisInput = network->getInput() + thisInputIdx;
         double *weights = network->getWeights() + network->getWeightsOffset(l-1);
         
         
         // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
         int wc = network->getWeightsOffset(l+1) - network->getWeightsOffset(l) + 1;
-        double *thisInputs = network->getInputValues() + network->getPotentialOffset(l-1);
         double *wdiff = weightDiffs + network->getWeightsOffset(l);
         for (int i = 0; i<wc; i++) {
-            wdiff[i] = -learningRate * nextLocalGradient[i%nextNeurons] * thisInputs[i/nextNeurons];
+            wdiff[i] = -learningRate * nextLocalGradient[i%nextNeurons] * thisInput[i/nextNeurons];
         }
         
         // COMPUTE BIAS DERIVATIVES for layer l+1
         if (useBias) {
             for (int i = 0; i<nextNeurons; i++) {
-                biasDiff[nextPotentialIndex + i] = -learningRate * nextLocalGradient[i];
+                biasDiff[nextInputIdx + i] = -learningRate * nextLocalGradient[i];
             }
         }
         
         // COMPUTE LOCAL GRADIENTS for layer l
         
-        // compute derivatives of neuron potentials in layer l
-        double *thisPotentialDerivatives = new double[thisNeurons];
-        daf(thisPotential, thisPotentialDerivatives, thisNeurons);
+        // compute derivatives of neuron inputs in layer l
+        double *thisInputDerivatives = new double[thisNeurons];
+        daf(thisInput, thisInputDerivatives, thisNeurons);
         
         // compute local gradients for layer l
         for (int i = 0; i<thisNeurons; i++) {
@@ -137,7 +136,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
             for (int j = 0; j<nextNeurons; j++) {
                 sumNextGradient += nextLocalGradient[j] * weights[i * thisNeurons + j];
             }
-            thisLocalGradient[i] = sumNextGradient * thisPotentialDerivatives[i];
+            thisLocalGradient[i] = sumNextGradient * thisInputDerivatives[i];
         }
     }
 }
