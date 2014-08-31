@@ -105,10 +105,10 @@ void runTest(Network *net) {
 LabeledDataset* createXorDataset() {
     SimpleLabeledDataset *ds = new SimpleLabeledDataset(2, 1, 4);
     
-    ds->addPattern((const double[2]){0.0f, 0.0f}, (const double[1]){0.0f});
-    ds->addPattern((const double[2]){0.0f, 1.0f}, (const double[1]){1.0f});
-    ds->addPattern((const double[2]){1.0f, 0.0f}, (const double[1]){1.0f});
-    ds->addPattern((const double[2]){1.0f, 1.0f}, (const double[1]){0.0f});
+    ds->addPattern((const double[2]){0, 0}, (const double[1]){0});
+    ds->addPattern((const double[2]){0, 1}, (const double[1]){1});
+    ds->addPattern((const double[2]){1, 0}, (const double[1]){1});
+    ds->addPattern((const double[2]){1, 1}, (const double[1]){0});
     
     return (LabeledDataset*)ds;
 }
@@ -116,10 +116,10 @@ LabeledDataset* createXorDataset() {
 LabeledDataset* createAndDataset() {
     SimpleLabeledDataset *ds = new SimpleLabeledDataset(2, 1, 4);
     
-    ds->addPattern((const double[2]){0.0f, 0.0f}, (const double[1]){0.0f});
-    ds->addPattern((const double[2]){0.0f, 1.0f}, (const double[1]){0.0f});
-    ds->addPattern((const double[2]){1.0f, 0.0f}, (const double[1]){0.0f});
-    ds->addPattern((const double[2]){1.0f, 1.0f}, (const double[1]){1.0f});
+    ds->addPattern((const double[2]){0, 0}, (const double[1]){0});
+    ds->addPattern((const double[2]){0, 1}, (const double[1]){0});
+    ds->addPattern((const double[2]){1, 0}, (const double[1]){0});
+    ds->addPattern((const double[2]){1, 1}, (const double[1]){1});
     
     return (LabeledDataset*)ds;
 }
