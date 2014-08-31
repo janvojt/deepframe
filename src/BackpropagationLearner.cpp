@@ -149,10 +149,10 @@ void BackpropagationLearner::computeWeightDifferentials() {
 void BackpropagationLearner::adjustWeights() {
     int wc = network->getWeightsOffset(network->getConfiguration()->getLayers()) + 1;
     double *weights = network->getWeights();
-    LOG()->debug("Adjusting weights by: [[%f, %f, %f], [%f, %f, %f], [%f, %f, %f]].",
-            weightDiffs[2], weightDiffs[3], weightDiffs[4],
-            weightDiffs[5], weightDiffs[6], weightDiffs[7], weightDiffs[8],
-            weightDiffs[9], weightDiffs[10]);
+    LOG()->debug("Adjusting weights by: [[%f, %f], [%f, %f]], [[%f, %f]].",
+            weightDiffs[2], weightDiffs[3],
+            weightDiffs[4], weightDiffs[5],
+            weightDiffs[6], weightDiffs[7]);
     
     // we should skip the garbage in zero-layer weights
     for(int i = network->getWeightsOffset(1); i<wc; i++) {
