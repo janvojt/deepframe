@@ -61,7 +61,12 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
         mse = mse / datasetSize;
         LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
     } while (mse > targetMse && epochCounter < epochLimit);
-    LOG()->info("Finished training after %d epochs with MSE of %f.", epochCounter, mse);
+    
+    if (mse <= targetMse) {
+        LOG()->info("Training successful after %d epochs with MSE of %f.", epochCounter, mse);
+    } else {
+        LOG()->info("Training interrupted after %d epochs with MSE of %f.", epochCounter, mse);
+    }
 }
 
 void BackpropagationLearner::doForwardPhase(double *input) {
