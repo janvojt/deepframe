@@ -116,7 +116,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
         
         
         // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
-        int wc = network->getWeightsOffset(l+1) - network->getWeightsOffset(l) + 1;
+        int wc = network->getWeightsOffset(l+1) - network->getWeightsOffset(l);
         double *wdiff = weightDiffs + network->getWeightsOffset(l);
         for (int i = 0; i<wc; i++) {
             wdiff[i] = -learningRate * nextLocalGradient[i%nextNeurons] * thisInput[i/nextNeurons];
@@ -147,7 +147,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
 }
 
 void BackpropagationLearner::adjustWeights() {
-    int wc = network->getWeightsOffset(network->getConfiguration()->getLayers()) + 1;
+    int wc = network->getWeightsOffset(network->getConfiguration()->getLayers());
     double *weights = network->getWeights();
     LOG()->debug("Adjusting weights by: [[%f, %f], [%f, %f]], [[%f, %f]].",
             weightDiffs[2], weightDiffs[3],
