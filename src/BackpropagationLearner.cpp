@@ -163,6 +163,10 @@ void BackpropagationLearner::adjustWeights() {
 void BackpropagationLearner::adjustBias() {
     double *bias = network->getBiasValues();
     int noNeurons = network->getAllNeurons();
+    LOG()->debug("Adjusting bias by: [%f, %f], [%f, %f], [%f].",
+            biasDiff[0], biasDiff[1],
+            biasDiff[2], biasDiff[3],
+            biasDiff[4]);
     for (int i = 0; i<noNeurons; i++) {
         bias[i] += biasDiff[i];
     }
