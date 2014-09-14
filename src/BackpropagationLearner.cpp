@@ -112,7 +112,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
         int thisNeurons = network->getConfiguration()->getNeurons(l-1);
         int nextNeurons = network->getConfiguration()->getNeurons(l);
         double *thisInput = network->getInput() + thisInputIdx;
-        double *weights = network->getWeights() + network->getWeightsOffset(l-1);
+        double *weights = network->getWeights() + network->getWeightsOffset(l);
         
         
         // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
