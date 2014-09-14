@@ -54,7 +54,8 @@ public:
     // This internal network property is usually needed
     // in the process of learning.
     double *getWeights();
-    // Returns offset where the weight array index starts for given layer.
+    // Returns offset where the weight array index starts for weights between
+    // given layer and the preceeding layer.
     // Input layer has index zero, while its returned offset is also zero.
     // Therefore offset for the output layer can be obtained by asking
     // for layer index (number of layers - 1). Furthermore, if number of layers
