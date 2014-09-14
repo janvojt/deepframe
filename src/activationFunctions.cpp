@@ -24,3 +24,11 @@ void dSigmoidFunction(double* inputPtr, double* targetPtr, int layerSize) {
         targetPtr++;
     }
 }
+
+void gSigmoidFunction(double* inputPtr, double* targetPtr, int layerSize) {
+    for (int i = 0; i < layerSize; i++) {
+        *targetPtr = *inputPtr * (1 - *inputPtr);
+        inputPtr++;
+        targetPtr++;
+    }
+}
