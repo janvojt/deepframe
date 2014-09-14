@@ -16,6 +16,10 @@
 #include "SimpleLabeledDataset.h"
 #include "MseErrorComputer.h"
 
+#include "log/LoggerFactory.h"
+#include "log4cpp/Category.hh"
+#include "log4cpp/Priority.hh"
+
 // getopts constants
 #define no_argument 0
 #define required_argument 1 
@@ -29,11 +33,12 @@ const struct option optsLong[] = {
     {"no-bias", no_argument, 0, 'b'},
     {"mse", required_argument, 0, 'e'},
     {"max-epochs", required_argument, 0, 'm'},
+    {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:";
+const char* optsList = "hbe:m:d";
 
 /* Application configuration. */
 struct config {
@@ -131,6 +136,7 @@ void printHelp() {
     cout << "-b          --no-bias             Disables bias in neural network. Bias is enabled by default." << endl;
     cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning." << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met." << endl;
+    cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
 /* Process command line options and return generated configuration. */
@@ -147,6 +153,9 @@ config* processOptions(int argc, char *argv[]) {
             case 'h':
                 printHelp();
                 exit(0);
+            case 'd' :
+                LOG()->setPriority(log4cpp::Priority::DEBUG);
+                break;
             case 'b':
                 conf->bias = false;
                 break;

@@ -95,6 +95,7 @@ void BackpropagationLearner::computeOutputGradients(double *expectedOutput) {
     daf(network->getInput() + network->getInputOffset(noLayers-1), dv, on);
     for (int i = 0; i<on; i++) {
         localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
+        LOG()->debug("Local gradient for neuron [%d, %d] : %f.", noLayers, i, localGradient[i]);
     }
 }
 
@@ -142,6 +143,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
                 sumNextGradient += nextLocalGradient[j] * weights[i * thisNeurons + j];
             }
             thisLocalGradient[i] = sumNextGradient * thisInputDerivatives[i];
+            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
         }
     }
 }

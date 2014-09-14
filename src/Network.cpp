@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include "log/LoggerFactory.h"
+#include "log4cpp/Category.hh"
+
 Network::Network(NetworkConfiguration *conf) {
     
     // Seed random generator before initializing weights.
@@ -114,6 +117,8 @@ void Network::run() {
         
         nPrevLayers += nThisLayer;
     }
+    
+    LOG()->debug("Forward phase results: [%f, %f] -> [%f].", getInput()[0], getInput()[1], getOutput()[0]);
 }
 
 void Network::applyBias(int l) {

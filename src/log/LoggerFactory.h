@@ -31,8 +31,6 @@ namespace Log {
         LoggerFactory& operator=(const LoggerFactory&);
         LoggerFactory& operator=(LoggerFactory&);
 
-    private:
-
     };
 
 }
