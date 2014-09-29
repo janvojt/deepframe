@@ -1,18 +1,27 @@
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
+#include "Network.h"
+#include "NetworkConfiguration.h"
+#include "activationFunctions.h"
 
-TEST(MathTest, Addition)
- {
 
-    EXPECT_EQ(2 + 2, 4);
-
+NetworkConfiguration* createConf() {
+    
+    NetworkConfiguration *netConf = new NetworkConfiguration();
+    netConf->setLayers(3);
+    netConf->setNeurons(0, 2);
+    netConf->setNeurons(1, 2);
+    netConf->setNeurons(2, 1);
+    netConf->activationFnc = sigmoidFunction;
+    netConf->dActivationFnc = dSigmoidFunction;
+    netConf->setBias(true);
+    
+    return netConf;
 }
 
-int main(int argc, char **argv)
- {
-
-    ::testing::InitGoogleTest(&argc, argv);
-
-    return RUN_ALL_TESTS();
-
+// Test network construction
+TEST(Network, ConstructorFromConfig) {
+    Network *net = new Network(createConf());
+    
+    EXPECT_EQ(5, net->getAllNeurons());
 }
