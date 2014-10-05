@@ -126,4 +126,15 @@ TEST(Network, WeightsOffsetTest) {
     EXPECT_EQ(0, net->getWeightsOffset(0));
     EXPECT_EQ(2, net->getWeightsOffset(1));
     EXPECT_EQ(6, net->getWeightsOffset(2));
+    EXPECT_EQ(8, net->getWeightsOffset(3));
+}
+
+// Test neuron input offsets.
+TEST(Network, NeuronInputOffsetTest) {
+    Network *net = new Network(createConf());
+    
+    EXPECT_EQ(0, net->getInputOffset(0));
+    EXPECT_EQ(2, net->getInputOffset(1));
+    EXPECT_EQ(4, net->getInputOffset(2));
+    EXPECT_EQ(5, net->getInputOffset(3));
 }
