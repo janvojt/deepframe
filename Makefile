@@ -28,7 +28,7 @@ TESTOBJECTS=$(patsubst $(TESTDIR)/%,$(TESTBUILDDIR)/%,$(TESTSOURCES:.$(SRCEXT)=.
 # (test objects and those we are linking against).
 TSOBJECTS=$(TESTOBJECTS) $(LINKEDOBJECTS)
 
-CFLAGS=-g # -Wall
+CFLAGS=-g -std=c++11 # -Wall
 LIB=-pthread -llog4cpp -lgtest -lgtest_main
 INC= #-Iinclude
 TESTINC=-Isrc/main
