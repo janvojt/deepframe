@@ -1,4 +1,11 @@
+# Build directories
 build/
 dist/
 bin/
+
+# Netbeans files
 nbproject/
+
+# Eclipse files
+.cproject
+.project
