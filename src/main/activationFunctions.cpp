@@ -32,3 +32,19 @@ void gSigmoidFunction(double* inputPtr, double* targetPtr, int layerSize) {
         targetPtr++;
     }
 }
+
+void identityFunction(double *inputPtr, double *targetPtr, int layerSize) {
+    for (int i = 0; i < layerSize; i++) {
+        *targetPtr = *inputPtr;
+        inputPtr++;
+        targetPtr++;
+    }
+}
+
+void dIdentityFunction(double* inputPtr, double* targetPtr, int layerSize) {
+    for (int i = 0; i < layerSize; i++) {
+        *targetPtr = 1;
+        inputPtr++;
+        targetPtr++;
+    }
+}

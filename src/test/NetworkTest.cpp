@@ -19,9 +19,49 @@ NetworkConfiguration* createConf() {
     return netConf;
 }
 
-// Test network construction
-TEST(Network, ConstructorFromConfig) {
+// Sets all the network weights to given value.
+void setAllWeights(Network *net, double value) {
+    double *weights = net->getWeights();
+    long noWeights = net->getWeightsOffset(net->getConfiguration()->getLayers());
+    
+    std::fill_n(weights, noWeights, value);
+}
+
+// Test network neurons counters.
+TEST(Network, NeuronCounters) {
     Network *net = new Network(createConf());
     
     EXPECT_EQ(5, net->getAllNeurons());
+    EXPECT_EQ(2, net->getInputNeurons());
+    EXPECT_EQ(1, net->getOutputNeurons());
+}
+
+// Test network input setup.
+TEST(Network, InputSetTest) {
+    Network *net = new Network(createConf());
+    
+    double input[] = {.1, .1};
+    net->setInput(input);
+    
+    EXPECT_EQ(input[0], net->getInput()[0]);
+    EXPECT_EQ(input[1], net->getInput()[1]);
+}
+
+// Test run of a simple network with no bias and weights of 1.
+TEST(Network, SimpleRun) {
+    
+    NetworkConfiguration *conf = createConf();
+    conf->setBias(false);
+    conf->activationFnc = identityFunction;
+    conf->dActivationFnc = dIdentityFunction;
+    
+    Network *net = new Network(conf);
+    setAllWeights(net, 1);
+    
+    double input[] = {1, 1};
+    net->setInput(input);
+    
+    net->run();
+    
+    EXPECT_EQ(4, net->getOutput()[0]);
 }
