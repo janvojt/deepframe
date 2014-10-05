@@ -140,7 +140,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
         for (int i = 0; i<thisNeurons; i++) {
             double sumNextGradient = 0;
             for (int j = 0; j<nextNeurons; j++) {
-                sumNextGradient += nextLocalGradient[j] * weights[i * thisNeurons + j];
+                sumNextGradient += nextLocalGradient[j] * weights[i * nextNeurons + j];
             }
             thisLocalGradient[i] = sumNextGradient * thisInputDerivatives[i];
             LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
