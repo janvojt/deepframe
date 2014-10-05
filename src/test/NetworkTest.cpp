@@ -58,10 +58,63 @@ TEST(Network, SimpleRun) {
     Network *net = new Network(conf);
     setAllWeights(net, 1);
     
-    double input[] = {1, 1};
+    double input[] = {0, 0};
+    
     net->setInput(input);
-    
     net->run();
+    EXPECT_EQ(0, net->getOutput()[0]);
     
+    input[0] = 0;
+    input[1] = 1;
+    net->setInput(input);
+    net->run();
+    EXPECT_EQ(2, net->getOutput()[0]);
+    
+    input[0] = 1;
+    input[1] = 0;
+    net->setInput(input);
+    net->run();
+    EXPECT_EQ(2, net->getOutput()[0]);
+    
+    input[0] = 1;
+    input[1] = 1;
+    net->setInput(input);
+    net->run();
     EXPECT_EQ(4, net->getOutput()[0]);
+}
+
+// Test run of a simple network with no bias and weights of 1/2.
+TEST(Network, SimpleWeightTest) {
+    
+    NetworkConfiguration *conf = createConf();
+    conf->setBias(false);
+    conf->activationFnc = identityFunction;
+    conf->dActivationFnc = dIdentityFunction;
+    
+    Network *net = new Network(conf);
+    setAllWeights(net, .5);
+    
+    double input[] = {0, 0};
+    
+    net->setInput(input);
+    net->run();
+    EXPECT_EQ(0, net->getOutput()[0]);
+    
+    input[0] = 0;
+    input[1] = 1;
+    net->setInput(input);
+    net->run();
+    EXPECT_EQ(.5, net->getOutput()[0]);
+    
+    input[0] = 1;
+    input[1] = 0;
+    net->setInput(input);
+    net->run();
+    EXPECT_EQ(.5, net->getOutput()[0]);
+    
+    input[0] = 1;
+    input[1] = 1;
+    net->setInput(input);
+    net->run();
+    EXPECT_EQ(1, net->getOutput()[0]);
 }
