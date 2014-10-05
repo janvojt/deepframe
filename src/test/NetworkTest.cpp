@@ -118,3 +118,12 @@ TEST(Network, SimpleWeightTest) {
     net->run();
     EXPECT_EQ(1, net->getOutput()[0]);
 }
+
+// Test network weight offsets.
+TEST(Network, WeightsOffsetTest) {
+    Network *net = new Network(createConf());
+    
+    EXPECT_EQ(0, net->getWeightsOffset(0));
+    EXPECT_EQ(2, net->getWeightsOffset(1));
+    EXPECT_EQ(6, net->getWeightsOffset(2));
+}
