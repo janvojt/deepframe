@@ -26,5 +26,14 @@ void identityFunction(double *inputPtr, double *targetPtr, int layerSize);
 // Derivative if the identity function. Always returns 1.
 void dIdentityFunction(double *inputPtr, double *targetPtr, int layerSize);
 
+// Computes hyperbolic tangent for each value in the input array,
+// putting the result in the target array. For in-place computation
+// it is possible to provide the same pointer for input and target
+// to save some memory.
+void hyperbolicTangentFunction(double *inputPtr, double *targetPtr, int layerSize);
+
+// Derivative of the hyperbolic tangent function.
+void dHyperbolicTangentFunction(double *inputPtr, double *targetPtr, int layerSize);
+
 #endif	/* ACTIVATIONFUNCTIONS_H */
 
