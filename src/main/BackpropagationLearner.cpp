@@ -117,10 +117,11 @@ void BackpropagationLearner::computeWeightDifferentials() {
         
         
         // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
-        int wc = network->getWeightsOffset(l+1) - network->getWeightsOffset(l);
         double *wdiff = weightDiffs + network->getWeightsOffset(l);
-        for (int i = 0; i<wc; i++) {
-            wdiff[i] = -learningRate * nextLocalGradient[i%nextNeurons] * thisInput[i/nextNeurons];
+        for (int i = 0; i<thisNeurons; i++) {
+            for (int j = 0; j<nextNeurons; j++) {
+                wdiff[i*nextNeurons+j] = -learningRate * nextLocalGradient[j] * thisInput[i];
+            }
         }
         
         // COMPUTE BIAS DERIVATIVES for layer l+1
