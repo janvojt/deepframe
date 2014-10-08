@@ -33,12 +33,14 @@ const struct option optsLong[] = {
     {"no-bias", no_argument, 0, 'b'},
     {"mse", required_argument, 0, 'e'},
     {"max-epochs", required_argument, 0, 'm'},
+    {"func", required_argument, 0, 'f'},
+    {"d-func", required_argument, 0, 'g'},
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:d";
+const char* optsList = "hbe:m:f:g:d";
 
 /* Application configuration. */
 struct config {
@@ -48,6 +50,10 @@ struct config {
     bool bias = true;
     /* epoch limit */
     long maxEpochs = 1000000;
+    /* activation function */
+    void (*activationFnc)(double *inputPtr, double *targetPtr, int layerSize);
+    /* derivative of activation function */
+    void (*dActivationFnc)(double *inputPtr, double *targetPtr, int layerSize);
 };
 
 
@@ -132,10 +138,13 @@ LabeledDataset* createAndDataset() {
 void printHelp() {
     cout << "Usage: xoraan [OPTIONS]" << endl << endl;
     cout << "Option      GNU long option       Meaning" << endl;
+    cout << "--------------------------------------------------------------------------------" << endl;
     cout << "-h          --help                This help." << endl;
     cout << "-b          --no-bias             Disables bias in neural network. Bias is enabled by default." << endl;
     cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning." << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met." << endl;
+    cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
+    cout << "-g <value>  --d-func <value>      Specifies the derivatice of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -143,6 +152,10 @@ void printHelp() {
 config* processOptions(int argc, char *argv[]) {
     
     config* conf = new config;
+    
+    // set defaults
+    conf->activationFnc = sigmoidFunction;
+    conf->dActivationFnc = gSigmoidFunction;
     
     int index;
     int iarg = 0;
@@ -165,6 +178,37 @@ config* processOptions(int argc, char *argv[]) {
             case 'm' :
                 conf->maxEpochs = atoi(optarg);
                 break;
+            case 'f' :
+                switch (optarg[0]) {
+                    case 's' :
+                        conf->activationFnc = sigmoidFunction;
+                        break;
+                    case 'h' :
+                        conf->activationFnc = hyperbolicTangentFunction;
+                        break;
+                    default :
+                        LOG()->warn("Unknown activation function %s, falling back to sigmoid.", optarg);
+                        conf->activationFnc = sigmoidFunction;
+                        break;
+                }
+                break;
+            case 'g' :
+                switch (optarg[0]) {
+                    case 's' :
+                        conf->dActivationFnc = dSigmoidFunction;
+                        break;
+                    case 'g' :
+                        conf->dActivationFnc = gSigmoidFunction;
+                        break;
+                    case 'h' :
+                        conf->dActivationFnc = dHyperbolicTangentFunction;
+                        break;
+                    default :
+                        LOG()->warn("Unknown derivative of activation function %s, falling back to sigmoid derivative.", optarg);
+                        conf->dActivationFnc = dSigmoidFunction;
+                        break;
+                }
+                break;
         }
     }
     
@@ -182,8 +226,8 @@ int main(int argc, char *argv[]) {
     netConf->setNeurons(0, 2);
     netConf->setNeurons(1, 2);
     netConf->setNeurons(2, 1);
-    netConf->activationFnc = sigmoidFunction;
-    netConf->dActivationFnc = dSigmoidFunction;
+    netConf->activationFnc = conf->activationFnc;
+    netConf->dActivationFnc = conf->dActivationFnc;
     netConf->setBias(conf->bias);
     
     Network *net = new Network(netConf);
