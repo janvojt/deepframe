@@ -35,12 +35,13 @@ const struct option optsLong[] = {
     {"max-epochs", required_argument, 0, 'm'},
     {"func", required_argument, 0, 'f'},
     {"d-func", required_argument, 0, 'g'},
+    {"init", required_argument, 0, 'i'},
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:d";
+const char* optsList = "hbe:m:f:g:i:d";
 
 /* Application configuration. */
 struct config {
@@ -50,6 +51,9 @@ struct config {
     bool bias = true;
     /* epoch limit */
     long maxEpochs = 1000000;
+    /* Weights and bias initialization. */
+    bool initRandom = true;
+    double initWeights = 0;
     /* activation function */
     void (*activationFnc)(double *inputPtr, double *targetPtr, int layerSize);
     /* derivative of activation function */
@@ -145,6 +149,7 @@ void printHelp() {
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met." << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-g <value>  --d-func <value>      Specifies the derivatice of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
+    cout << "-i <value>  --init <value>        Specifies the value all weights and biases should be initialized to. By default random initialization is used." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -177,6 +182,10 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 'm' :
                 conf->maxEpochs = atoi(optarg);
+                break;
+            case 'i' :
+                conf->initWeights = atof(optarg);
+                conf->initRandom = false;
                 break;
             case 'f' :
                 switch (optarg[0]) {
@@ -229,6 +238,8 @@ int main(int argc, char *argv[]) {
     netConf->activationFnc = conf->activationFnc;
     netConf->dActivationFnc = conf->dActivationFnc;
     netConf->setBias(conf->bias);
+    netConf->setInitRandom(conf->initRandom);
+    netConf->setInitWeights(conf->initWeights);
     
     Network *net = new Network(netConf);
     

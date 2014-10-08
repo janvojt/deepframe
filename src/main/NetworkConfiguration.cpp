@@ -17,6 +17,7 @@
 NetworkConfiguration::NetworkConfiguration() {
     neuronConf = NULL;
     bias = true;
+    initRandom = true;
 }
 
 NetworkConfiguration::NetworkConfiguration(const NetworkConfiguration& orig) {
@@ -61,6 +62,22 @@ void NetworkConfiguration::setBias(bool enabled) {
 
 bool NetworkConfiguration::getBias() {
     return bias;
+}
+
+bool NetworkConfiguration::getInitRandom() {
+    return initRandom;
+}
+
+void NetworkConfiguration::setInitRandom(bool random) {
+    this->initRandom = random;
+}
+
+double NetworkConfiguration::getInitWeights() {
+    return initWeights;
+}
+
+void NetworkConfiguration::setInitWeights(double value) {
+    this->initWeights = value;
 }
 
 void NetworkConfiguration::initConf() {

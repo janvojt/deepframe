@@ -25,6 +25,14 @@ public:
     void setBias(bool enabled);
     // Returns whether bias is enabled.
     bool getBias();
+    // Returns the value for weights and bias initialization.
+    double getInitWeights();
+    // Sets the value for weights and bias initialization.
+    void setInitWeights(double value);
+    // Determines whether to use random weights and bias initialization.
+    bool getInitRandom();
+    // Sets whether to use random weights and bias initialization.
+    void setInitRandom(bool random);
     // Pointer to activation function normalizing the neurons potential.
     // Input potential is preserved and the normalized value
     // is put into the target array. It is also possible to provide
@@ -41,6 +49,11 @@ private:
     int *neuronConf;
     // flag determining whether the network uses bias, true by default
     bool bias;
+    // Specifies the value weights and bias is initialized to upon network
+    // creation.
+    double initWeights;
+    // Determines whether to use random weights and bias initialization.
+    bool initRandom;
 };
 
 #endif	/* NETWORKCONFIGURATION_H */

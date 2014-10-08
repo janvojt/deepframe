@@ -52,10 +52,16 @@ void Network::initWeights() {
         pLayer = tLayer;
     }
     weights = new double[noWeights];
-    
-    // randomly initialize weights between -1 and 1
-    for (int i = 0; i < noWeights; i++) {
-        weights[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
+
+    // Initialize weights.
+    if (conf->getInitRandom()) {
+        LOG()->info("Randomly initialize weights between -1 and 1.");
+        for (int i = 0; i < noWeights; i++) {
+            weights[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
+        }
+    } else {
+        LOG()->info("Initialize all weights to a constant value of %f.", conf->getInitWeights());
+        std::fill_n(weights, noWeights, conf->getInitWeights());
     }
 }
 
@@ -75,8 +81,16 @@ void Network::initInputs() {
 void Network::initBias() {
     if (conf->getBias()) {
         bias = new double[noNeurons];
-        for (int i = 0; i < noNeurons; i++) {
-            bias[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
+        
+        // Initialize bias.
+        if (conf->getInitRandom()) {
+            // Randomly initialize bias between -1 and 1.
+            for (int i = 0; i < noNeurons; i++) {
+                bias[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
+            }
+        } else {
+            // Initialize all bias to a constant.
+            std::fill_n(weights, noNeurons, conf->getInitWeights());
         }
     } else {
         bias = NULL;
