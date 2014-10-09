@@ -6,6 +6,7 @@
  */
 
 #include <cstdlib>
+#include <string.h>
 #include <iostream>
 #include <getopt.h>
 
@@ -36,12 +37,13 @@ const struct option optsLong[] = {
     {"func", required_argument, 0, 'f'},
     {"d-func", required_argument, 0, 'g'},
     {"init", required_argument, 0, 'i'},
+    {"lconf", required_argument, 0, 'l'},
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:i:d";
+const char* optsList = "hbe:m:f:g:i:l:d";
 
 /* Application configuration. */
 struct config {
@@ -54,6 +56,8 @@ struct config {
     /* Weights and bias initialization. */
     bool initRandom = true;
     double initWeights = 0;
+    /* Layer configuration. */
+    char* layerConf;
     /* activation function */
     void (*activationFnc)(double *inputPtr, double *targetPtr, int layerSize);
     /* derivative of activation function */
@@ -148,8 +152,9 @@ void printHelp() {
     cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning." << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met." << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
-    cout << "-g <value>  --d-func <value>      Specifies the derivatice of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
+    cout << "-g <value>  --d-func <value>      Specifies the derivative of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-i <value>  --init <value>        Specifies the value all weights and biases should be initialized to. By default random initialization is used." << endl;
+    cout << "-l <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -161,6 +166,7 @@ config* processOptions(int argc, char *argv[]) {
     // set defaults
     conf->activationFnc = sigmoidFunction;
     conf->dActivationFnc = gSigmoidFunction;
+    conf->layerConf = "2,2,1";
     
     int index;
     int iarg = 0;
@@ -186,6 +192,9 @@ config* processOptions(int argc, char *argv[]) {
             case 'i' :
                 conf->initWeights = atof(optarg);
                 conf->initRandom = false;
+            case 'l' :
+                conf->layerConf = new char[strlen(optarg)];
+                strcpy(conf->layerConf, optarg);
                 break;
             case 'f' :
                 switch (optarg[0]) {
@@ -231,10 +240,26 @@ int main(int argc, char *argv[]) {
     
     NetworkConfiguration *netConf = new NetworkConfiguration();
 
-    netConf->setLayers(3);
-    netConf->setNeurons(0, 2);
-    netConf->setNeurons(1, 2);
-    netConf->setNeurons(2, 1);
+    // Configure layers.
+    // Count and set number of layers.
+    int i;
+    char *lconf = conf->layerConf;
+    for (i=0; lconf[i]; lconf[i]==',' ? i++ : *lconf++);
+    netConf->setLayers(i+1);
+    
+    // set number of neurons for each layer
+    i = 0;
+    int l = 0;
+    char *haystack = new char[strlen(conf->layerConf)];
+    strcpy(haystack, conf->layerConf);
+    char *token = strtok(haystack, ",");
+    while (token != NULL) {
+        sscanf(token, "%d", &l);
+        netConf->setNeurons(i++, l);
+        token = strtok(NULL, ",");
+    }
+    
+    // configure other network properties
     netConf->activationFnc = conf->activationFnc;
     netConf->dActivationFnc = conf->dActivationFnc;
     netConf->setBias(conf->bias);
