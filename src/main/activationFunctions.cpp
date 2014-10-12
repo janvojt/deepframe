@@ -51,8 +51,7 @@ void dIdentityFunction(double* inputPtr, double* targetPtr, int layerSize) {
 
 void hyperbolicTangentFunction(double* inputPtr, double* targetPtr, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        double ex = exp(2 * *inputPtr);
-        *targetPtr = (ex - 1) / (ex + 1);
+        *targetPtr = tanh(*inputPtr);
         inputPtr++;
         targetPtr++;
     }
@@ -60,7 +59,7 @@ void hyperbolicTangentFunction(double* inputPtr, double* targetPtr, int layerSiz
 
 void dHyperbolicTangentFunction(double* inputPtr, double* targetPtr, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        *targetPtr = 4 / pow(exp(*inputPtr) - exp(-*inputPtr), 2);
+        *targetPtr = 1 - (*inputPtr * *inputPtr);
         inputPtr++;
         targetPtr++;
     }
