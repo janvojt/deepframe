@@ -165,7 +165,7 @@ config* processOptions(int argc, char *argv[]) {
     
     // set defaults
     conf->activationFnc = sigmoidFunction;
-    conf->dActivationFnc = gSigmoidFunction;
+    conf->dActivationFnc = dSigmoidFunction;
     conf->layerConf = "2,2,1";
     
     int index;
@@ -214,9 +214,6 @@ config* processOptions(int argc, char *argv[]) {
                 switch (optarg[0]) {
                     case 's' :
                         conf->dActivationFnc = dSigmoidFunction;
-                        break;
-                    case 'g' :
-                        conf->dActivationFnc = gSigmoidFunction;
                         break;
                     case 'h' :
                         conf->dActivationFnc = dHyperbolicTangentFunction;

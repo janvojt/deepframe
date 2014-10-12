@@ -19,14 +19,6 @@ void sigmoidFunction(double *inputPtr, double *targetPtr, int layerSize) {
 
 void dSigmoidFunction(double* inputPtr, double* targetPtr, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        *targetPtr = exp(*inputPtr) / pow(1 + exp(*inputPtr), 2);
-        inputPtr++;
-        targetPtr++;
-    }
-}
-
-void gSigmoidFunction(double* inputPtr, double* targetPtr, int layerSize) {
-    for (int i = 0; i < layerSize; i++) {
         *targetPtr = *inputPtr * (1 - *inputPtr);
         inputPtr++;
         targetPtr++;

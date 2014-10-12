@@ -17,9 +17,6 @@ void sigmoidFunction(double *inputPtr, double *targetPtr, int layerSize);
 // Derivative of the sigmoid function.
 void dSigmoidFunction(double *inputPtr, double *targetPtr, int layerSize);
 
-// Gradient for the sigmoid function.
-void gSigmoidFunction(double *inputPtr, double *targetPtr, int layerSize);
-
 // Computes identity function. Essentially, no computation is done.
 void identityFunction(double *inputPtr, double *targetPtr, int layerSize);
 
