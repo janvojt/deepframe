@@ -166,7 +166,7 @@ config* processOptions(int argc, char *argv[]) {
     // set defaults
     conf->activationFnc = sigmoidFunction;
     conf->dActivationFnc = dSigmoidFunction;
-    conf->layerConf = "2,2,1";
+    conf->layerConf = (char*) "2,2,1";
     
     int index;
     int iarg = 0;
