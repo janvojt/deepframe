@@ -59,9 +59,9 @@ struct config {
     /* Layer configuration. */
     char* layerConf;
     /* activation function */
-    void (*activationFnc)(double *inputPtr, double *targetPtr, int layerSize);
+    void (*activationFnc)(double *x, double *y, int layerSize);
     /* derivative of activation function */
-    void (*dActivationFnc)(double *inputPtr, double *targetPtr, int layerSize);
+    void (*dActivationFnc)(double *x, double *y, int layerSize);
 };
 
 

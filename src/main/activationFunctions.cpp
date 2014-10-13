@@ -9,50 +9,50 @@
 
 #include <math.h>
 
-void sigmoidFunction(double *inputPtr, double *targetPtr, int layerSize) {
+void sigmoidFunction(double *x, double *y, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        *targetPtr = 1 / (1 + exp(-*inputPtr));
-        inputPtr++;
-        targetPtr++;
+        *y = 1 / (1 + exp(-*x));
+        x++;
+        y++;
     }
 }
 
-void dSigmoidFunction(double* inputPtr, double* targetPtr, int layerSize) {
+void dSigmoidFunction(double* x, double* y, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        *targetPtr = *inputPtr * (1 - *inputPtr);
-        inputPtr++;
-        targetPtr++;
+        *y = *x * (1 - *x);
+        x++;
+        y++;
     }
 }
 
-void identityFunction(double *inputPtr, double *targetPtr, int layerSize) {
+void identityFunction(double *x, double *y, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        *targetPtr = *inputPtr;
-        inputPtr++;
-        targetPtr++;
+        *y = *x;
+        x++;
+        y++;
     }
 }
 
-void dIdentityFunction(double* inputPtr, double* targetPtr, int layerSize) {
+void dIdentityFunction(double* x, double* y, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        *targetPtr = 1;
-        inputPtr++;
-        targetPtr++;
+        *y = 1;
+        x++;
+        y++;
     }
 }
 
-void hyperbolicTangentFunction(double* inputPtr, double* targetPtr, int layerSize) {
+void hyperbolicTangentFunction(double* x, double* y, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        *targetPtr = tanh(*inputPtr);
-        inputPtr++;
-        targetPtr++;
+        *y = tanh(*x);
+        x++;
+        y++;
     }
 }
 
-void dHyperbolicTangentFunction(double* inputPtr, double* targetPtr, int layerSize) {
+void dHyperbolicTangentFunction(double* x, double* y, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
-        *targetPtr = 1 - (*inputPtr * *inputPtr);
-        inputPtr++;
-        targetPtr++;
+        *y = 1 - (*x * *x);
+        x++;
+        y++;
     }
 }
