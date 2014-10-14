@@ -20,6 +20,7 @@
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 #include "log4cpp/Priority.hh"
+#include "LabeledDatasetParser.h"
 
 // getopts constants
 #define no_argument 0
@@ -38,12 +39,13 @@ const struct option optsLong[] = {
     {"d-func", required_argument, 0, 'g'},
     {"init", required_argument, 0, 'i'},
     {"lconf", required_argument, 0, 'l'},
+    {"labels", required_argument, 0, 's'},
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:i:l:d";
+const char* optsList = "hbe:m:f:g:i:l:s:d";
 
 /* Application configuration. */
 struct config {
@@ -58,6 +60,8 @@ struct config {
     double initWeights = 0;
     /* Layer configuration. */
     char* layerConf;
+    /* File path with labeled data. */
+    char* labeledData;
     /* activation function */
     void (*activationFnc)(double *x, double *y, int layerSize);
     /* derivative of activation function */
@@ -155,6 +159,7 @@ void printHelp() {
     cout << "-g <value>  --d-func <value>      Specifies the derivative of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-i <value>  --init <value>        Specifies the value all weights and biases should be initialized to. By default random initialization is used." << endl;
     cout << "-l <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
+    cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -195,6 +200,9 @@ config* processOptions(int argc, char *argv[]) {
             case 'l' :
                 conf->layerConf = new char[strlen(optarg)];
                 strcpy(conf->layerConf, optarg);
+                break;
+            case 's' :
+                conf->labeledData = optarg;
                 break;
             case 'f' :
                 switch (optarg[0]) {
@@ -268,8 +276,17 @@ int main(int argc, char *argv[]) {
     runTest(net);
     
     printSeperator();
+
+    // Prepare labeled dataset.
+    // If none was provided in options use XOR dataset by default.
+    LabeledDataset *ds;
+    if (conf->labeledData == NULL) {
+        ds = createXorDataset();
+    } else {
+        LabeledDatasetParser *p = new LabeledDatasetParser(conf->labeledData, netConf);
+        ds = p->parse();
+    }
     
-    LabeledDataset *ds = createXorDataset();
     BackpropagationLearner *bp = new BackpropagationLearner(net);
     bp->setTargetMse(conf->mse);
     bp->setErrorComputer(new MseErrorComputer());
