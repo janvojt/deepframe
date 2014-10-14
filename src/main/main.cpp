@@ -136,17 +136,6 @@ LabeledDataset* createXorDataset() {
     return (LabeledDataset*)ds;
 }
 
-LabeledDataset* createAndDataset() {
-    SimpleLabeledDataset *ds = new SimpleLabeledDataset(2, 1, 4);
-    
-    ds->addPattern((const double[2]){0, 0}, (const double[1]){0});
-    ds->addPattern((const double[2]){0, 1}, (const double[1]){0});
-    ds->addPattern((const double[2]){1, 0}, (const double[1]){0});
-    ds->addPattern((const double[2]){1, 1}, (const double[1]){1});
-    
-    return (LabeledDataset*)ds;
-}
-
 void printHelp() {
     cout << "Usage: xoraan [OPTIONS]" << endl << endl;
     cout << "Option      GNU long option       Meaning" << endl;
