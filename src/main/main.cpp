@@ -21,6 +21,8 @@
 #include "log4cpp/Category.hh"
 #include "log4cpp/Priority.hh"
 #include "LabeledDatasetParser.h"
+#include "SimpleInputDataset.h"
+#include "InputDatasetParser.h"
 
 // getopts constants
 #define no_argument 0
@@ -40,12 +42,13 @@ const struct option optsLong[] = {
     {"init", required_argument, 0, 'i'},
     {"lconf", required_argument, 0, 'l'},
     {"labels", required_argument, 0, 's'},
+    {"test", required_argument, 0, 't'},
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:i:l:s:d";
+const char* optsList = "hbe:m:f:g:i:l:s:t:d";
 
 /* Application configuration. */
 struct config {
@@ -62,6 +65,8 @@ struct config {
     char* layerConf;
     /* File path with labeled data. */
     char* labeledData;
+    /* File path with test data. */
+    char* testData;
     /* activation function */
     void (*activationFnc)(double *x, double *y, int layerSize);
     /* derivative of activation function */
@@ -101,28 +106,14 @@ void printSeperator() {
     cout << endl;
 }
 
-void runTest(Network *net) {
-    
-    double input[] = {0, 0};
-    net->setInput(input);
-    net->run();
-    printOutput(net);
-    
-    double input2[] = {0, 1};
-    net->setInput(input2);
-    net->run();
-    printOutput(net);
-    
-    double input3[] = {1, 0};
-    net->setInput(input3);
-    net->run();
-    printOutput(net);
-    
-    double input4[] = {1, 1};
-    net->setInput(input4);
-    net->run();
-    printOutput(net);
-    
+/* Runs the given test dataset through given network and prints results. */
+void runTest(Network *net, InputDataset *ds) {
+    ds->reset();
+    while (ds->hasNext()) {
+        net->setInput(ds->next());
+        net->run();
+        printOutput(net);
+    }
 }
 
 LabeledDataset* createXorDataset() {
@@ -149,6 +140,7 @@ void printHelp() {
     cout << "-i <value>  --init <value>        Specifies the value all weights and biases should be initialized to. By default random initialization is used." << endl;
     cout << "-l <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
+    cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -192,6 +184,9 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 's' :
                 conf->labeledData = optarg;
+                break;
+            case 't' :
+                conf->testData = optarg;
                 break;
             case 'f' :
                 switch (optarg[0]) {
@@ -262,8 +257,22 @@ int main(int argc, char *argv[]) {
     
     Network *net = new Network(netConf);
     
-    runTest(net);
+    // Prepare test dataset.
+    InputDataset *tds;
+    if (conf->testData == NULL) {
+        SimpleInputDataset *d = new SimpleInputDataset(2, 4);
+        d->addInput((const double[2]){0, 0});
+        d->addInput((const double[2]){0, 1});
+        d->addInput((const double[2]){1, 0});
+        d->addInput((const double[2]){1, 1});
+        tds = (InputDataset *) d;
+    } else {
+        InputDatasetParser *p = new InputDatasetParser(conf->testData, netConf);
+        tds = p->parse();
+    }
     
+    // Run network without learning.
+    runTest(net, tds);
     printSeperator();
 
     // Prepare labeled dataset.
@@ -282,7 +291,8 @@ int main(int argc, char *argv[]) {
     bp->setEpochLimit(conf->maxEpochs);
     bp->train(ds);
     
-    runTest(net);
+    // Run (hopefully) learnt network.
+    runTest(net, tds);
     
     delete bp;
     delete ds;

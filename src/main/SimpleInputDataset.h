@@ -22,7 +22,7 @@ public:
     void reset();
     int getInputDimension();
     // Adds a single input pattern to be processed by the network.
-    void addInput(double *input);
+    void addInput(const double *input);
 private:
     void initDataset();
     int dimension;

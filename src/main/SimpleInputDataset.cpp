@@ -28,7 +28,7 @@ void SimpleInputDataset::initDataset() {
     data = new double[dimension * size];
 }
 
-void SimpleInputDataset::addInput(double* input) {
+void SimpleInputDataset::addInput(const double* input) {
     
     if (addedCounter >= size) {
         LOG()->error("Trying to add %d input patterns while the dataset size is only %d.", addedCounter+1, size);
