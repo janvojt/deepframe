@@ -15,6 +15,7 @@ SimpleInputDataset::SimpleInputDataset(int dimension, int size) {
     this->size = size;
     this->cursor = 0;
     this->addedCounter = 0;
+    initDataset();
 }
 
 SimpleInputDataset::SimpleInputDataset(const SimpleInputDataset& orig) {
@@ -34,7 +35,7 @@ void SimpleInputDataset::addInput(double* input) {
     }
     
     int patternSize = sizeof(double) * dimension;
-    double *dataPtr = data + (size * patternSize);
+    double *dataPtr = data + (addedCounter * dimension);
     std::memcpy(dataPtr, input, patternSize);
     addedCounter++;
 }
