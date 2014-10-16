@@ -33,6 +33,8 @@ public:
     bool getInitRandom();
     // Sets whether to use random weights and bias initialization.
     void setInitRandom(bool random);
+    // Parse layer configuration from comma separated list of neuron counts.
+    void parseLayerConf(char *layerConf);
     // Pointer to activation function normalizing the neurons potential.
     // Input potential is preserved and the normalized value
     // is put into the target array. It is also possible to provide

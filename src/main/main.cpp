@@ -241,29 +241,9 @@ int main(int argc, char *argv[]) {
         srand(conf->seed);
     }
     
+    // Setup network configuration.
     NetworkConfiguration *netConf = new NetworkConfiguration();
-
-    // Configure layers.
-    // Count and set number of layers.
-    int i;
-    char *lconf = conf->layerConf;
-    for (i=0; lconf[i]; lconf[i]==',' ? i++ : *lconf++);
-    netConf->setLayers(i+1);
-    
-    // set number of neurons for each layer
-    i = 0;
-    int l = 0;
-    char *haystack = new char[strlen(conf->layerConf)];
-    strcpy(haystack, conf->layerConf);
-    char *token = strtok(haystack, ",");
-    while (token != NULL) {
-        sscanf(token, "%d", &l);
-        netConf->setNeurons(i++, l);
-        token = strtok(NULL, ",");
-    }
-    delete haystack;
-    
-    // configure other network properties
+    netConf->parseLayerConf(conf->layerConf);
     netConf->activationFnc = conf->activationFnc;
     netConf->dActivationFnc = conf->dActivationFnc;
     netConf->setBias(conf->bias);

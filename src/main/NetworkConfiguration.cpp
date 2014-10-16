@@ -9,10 +9,13 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <string.h>
 #include <stdexcept>
 
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
+
+using namespace std;
 
 NetworkConfiguration::NetworkConfiguration() {
     neuronConf = NULL;
@@ -87,4 +90,27 @@ void NetworkConfiguration::initConf() {
     }
     // initialize configuration
     neuronConf = new int[layers];
+}
+
+void NetworkConfiguration::parseLayerConf(char* layerConf) {
+
+    // Configure layers.
+    // Count and set number of layers.
+    int i;
+    char *lconf = layerConf;
+    for (i=0; lconf[i]; lconf[i]==',' ? i++ : *lconf++);
+    setLayers(i+1);
+    
+    // set number of neurons for each layer
+    i = 0;
+    int l = 0;
+    char *haystack = new char[strlen(layerConf)];
+    strcpy(haystack, layerConf);
+    char *token = strtok(haystack, ",");
+    while (token != NULL) {
+        sscanf(token, "%d", &l);
+        setNeurons(i++, l);
+        token = strtok(NULL, ",");
+    }
+    delete haystack;
 }
