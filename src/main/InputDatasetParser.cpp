@@ -55,6 +55,7 @@ InputDataset* InputDatasetParser::parse() {
         fp.get() == 13 && fp.get();
         
         ds->addInput((const double *) input);
+        delete input;
     }
     
     fp.close();

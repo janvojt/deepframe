@@ -27,6 +27,9 @@ Network::Network(const Network& orig) {
 }
 
 Network::~Network() {
+    delete weightsUpToLayerCache;
+    delete neuronsUpToLayerCache;
+    delete potentials;
     delete weights;
     delete inputs;
     delete bias;

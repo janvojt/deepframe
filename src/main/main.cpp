@@ -261,6 +261,7 @@ int main(int argc, char *argv[]) {
         netConf->setNeurons(i++, l);
         token = strtok(NULL, ",");
     }
+    delete haystack;
     
     // configure other network properties
     netConf->activationFnc = conf->activationFnc;
@@ -283,6 +284,7 @@ int main(int argc, char *argv[]) {
     } else {
         InputDatasetParser *p = new InputDatasetParser(conf->testData, netConf);
         tds = p->parse();
+        delete p;
     }
     
     // Run network without learning.
@@ -297,6 +299,7 @@ int main(int argc, char *argv[]) {
     } else {
         LabeledDatasetParser *p = new LabeledDatasetParser(conf->labeledData, netConf);
         ds = p->parse();
+        delete p;
     }
     
     BackpropagationLearner *bp = new BackpropagationLearner(net);
@@ -310,7 +313,9 @@ int main(int argc, char *argv[]) {
     
     delete bp;
     delete ds;
+    delete tds;
     delete netConf;
+    delete conf;
     delete net;
     return 0;
 }

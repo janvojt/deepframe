@@ -29,7 +29,9 @@ BackpropagationLearner::BackpropagationLearner(const BackpropagationLearner &ori
 }
 
 BackpropagationLearner::~BackpropagationLearner() {
-    
+    delete weightDiffs;
+    delete localGradients;
+    if (useBias) delete biasDiff;
 }
 
 void BackpropagationLearner::allocateCache() {
@@ -97,6 +99,7 @@ void BackpropagationLearner::computeOutputGradients(double *expectedOutput) {
         localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
         LOG()->debug("Local gradient for neuron [%d, %d] : %f.", noLayers, i, localGradient[i]);
     }
+    delete dv;
 }
 
 void BackpropagationLearner::computeWeightDifferentials() {
@@ -146,6 +149,8 @@ void BackpropagationLearner::computeWeightDifferentials() {
             thisLocalGradient[i] = sumNextGradient * thisInputDerivatives[i];
             LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
         }
+        
+        delete thisInputDerivatives;
     }
 }
 
