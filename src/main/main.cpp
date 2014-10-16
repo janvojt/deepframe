@@ -58,7 +58,7 @@ struct config {
     /* use bias? */
     bool bias = true;
     /* epoch limit */
-    long maxEpochs = 1000000;
+    long maxEpochs = 100000;
     /* Weights and bias initialization. */
     bool initRandom = true;
     double initWeights = 0;
@@ -137,7 +137,7 @@ void printHelp() {
     cout << "-h          --help                This help." << endl;
     cout << "-b          --no-bias             Disables bias in neural network. Bias is enabled by default." << endl;
     cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning." << endl;
-    cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met." << endl;
+    cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met. Default is 100,000" << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-g <value>  --d-func <value>      Specifies the derivative of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-i <value>  --init <value>        Specifies the value all weights and biases should be initialized to. By default random initialization is used." << endl;
