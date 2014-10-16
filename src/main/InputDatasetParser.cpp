@@ -54,8 +54,6 @@ InputDataset* InputDatasetParser::parse() {
         // truncate LF or CRLF
         fp.get() == 13 && fp.get();
         
-    LOG()->info("Testing input [%f, %f].", input[0], input[1]);
-
         ds->addInput((const double *) input);
     }
     
