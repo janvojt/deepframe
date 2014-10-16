@@ -29,7 +29,6 @@ Network::Network(const Network& orig) {
 Network::~Network() {
     delete weightsUpToLayerCache;
     delete neuronsUpToLayerCache;
-    delete potentials;
     delete weights;
     delete inputs;
     delete bias;
@@ -73,7 +72,6 @@ void Network::initInputs() {
         neuronsUpToLayerCache[i+1] = noNeurons;
     }
     this->noNeurons = noNeurons;
-    potentials = new double[noNeurons];
     inputs = new double[noNeurons];
 }
 
@@ -107,7 +105,6 @@ void Network::run() {
         int nNextLayer = conf->getNeurons(l+1);
         
         // clear the following layer just before working with it
-        clearLayer(potentials + nPrevLayers + nThisLayer, nNextLayer);
         clearLayer(inputs + nPrevLayers + nThisLayer, nNextLayer);
         
         // for every neuron in (l)th layer
@@ -116,7 +113,7 @@ void Network::run() {
             // for every neuron in (l+1)th layer
             for (int j = 0; j<nNextLayer; j++) {
                 int indexTo = nPrevLayers + nThisLayer + j;
-                potentials[indexTo] += *weighPtr * inputs[indexFrom];
+                inputs[indexTo] += *weighPtr * inputs[indexFrom];
                 weighPtr++;
             }
         }
@@ -126,7 +123,7 @@ void Network::run() {
         }
         
         // Run through activation function
-        conf->activationFnc(potentials+nPrevLayers+nThisLayer, inputs+nPrevLayers+nThisLayer, nNextLayer);
+        conf->activationFnc(inputs+nPrevLayers+nThisLayer, inputs+nPrevLayers+nThisLayer, nNextLayer);
         
         nPrevLayers += nThisLayer;
     }
@@ -136,9 +133,9 @@ void Network::run() {
 
 void Network::applyBias(int l) {
     int n = conf->getNeurons(l);
-    int potentialOffset = getInputOffset(l);
+    int offset = getInputOffset(l);
     for (int i = 0; i<n; i++) {
-        potentials[potentialOffset + i] += bias[potentialOffset + i];
+        inputs[offset + i] += bias[offset + i];
     }
 }
 
@@ -148,7 +145,6 @@ void Network::clearLayer(double *inputPtr, int layerSize) {
 
 void Network::setInput(double* input) {
     std::memcpy(inputs, input, sizeof(double) * getInputNeurons());
-    std::memcpy(potentials, input, sizeof(double) * getInputNeurons());
 }
 
 double *Network::getInput() {
@@ -169,10 +165,6 @@ int Network::getOutputNeurons() {
 
 int Network::getAllNeurons() {
     return noNeurons;
-}
-
-double* Network::getPotentialValues() {
-    return potentials;
 }
 
 int Network::getInputOffset(int layer) {
