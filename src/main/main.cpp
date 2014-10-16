@@ -43,12 +43,13 @@ const struct option optsLong[] = {
     {"lconf", required_argument, 0, 'l'},
     {"labels", required_argument, 0, 's'},
     {"test", required_argument, 0, 't'},
+    {"random-seed", required_argument, 0, 'r'},
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:i:l:s:t:d";
+const char* optsList = "hbe:m:f:g:i:l:s:t:r:d";
 
 /* Application configuration. */
 struct config {
@@ -67,6 +68,8 @@ struct config {
     char* labeledData;
     /* File path with test data. */
     char* testData;
+    /* Seed for random generator. */
+    int seed;
     /* activation function */
     void (*activationFnc)(double *x, double *y, int layerSize);
     /* derivative of activation function */
@@ -141,6 +144,7 @@ void printHelp() {
     cout << "-l <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
+    cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -188,6 +192,9 @@ config* processOptions(int argc, char *argv[]) {
             case 't' :
                 conf->testData = optarg;
                 break;
+            case 'r' :
+                conf->seed = atoi(optarg);
+                break;
             case 'f' :
                 switch (optarg[0]) {
                     case 's' :
@@ -226,6 +233,13 @@ config* processOptions(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     
     config* conf = processOptions(argc, argv);
+    
+    // Seed random generator before initializing weights.
+    if (conf->seed == NULL) {
+        srand(time(0));
+    } else {
+        srand(conf->seed);
+    }
     
     NetworkConfiguration *netConf = new NetworkConfiguration();
 

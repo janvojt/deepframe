@@ -16,10 +16,6 @@
 #include "log4cpp/Category.hh"
 
 Network::Network(NetworkConfiguration *conf) {
-    
-    // Seed random generator before initializing weights.
-    srand(time(0));
-    
     this->conf = conf;
     this->noLayers = conf->getLayers();
     initWeights();
