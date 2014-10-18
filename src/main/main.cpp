@@ -177,7 +177,7 @@ config* processOptions(int argc, char *argv[]) {
                 conf->mse = atof(optarg);
                 break;
             case 'm' :
-                conf->maxEpochs = atoi(optarg);
+                conf->maxEpochs = atol(optarg);
                 break;
             case 'i' :
                 conf->initWeights = atof(optarg);

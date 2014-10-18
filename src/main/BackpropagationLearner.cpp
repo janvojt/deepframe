@@ -193,7 +193,7 @@ void BackpropagationLearner::validate(LabeledDataset *dataset) {
     }
 }
 
-void BackpropagationLearner::setEpochLimit(int limit) {
+void BackpropagationLearner::setEpochLimit(long limit) {
     epochLimit = limit;
 }
 

@@ -21,7 +21,7 @@ public:
     // Launches the learning process.
     void train(LabeledDataset *dataset);
     // Sets the maximum number of epochs.
-    void setEpochLimit(int limit);
+    void setEpochLimit(long limit);
     // Sets object for computing network error.
     void setErrorComputer(ErrorComputer *errorComputer);
     // Set target Mean Square Error. When it is reached, training is finished.
@@ -55,9 +55,9 @@ private:
     // Represents average error of the current network configuration.
     double errorTotal;
     // Counter of epochs, incremented right before new epoch is started.
-    int epochCounter;
+    long epochCounter;
     // Stop learning when given number of epochs passes.
-    int epochLimit;
+    long epochLimit;
     // Target Mean Square Error. When it is reached, training is finished.
     double targetMse;
     // Total differential for weight adjustment.
