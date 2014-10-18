@@ -127,8 +127,6 @@ void Network::run() {
         
         nPrevLayers += nThisLayer;
     }
-    
-    LOG()->debug("Forward phase results: [%f, %f] -> [%f].", getInput()[0], getInput()[1], getOutput()[0]);
 }
 
 void Network::applyBias(int l) {

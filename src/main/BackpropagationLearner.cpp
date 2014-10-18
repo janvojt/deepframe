@@ -55,7 +55,6 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
             datasetSize++;
             double *pattern = dataset->next();
             double *expOutput = pattern + dataset->getInputDimension();
-            LOG()->debug("Learning pattern [%f, %f] -> [%f].", pattern[0], pattern[1], expOutput[0]);
             doForwardPhase(pattern);
             doBackwardPhase(expOutput);
             mse += errorComputer->compute(network, expOutput);
@@ -157,10 +156,6 @@ void BackpropagationLearner::computeWeightDifferentials() {
 void BackpropagationLearner::adjustWeights() {
     int wc = network->getWeightsOffset(network->getConfiguration()->getLayers());
     double *weights = network->getWeights();
-    LOG()->debug("Adjusting weights by: [[%f, %f], [%f, %f]], [[%f, %f]].",
-            weightDiffs[2], weightDiffs[3],
-            weightDiffs[4], weightDiffs[5],
-            weightDiffs[6], weightDiffs[7]);
     
     // we should skip the garbage in zero-layer weights
     for(int i = network->getWeightsOffset(1); i<wc; i++) {
@@ -171,10 +166,6 @@ void BackpropagationLearner::adjustWeights() {
 void BackpropagationLearner::adjustBias() {
     double *bias = network->getBiasValues();
     int noNeurons = network->getAllNeurons();
-    LOG()->debug("Adjusting bias by: [%f, %f], [%f, %f], [%f].",
-            biasDiff[0], biasDiff[1],
-            biasDiff[2], biasDiff[3],
-            biasDiff[4]);
     for (int i = 0; i<noNeurons; i++) {
         bias[i] += biasDiff[i];
     }
