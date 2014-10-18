@@ -59,9 +59,6 @@ struct config {
     bool bias = true;
     /* epoch limit */
     long maxEpochs = 100000;
-    /* Weights and bias initialization. */
-    bool initRandom = true;
-    double initWeights = 0;
     /* Layer configuration. */
     char* layerConf;
     /* File path with labeled data. */
@@ -140,7 +137,6 @@ void printHelp() {
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met. Default is 100,000" << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-g <value>  --d-func <value>      Specifies the derivative of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
-    cout << "-i <value>  --init <value>        Specifies the value all weights and biases should be initialized to. By default random initialization is used." << endl;
     cout << "-l <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
@@ -179,9 +175,6 @@ config* processOptions(int argc, char *argv[]) {
             case 'm' :
                 conf->maxEpochs = atol(optarg);
                 break;
-            case 'i' :
-                conf->initWeights = atof(optarg);
-                conf->initRandom = false;
             case 'l' :
                 conf->layerConf = new char[strlen(optarg)];
                 strcpy(conf->layerConf, optarg);
@@ -247,8 +240,6 @@ int main(int argc, char *argv[]) {
     netConf->activationFnc = conf->activationFnc;
     netConf->dActivationFnc = conf->dActivationFnc;
     netConf->setBias(conf->bias);
-    netConf->setInitRandom(conf->initRandom);
-    netConf->setInitWeights(conf->initWeights);
     
     Network *net = new Network(netConf);
     
