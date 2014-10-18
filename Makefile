@@ -59,5 +59,5 @@ $(TESTBUILDDIR)/%.o: $(TESTDIR)/%.$(SRCEXT)
 
 clean:
 	@echo " Cleaning..."; 
-	$(RM) -r $(BUILDDIR) $(TARGET) $(TESTBUILDDIR) $(TESTTARGET)
+	$(RM) -r $(BUILDDIR) $(TARGETDIR) $(TESTBUILDDIR)
 
