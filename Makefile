@@ -4,11 +4,11 @@ CC=g++ # This is the main compiler
 SRCDIR=src/main
 BUILDDIR=build/main
 TARGETDIR=bin
-TARGET=$(TARGETDIR)/xoraan
+TARGET=$(TARGETDIR)/ffwdnet
 
 TESTDIR=src/test
 TESTBUILDDIR=build/test
-TESTTARGET=$(TARGETDIR)/xoraan-test
+TESTTARGET=$(TARGETDIR)/ffwdnet-test
 
 SRCEXT=cpp
 # main file needs to be excluded from the test executable,
