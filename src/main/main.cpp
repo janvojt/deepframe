@@ -69,7 +69,7 @@ struct config {
     /* File path with test data. */
     char* testData;
     /* Seed for random generator. */
-    int seed;
+    int seed = 0;
     /* activation function */
     void (*activationFnc)(double *x, double *y, int layerSize);
     /* derivative of activation function */
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
     config* conf = processOptions(argc, argv);
     
     // Seed random generator before initializing weights.
-    if (conf->seed == NULL) {
+    if (conf->seed == 0) {
         srand(time(0));
     } else {
         srand(conf->seed);
