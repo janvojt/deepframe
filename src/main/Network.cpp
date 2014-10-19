@@ -52,7 +52,6 @@ void Network::initWeights() {
     weights = new double[noWeights];
 
     // Initialize weights.
-    LOG()->info("Randomly initialize weights between -1 and 1.");
     for (int i = 0; i < noWeights; i++) {
         weights[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
     }

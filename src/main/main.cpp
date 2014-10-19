@@ -9,6 +9,7 @@
 #include <string.h>
 #include <iostream>
 #include <getopt.h>
+#include <unistd.h>
 
 #include "NetworkConfiguration.h"
 #include "Network.h"
@@ -16,7 +17,6 @@
 #include "BackpropagationLearner.h"
 #include "SimpleLabeledDataset.h"
 #include "MseErrorComputer.h"
-
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 #include "log4cpp/Priority.hh"
@@ -72,6 +72,18 @@ struct config {
     /* derivative of activation function */
     void (*dActivationFnc)(double *x, double *y, int layerSize);
 };
+
+/* Random seed generator. */
+unsigned getSeed(void)
+{
+  unsigned seed = 0;
+  
+  int fp = open("/dev/urandom", O_RDONLY);
+  read(fp, &seed, sizeof seed);
+  close(fp);
+  
+  return seed;
+}
 
 
 void printOutput(Network *net) {
@@ -229,10 +241,10 @@ int main(int argc, char *argv[]) {
     
     // Seed random generator before initializing weights.
     if (conf->seed == 0) {
-        srand(time(0));
-    } else {
-        srand(conf->seed);
+        conf->seed = getSeed();
     }
+    LOG()->info("Seeding random generator with %d.", conf->seed);
+    srand(conf->seed);
     
     // Setup network configuration.
     NetworkConfiguration *netConf = new NetworkConfiguration();
