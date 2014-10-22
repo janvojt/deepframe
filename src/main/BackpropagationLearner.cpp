@@ -47,7 +47,7 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
     LOG()->info("Started training with limits of %d epochs and target MSE of %f.", epochLimit, targetMse);
     do {
         epochCounter++;
-        LOG()->debug("Starting epoch %d.", epochCounter);
+//        LOG()->debug("Starting epoch %d.", epochCounter);
         dataset->reset();
         int datasetSize = 0;
         mse = 0;
@@ -60,7 +60,7 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
             mse += errorComputer->compute(network, expOutput);
         }
         mse = mse / datasetSize;
-        LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
+//        LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
     } while (mse > targetMse && epochCounter < epochLimit);
     
     if (mse <= targetMse) {
@@ -96,7 +96,7 @@ void BackpropagationLearner::computeOutputGradients(double *expectedOutput) {
     daf(network->getInput() + network->getInputOffset(noLayers-1), dv, on);
     for (int i = 0; i<on; i++) {
         localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
-        LOG()->debug("Local gradient for neuron [%d, %d] : %f.", noLayers, i, localGradient[i]);
+//        LOG()->debug("Local gradient for neuron [%d, %d] : %f.", noLayers, i, localGradient[i]);
     }
     delete dv;
 }
@@ -146,7 +146,7 @@ void BackpropagationLearner::computeWeightDifferentials() {
                 sumNextGradient += nextLocalGradient[j] * weights[i * nextNeurons + j];
             }
             thisLocalGradient[i] = sumNextGradient * thisInputDerivatives[i];
-            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
+//            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
         }
         
         delete thisInputDerivatives;

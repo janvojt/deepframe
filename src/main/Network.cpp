@@ -12,9 +12,6 @@
 #include <stdlib.h>
 #include <iostream>
 
-#include "log/LoggerFactory.h"
-#include "log4cpp/Category.hh"
-
 Network::Network(NetworkConfiguration *conf) {
     this->conf = conf;
     this->noLayers = conf->getLayers();
