@@ -2,6 +2,7 @@
 build/
 dist/
 bin/
+test-output/
 
 # Netbeans files
 nbproject/
