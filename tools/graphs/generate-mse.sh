@@ -29,5 +29,6 @@ set style data points
 stats "$TEST_OUT/mse-$LAYERS.csv" index 0 using 1 prefix "A"
 
 plot "$TEST_OUT/mse-$LAYERS.csv" using 0:1 title "Measured" \
-	,A_mean title "Mean"
+	,A_mean title "Mean" \
+	,A_median title "Median"
 GNUEOS
