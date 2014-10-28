@@ -22,7 +22,7 @@ SimpleInputDataset::SimpleInputDataset(const SimpleInputDataset& orig) {
 }
 
 SimpleInputDataset::~SimpleInputDataset() {
-    delete data;
+    delete[] data;
 }
 
 void SimpleInputDataset::initDataset() {

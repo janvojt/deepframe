@@ -14,7 +14,6 @@ log4cpp::Category *LoggerFactory::instance;
 
 LoggerFactory::LoggerFactory() {}
 
-/* Factory for a simple log4cpp logger. */
 log4cpp::Category* LoggerFactory::create() {
     log4cpp::Category *logger = &log4cpp::Category::getRoot();
     log4cpp::Appender *p_appender = new log4cpp::OstreamAppender("console", &std::cout);
@@ -27,11 +26,16 @@ log4cpp::Category* LoggerFactory::create() {
     return logger;
 }
 
-/* Returns a singleton root logger. */
 log4cpp::Category *LoggerFactory::getLogger() {
     if (!isCreated) {
         isCreated = true;
         instance = create();
     }
     return instance;
+}
+
+void* LoggerFactory::destroy() {
+    if (isCreated) {
+        delete instance;
+    }
 }

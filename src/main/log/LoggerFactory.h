@@ -19,8 +19,14 @@ namespace Log {
     class LoggerFactory {
         
     public:
+        // Get a singleton instance of logger.
         static log4cpp::Category *getLogger();
+        // Factory for creating new logger instance. Caller is responsible for
+        // correctly freeing the memory hold by the created logger.
         static log4cpp::Category *create();
+        // Correctly destroys the logger singleton instance by freeing the
+        // memory hold by the instance.
+        static void *destroy();
 
     private:
         static bool isCreated;

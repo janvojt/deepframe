@@ -27,7 +27,7 @@ NetworkConfiguration::NetworkConfiguration(const NetworkConfiguration& orig) {
 
 NetworkConfiguration::~NetworkConfiguration() {
     if (neuronConf) {
-        delete neuronConf;
+        delete[] neuronConf;
     }
 }
 
@@ -87,7 +87,7 @@ void NetworkConfiguration::parseLayerConf(char* layerConf) {
     // set number of neurons for each layer
     i = 0;
     int l = 0;
-    char *haystack = new char[strlen(layerConf)];
+    char *haystack = new char[strlen(layerConf)+1];
     strcpy(haystack, layerConf);
     char *token = strtok(haystack, ",");
     while (token != NULL) {
@@ -95,5 +95,5 @@ void NetworkConfiguration::parseLayerConf(char* layerConf) {
         setNeurons(i++, l);
         token = strtok(NULL, ",");
     }
-    delete haystack;
+    delete[] haystack;
 }

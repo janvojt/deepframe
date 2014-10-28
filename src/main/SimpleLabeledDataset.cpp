@@ -22,7 +22,7 @@ SimpleLabeledDataset::SimpleLabeledDataset(const SimpleLabeledDataset& orig) {
 }
 
 SimpleLabeledDataset::~SimpleLabeledDataset() {
-    delete data;
+    delete[] data;
 }
 
 void SimpleLabeledDataset::addPattern(const double *input, const double *output) {

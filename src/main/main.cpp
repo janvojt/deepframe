@@ -60,11 +60,11 @@ struct config {
     /* epoch limit */
     long maxEpochs = 100000;
     /* Layer configuration. */
-    char* layerConf;
+    char* layerConf = NULL;
     /* File path with labeled data. */
-    char* labeledData;
+    char* labeledData = NULL;
     /* File path with test data. */
-    char* testData;
+    char* testData = NULL;
     /* Seed for random generator. */
     int seed = 0;
     /* activation function */
@@ -188,7 +188,7 @@ config* processOptions(int argc, char *argv[]) {
                 conf->maxEpochs = atol(optarg);
                 break;
             case 'l' :
-                conf->layerConf = new char[strlen(optarg)];
+                conf->layerConf = new char[strlen(optarg)+1];
                 strcpy(conf->layerConf, optarg);
                 break;
             case 's' :

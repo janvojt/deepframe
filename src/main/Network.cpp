@@ -24,11 +24,11 @@ Network::Network(const Network& orig) {
 }
 
 Network::~Network() {
-    delete weightsUpToLayerCache;
-    delete neuronsUpToLayerCache;
-    delete weights;
-    delete inputs;
-    delete bias;
+    delete[] weightsUpToLayerCache;
+    delete[] neuronsUpToLayerCache;
+    delete[] weights;
+    delete[] inputs;
+    delete[] bias;
 }
 
 NetworkConfiguration* Network::getConfiguration() {
@@ -38,7 +38,7 @@ NetworkConfiguration* Network::getConfiguration() {
 void Network::initWeights() {
     int noWeights = 0;
     int pLayer = 1; // neurons in previous layer
-    weightsUpToLayerCache = new int[noLayers];
+    weightsUpToLayerCache = new int[noLayers+1];
     weightsUpToLayerCache[0] = noWeights;
     for (int i = 0; i<noLayers; i++) {
         int tLayer = this->conf->getNeurons(i);
@@ -56,7 +56,7 @@ void Network::initWeights() {
 
 void Network::initInputs() {
     int noNeurons = 0;
-    neuronsUpToLayerCache = new int[noLayers];
+    neuronsUpToLayerCache = new int[noLayers+1];
     neuronsUpToLayerCache[0] = noNeurons;
     for (int i = 0; i<noLayers; i++) {
         noNeurons += conf->getNeurons(i);
