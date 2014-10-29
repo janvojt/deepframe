@@ -11,17 +11,25 @@ TESTDIR="$1"
 FILE_SUFFIX="$2"
 TEST_OUT="$basedir/../../$TESTDIR"
 
+if [ -z "$FILE_SUFFIX" ]; then
+	TITLE_MAIN="Memory requirements for 4-bit sum with 1 hidden layer"
+	TITLE_X="hidden neurons"
+else
+	TITLE_MAIN="Memory requirements for 4-bit sum"
+	TITLE_X="hidden layers"
+fi
+
 gnuplot << GNUEOS
 reset
 set terminal eps
 
 set datafile separator ","
 
-set xlabel "hidden neurons"
+set xlabel "$TITLE_X"
 
 set ylabel "Max memory (kB)"
 
-set title "Memory requirements for 4-bit sum with 1 hidden layer"
+set title "$TITLE_MAIN"
 set key reverse Left outside
 set grid
 
