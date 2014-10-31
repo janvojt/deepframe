@@ -32,5 +32,12 @@ void hyperbolicTangentFunction(double *x, double *y, int layerSize);
 // Derivative of the hyperbolic tangent function.
 void dHyperbolicTangentFunction(double *x, double *y, int layerSize);
 
+// Looks up activation function in a precomputed table for the input array,
+// putting the result in the target array. For in-place computation
+// it is possible to provide the same pointer for input and target
+// to save some memory.
+// See FunctionCache for details of implementation.
+void cachedFunction(double *x, double *y, int layerSize);
+
 #endif	/* ACTIVATIONFUNCTIONS_H */
 

@@ -6,6 +6,7 @@
  */
 
 #include "activationFunctions.h"
+#include "FunctionCache.h"
 
 #include <math.h>
 
@@ -55,4 +56,8 @@ void dHyperbolicTangentFunction(double* x, double* y, int layerSize) {
         x++;
         y++;
     }
+}
+
+void cachedFunction(double* x, double* y, int layerSize) {
+    FunctionCache::getInstance()->compute(x, y, layerSize);
 }

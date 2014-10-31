@@ -23,6 +23,7 @@
 #include "LabeledDatasetParser.h"
 #include "SimpleInputDataset.h"
 #include "InputDatasetParser.h"
+#include "FunctionCache.h"
 
 // getopts constants
 #define no_argument 0
@@ -44,12 +45,13 @@ const struct option optsLong[] = {
     {"labels", required_argument, 0, 's'},
     {"test", required_argument, 0, 't'},
     {"random-seed", required_argument, 0, 'r'},
+    {"use-cache", optional_argument, 0, 'u'},
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:i:l:s:t:r:d";
+const char* optsList = "hbe:m:f:g:i:l:s:t:r:u:d";
 
 /* Application configuration. */
 struct config {
@@ -71,6 +73,10 @@ struct config {
     void (*activationFnc)(double *x, double *y, int layerSize);
     /* derivative of activation function */
     void (*dActivationFnc)(double *x, double *y, int layerSize);
+    /* Whether to use precomputed table for activation function value lookup. */
+    bool useFunctionCache = false;
+    /* Number of samples for function cache lookup table. */
+    int functionSamples = 10000;
 };
 
 /* Random seed generator. */
@@ -140,7 +146,7 @@ LabeledDataset* createXorDataset() {
 }
 
 void printHelp() {
-    cout << "Usage: xoraan [OPTIONS]" << endl << endl;
+    cout << "Usage: ffwdnet [OPTIONS]" << endl << endl;
     cout << "Option      GNU long option       Meaning" << endl;
     cout << "--------------------------------------------------------------------------------" << endl;
     cout << "-h          --help                This help." << endl;
@@ -153,6 +159,7 @@ void printHelp() {
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
+    cout << "-u <value>  --use-cache <value>   Enables use of precomputed lookup table for activation function. Value specifies the size of the table." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -228,16 +235,21 @@ config* processOptions(int argc, char *argv[]) {
                         break;
                 }
                 break;
+            case 'u' :
+                conf->useFunctionCache = true;
+                int i = atoi(optarg);
+                if (optarg != NULL) {
+                    conf->functionSamples = atoi(optarg);
+                }
+                break;
         }
     }
     
     return conf;
 }
 
-/* Entry point of the application. */
-int main(int argc, char *argv[]) {
-    
-    config* conf = processOptions(argc, argv);
+/* Factory for network configuration. */
+NetworkConfiguration *createNetworkConfiguration(config* conf) {
     
     // Seed random generator before initializing weights.
     if (conf->seed == 0) {
@@ -246,6 +258,12 @@ int main(int argc, char *argv[]) {
     LOG()->info("Seeding random generator with %d.", conf->seed);
     srand(conf->seed);
     
+    // Setup function lookup table if it is to be used.
+    if (conf->useFunctionCache) {
+        FunctionCache::init(conf->activationFnc, conf->functionSamples);
+        conf->activationFnc = cachedFunction;
+    }
+    
     // Setup network configuration.
     NetworkConfiguration *netConf = new NetworkConfiguration();
     netConf->parseLayerConf(conf->layerConf);
@@ -253,6 +271,15 @@ int main(int argc, char *argv[]) {
     netConf->dActivationFnc = conf->dActivationFnc;
     netConf->setBias(conf->bias);
     
+    return netConf;
+}
+
+/* Entry point of the application. */
+int main(int argc, char *argv[]) {
+    
+    config* conf = processOptions(argc, argv);
+    
+    NetworkConfiguration *netConf = createNetworkConfiguration(conf);
     Network *net = new Network(netConf);
     
     // Prepare test dataset.
