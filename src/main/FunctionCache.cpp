@@ -14,14 +14,22 @@ FunctionCache *FunctionCache::instance;
 
 FunctionCache::FunctionCache(void (*activationFnc)(double *x, double *y, int layerSize), int samples) {
     this->samples = samples;
-    cache = new double[samples+1];
+    cache = new double[samples];
     slotsPerUnit = samples / 8;
     double step = (double)8 / samples;
+    
     double x = -4;
-    for (int i = 0; i<=samples; i++, x+=step) {
+    int halfSamples = samples / 2;
+    for (int i = 0; i<halfSamples; i++, x+=step) {
         cache[i] = x;
     }
-    activationFnc(cache, cache, samples+1);
+    // Split into 2 loops, so we can round down the negative input,
+    // and round up the positive input.
+    x += step;
+    for (int i = halfSamples; i<samples; i++, x+=step) {
+        cache[i] = x;
+    }
+    activationFnc(cache, cache, samples);
 }
 
 FunctionCache::FunctionCache(const FunctionCache& orig) {
@@ -37,8 +45,8 @@ void FunctionCache::compute(double* x, double* y, int layerSize) {
         // check bounds
         if (j<0) {
             j = 0;
-        } else if (j>samples) {
-            j = samples;
+        } else if (j>=samples) {
+            j = samples-1;
         }
         
         *y = cache[j];
