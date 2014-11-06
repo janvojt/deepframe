@@ -46,12 +46,13 @@ const struct option optsLong[] = {
     {"test", required_argument, 0, 't'},
     {"random-seed", required_argument, 0, 'r'},
     {"use-cache", optional_argument, 0, 'u'},
+    {"use-gpu", no_argument, 0, 'p'},
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:i:l:s:t:r:u:d";
+const char* optsList = "hbe:m:f:g:i:l:s:t:r:u:pd";
 
 /* Application configuration. */
 struct config {
@@ -77,6 +78,8 @@ struct config {
     bool useFunctionCache = false;
     /* Number of samples for function cache lookup table. */
     int functionSamples = 10000;
+    /* Whether to use parallel implementation using GPU. */
+    bool useGpu = false;
 };
 
 /* Random seed generator. */
@@ -160,6 +163,7 @@ void printHelp() {
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << "-u <value>  --use-cache <value>   Enables use of precomputed lookup table for activation function. Value specifies the size of the table." << endl;
+    cout << "-p          --use-gpu             Enables parallel implementation of the network using CUDA GPU API." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -237,10 +241,12 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 'u' :
                 conf->useFunctionCache = true;
-                int i = atoi(optarg);
                 if (optarg != NULL) {
                     conf->functionSamples = atoi(optarg);
                 }
+                break;
+            case 'p' :
+                conf->useGpu = true;
                 break;
         }
     }
