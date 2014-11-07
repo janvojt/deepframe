@@ -8,7 +8,8 @@
 #include "InputDatasetParser.h"
 #include "SimpleInputDataset.h"
 #include "InputDataset.h"
-#include "log/LoggerFactory.h"
+
+#include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 #include <iostream>

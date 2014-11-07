@@ -15,14 +15,14 @@
 #include "Network.h"
 #include "activationFunctions.h"
 #include "BackpropagationLearner.h"
-#include "SimpleLabeledDataset.h"
 #include "MseErrorComputer.h"
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 #include "log4cpp/Priority.hh"
-#include "LabeledDatasetParser.h"
-#include "SimpleInputDataset.h"
-#include "InputDatasetParser.h"
+#include "ds/SimpleLabeledDataset.h"
+#include "ds/LabeledDatasetParser.h"
+#include "ds/SimpleInputDataset.h"
+#include "ds/InputDatasetParser.h"
 #include "FunctionCache.h"
 
 // getopts constants

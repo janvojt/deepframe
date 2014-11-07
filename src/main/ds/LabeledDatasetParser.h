@@ -8,7 +8,7 @@
 #ifndef LABELEDDATASETPARSER_H
 #define	LABELEDDATASETPARSER_H
 
-#include "NetworkConfiguration.h"
+#include "../NetworkConfiguration.h"
 #include "LabeledDataset.h"
 
 

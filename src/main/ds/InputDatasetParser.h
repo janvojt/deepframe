@@ -8,8 +8,8 @@
 #ifndef INPUTDATASETPARSER_H
 #define	INPUTDATASETPARSER_H
 
-#include "NetworkConfiguration.h"
 #include "InputDataset.h"
+#include "../NetworkConfiguration.h"
 
 class InputDatasetParser {
 public:

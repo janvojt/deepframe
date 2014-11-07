@@ -9,7 +9,7 @@
 #define	BACKPROPAGATIONLEARNER_H
 
 #include "Network.h"
-#include "LabeledDataset.h"
+#include "ds/LabeledDataset.h"
 #include "ErrorComputer.h"
 #include <limits>
 

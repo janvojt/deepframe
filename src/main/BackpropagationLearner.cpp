@@ -7,7 +7,7 @@
 
 #include "BackpropagationLearner.h"
 #include "Network.h"
-#include "LabeledDataset.h"
+#include "ds/LabeledDataset.h"
 #include <cstring>
 #include <string>
 #include <stdexcept>

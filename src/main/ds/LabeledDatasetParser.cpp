@@ -10,7 +10,7 @@
 
 #include "LabeledDatasetParser.h"
 #include "SimpleLabeledDataset.h"
-#include "log/LoggerFactory.h"
+#include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 LabeledDatasetParser::LabeledDatasetParser(char* filepath, NetworkConfiguration* netConf) {

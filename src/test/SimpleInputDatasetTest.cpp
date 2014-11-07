@@ -6,7 +6,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "SimpleInputDataset.h"
+#include "ds/SimpleInputDataset.h"
 
 // Test binary data set creation.
 TEST(SimpleInputDataset, BinaryDatasetCreation) {
