@@ -13,6 +13,7 @@
 
 #include "NetworkConfiguration.h"
 #include "Network.h"
+#include "CpuNetwork.h"
 #include "activationFunctions.h"
 #include "BackpropagationLearner.h"
 #include "MseErrorComputer.h"
@@ -24,6 +25,7 @@
 #include "ds/SimpleInputDataset.h"
 #include "ds/InputDatasetParser.h"
 #include "FunctionCache.h"
+#include "CpuNetwork.h"
 
 // getopts constants
 #define no_argument 0
@@ -286,7 +288,7 @@ int main(int argc, char *argv[]) {
     config* conf = processOptions(argc, argv);
     
     NetworkConfiguration *netConf = createNetworkConfiguration(conf);
-    Network *net = new Network(netConf);
+    Network *net = new CpuNetwork(netConf);
     
     // Prepare test dataset.
     InputDataset *tds;
