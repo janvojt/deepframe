@@ -11,6 +11,7 @@
 #include <cstring>
 #include <string>
 #include <stdexcept>
+#include <limits>
 
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"

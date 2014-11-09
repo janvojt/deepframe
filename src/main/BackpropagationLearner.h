@@ -11,7 +11,6 @@
 #include "Network.h"
 #include "ds/LabeledDataset.h"
 #include "ErrorComputer.h"
-#include <limits>
 
 class BackpropagationLearner {
 public:
