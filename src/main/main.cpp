@@ -10,22 +10,26 @@
 #include <iostream>
 #include <getopt.h>
 #include <unistd.h>
+#include <cuda_runtime.h>
+
+#include "log/LoggerFactory.h"
+#include "log4cpp/Category.hh"
+#include "log4cpp/Priority.hh"
 
 #include "NetworkConfiguration.h"
 #include "Network.h"
 #include "CpuNetwork.h"
+#include "GpuNetwork.h"
 #include "activationFunctions.h"
 #include "BackpropagationLearner.h"
 #include "MseErrorComputer.h"
-#include "log/LoggerFactory.h"
-#include "log4cpp/Category.hh"
-#include "log4cpp/Priority.hh"
 #include "ds/SimpleLabeledDataset.h"
 #include "ds/LabeledDatasetParser.h"
 #include "ds/SimpleInputDataset.h"
 #include "ds/InputDatasetParser.h"
 #include "FunctionCache.h"
 #include "CpuNetwork.h"
+#include "GpuConfiguration.h"
 
 // getopts constants
 #define no_argument 0
@@ -284,11 +288,26 @@ NetworkConfiguration *createNetworkConfiguration(config* conf) {
 
 /* Entry point of the application. */
 int main(int argc, char *argv[]) {
-    
+
+    // prepare network configuration
     config* conf = processOptions(argc, argv);
-    
     NetworkConfiguration *netConf = createNetworkConfiguration(conf);
-    Network *net = new CpuNetwork(netConf);
+    
+    // construct the network
+    Network *net;
+    if (conf->useGpu) {
+        GpuConfiguration *gpuConf = GpuConfiguration::create();
+        if (gpuConf == NULL) {
+            LOG()->warn("Falling back to CPU as GPU probe was unsuccessful.");
+            net = new CpuNetwork(netConf);
+        } else {
+            LOG()->info("Using GPU for computing the network runs.");
+            net = new GpuNetwork(netConf, gpuConf);
+        }
+    } else {
+        LOG()->info("Using CPU for computing the network runs.");
+        net = new CpuNetwork(netConf);
+    }
     
     // Prepare test dataset.
     InputDataset *tds;
