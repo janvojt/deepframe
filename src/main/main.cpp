@@ -10,7 +10,9 @@
 #include <iostream>
 #include <getopt.h>
 #include <unistd.h>
+#include <cuda.h>
 #include <cuda_runtime.h>
+#include <curand.h>
 
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -263,10 +265,6 @@ config* processOptions(int argc, char *argv[]) {
 /* Factory for network configuration. */
 NetworkConfiguration *createNetworkConfiguration(config* conf) {
     
-    // Seed random generator before initializing weights.
-    if (conf->seed == 0) {
-        conf->seed = getSeed();
-    }
     LOG()->info("Seeding random generator with %d.", conf->seed);
     srand(conf->seed);
     
@@ -286,17 +284,35 @@ NetworkConfiguration *createNetworkConfiguration(config* conf) {
     return netConf;
 }
 
+/* Factory for GPU configuration. */
+GpuConfiguration *createGpuConfiguration(config *conf) {
+    
+    GpuConfiguration *gpuConf = GpuConfiguration::create();
+    curandGenerator_t *gen = new curandGenerator_t;
+    curandCreateGenerator(gen, CURAND_RNG_PSEUDO_DEFAULT);
+    curandSetPseudoRandomGeneratorSeed(*gen, conf->seed);
+    gpuConf->setRandGen(gen);
+    
+    return gpuConf;
+}
+
 /* Entry point of the application. */
 int main(int argc, char *argv[]) {
-
+    
     // prepare network configuration
     config* conf = processOptions(argc, argv);
+
+    // Configure seed for random generator.
+    if (conf->seed == 0) {
+        conf->seed = getSeed();
+    }
+    
     NetworkConfiguration *netConf = createNetworkConfiguration(conf);
     
     // construct the network
     Network *net;
     if (conf->useGpu) {
-        GpuConfiguration *gpuConf = GpuConfiguration::create();
+        GpuConfiguration *gpuConf = createGpuConfiguration(conf);
         if (gpuConf == NULL) {
             LOG()->warn("Falling back to CPU as GPU probe was unsuccessful.");
             net = new CpuNetwork(netConf);

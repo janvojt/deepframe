@@ -64,6 +64,14 @@ cudaDeviceProp* GpuConfiguration::getDeviceProp() {
     return deviceProp;
 }
 
+void GpuConfiguration::setRandGen(curandGenerator_t* randGen) {
+    this->randGen = randGen;
+}
+
+curandGenerator_t* GpuConfiguration::getRandGen() {
+    return randGen;
+}
+
 void GpuConfiguration::setBlockSize(int blockSize) {
     this->blockSize = blockSize;
 }

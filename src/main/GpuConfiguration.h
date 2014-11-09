@@ -9,6 +9,7 @@
 #define	GPUCONFIGURATION_H
 
 #include <cuda_runtime.h>
+#include <curand.h>
 
 class GpuConfiguration {
 public:
@@ -18,10 +19,13 @@ public:
     static GpuConfiguration *create();
     cudaDeviceProp *getDeviceProp();
     void setDeviceProp(cudaDeviceProp *devideProp);
+    curandGenerator_t *getRandGen();
+    void setRandGen(curandGenerator_t *randGen);
     int getBlockSize();
     void setBlockSize(int blockSize);
 private:
     cudaDeviceProp *deviceProp;
+    curandGenerator_t *randGen;
     int blockSize;
 };
 

@@ -17,11 +17,6 @@
 #include <iostream>
 
 
-__global__
-void randomize(double *values) {
-    values[threadIdx.x] = 1;
-}
-
 GpuNetwork::GpuNetwork(NetworkConfiguration *netConf, GpuConfiguration *gpuConf) : Network(netConf) {
     this->gpuConf = gpuConf;
     initWeights();
@@ -52,10 +47,10 @@ void GpuNetwork::randomizeDoublesOnGpu(double **hMemory, double **dMemory, int s
         LOG()->error("Error when trying to cudaMalloc memory, error code: %d.", error);
         exit(EXIT_FAILURE);
     }
-
-    // Initialize random values on GPU device memory.
-    randomize<<<1,size>>>(*dMemory);
     
+    // Initialize random values on GPU device memory.
+    curandGenerateUniformDouble(*gpuConf->getRandGen(), *dMemory, size);
+
     // Copy to host memory.
     *hMemory = new double[size];
     cudaMemcpy(static_cast<void*>(*hMemory), static_cast<void*>(*dMemory), memSize, cudaMemcpyDeviceToHost);
