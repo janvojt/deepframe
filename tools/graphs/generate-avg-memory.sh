@@ -14,9 +14,11 @@ TEST_OUT="$basedir/../../$TESTDIR"
 if [ -z "$FILE_SUFFIX" ]; then
 	TITLE_MAIN="Memory requirements for 4-bit sum with 1 hidden layer"
 	TITLE_X="hidden neurons"
+	BOXWIDTH=30
 else
 	TITLE_MAIN="Memory requirements for 4-bit sum"
 	TITLE_X="hidden layers"
+	BOXWIDTH=.4
 fi
 
 gnuplot << GNUEOS
@@ -35,13 +37,17 @@ set grid
 
 set style data points
 
+set boxwidth $BOXWIDTH
+
 # compute linear fit
 set fit quiet
 set fit logfile '/dev/null'
 f(x) = m * x + b
 fit f(x) "$TEST_OUT/memory-avg$FILE_SUFFIX.csv" using 1:2 via m,b
 
-plot "$TEST_OUT/memory-avg$FILE_SUFFIX.csv" using 1:2 title "Measured" \
-     ,f(x) title "Linear fit"
+plot "$TEST_OUT/memory-avg$FILE_SUFFIX.csv" \
+	using 1:4:3:5:6 with candlesticks title "Measured" whiskerbars \
+	, '' using 1:2:2:2:2 with candlesticks fs solid title "Mean" \
+	,f(x) title "Linear fit"
 
 GNUEOS
