@@ -37,7 +37,7 @@ TESTOBJECTS=$(patsubst $(TESTDIR)/%,$(TESTBUILDDIR)/%,$(TESTSOURCES:.$(SRCEXT)=.
 TSOBJECTS=$(TESTOBJECTS) $(LINKEDOBJECTS)
 
 CFLAGS=-g -std=c++11 # -Wall
-LIB=-llog4cpp -lgtest -lgtest_main -lcurand #-pthread
+LIB=-llog4cpp -lgtest -lgtest_main -lcurand -lcublas #-pthread
 INC= #-Iinclude
 TESTINC=-Isrc/main
 

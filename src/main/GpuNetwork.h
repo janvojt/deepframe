@@ -10,7 +10,9 @@
 
 #include "Network.h"
 #include "GpuConfiguration.h"
+
 #include <cuda_runtime.h>
+#include <cublas_v2.h>
 
 class GpuNetwork : public Network {
 public:
@@ -63,9 +65,6 @@ private:
     void initBias();
     // Generates random numbers on GPU and copies them to host memory.
     void randomizeDoublesOnGpu(double **hMemory, double **dMemory, int size);
-    // Clears neuron potentials in given layer
-    // (zero index represents input layer).
-    void clearLayer(double *inputPtr, int layerSize);
     // Applies bias to layer l (if it is enabled, otherwise does nothing).
     void applyBias(int l);
     // Total number of neurons in the network.
@@ -78,6 +77,7 @@ private:
     double *dWeights;
     // Array representing input coming into each neuron.
     double *inputs;
+    double *dInputs;
     // Network bias. Each neuron has its own bias.
     double *bias;
     double *dBias;
@@ -93,6 +93,8 @@ private:
     int *weightsUpToLayerCache;
     // Holds GPU configuration and device properties.
     GpuConfiguration *gpuConf;
+    // CUDA Basic Linear Algebra Subprograms handle.
+    cublasHandle_t cublasHandle;
 };
 
 #endif	/* GPUNETWORK_H */
