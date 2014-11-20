@@ -190,7 +190,7 @@ void GpuNetwork::run() {
         int nNextLayer = conf->getNeurons(l+1);
         
         // clear the following layer just before working with it
-        clearLayer<<<1,nNextLayer>>>(dInputs + nThisLayer);
+        clearLayer<<<1,nNextLayer>>>(dInputsPtr + nThisLayer);
         
         //note cuBLAS is column primary!
         //need to transpose the order
@@ -227,7 +227,9 @@ void GpuNetwork::run() {
 }
 
 void GpuNetwork::setInput(double* input) {
-    std::memcpy(inputs, input, sizeof(double) * getInputNeurons());
+    int memSize = sizeof(double) * getInputNeurons();
+    std::memcpy(inputs, input, memSize);
+    checkCudaErrors(cudaMemcpy(dInputs, input, memSize, cudaMemcpyHostToDevice));
 }
 
 double *GpuNetwork::getInput() {
