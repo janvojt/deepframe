@@ -32,6 +32,7 @@
 #include "FunctionCache.h"
 #include "CpuNetwork.h"
 #include "GpuConfiguration.h"
+#include "CpuBackpropagationLearner.h"
 
 // getopts constants
 #define no_argument 0
@@ -314,18 +315,27 @@ int main(int argc, char *argv[]) {
     
     // construct the network
     Network *net;
+    BackpropagationLearner *bp;
     if (conf->useGpu) {
         GpuConfiguration *gpuConf = createGpuConfiguration(conf);
         if (gpuConf == NULL) {
             LOG()->warn("Falling back to CPU as GPU probe was unsuccessful.");
-            net = new CpuNetwork(netConf);
+            CpuNetwork *cpuNet = new CpuNetwork(netConf);
+            bp = new CpuBackpropagationLearner(cpuNet);
+            net = cpuNet;
         } else {
             LOG()->info("Using GPU for computing the network runs.");
-            net = new GpuNetwork(netConf, gpuConf);
+            GpuNetwork *gpuNet = new GpuNetwork(netConf, gpuConf);
+            cerr << "GPU support for BP learner not yet implemented." << endl;
+            exit(EXIT_FAILURE);
+//            bp = new GpuBackpropagationLearner(gpuNet);
+//            net = gpuNet;
         }
     } else {
         LOG()->info("Using CPU for computing the network runs.");
-        net = new CpuNetwork(netConf);
+        CpuNetwork *cpuNet = new CpuNetwork(netConf);
+        bp = new CpuBackpropagationLearner(cpuNet);
+        net = cpuNet;
     }
     
     // Prepare test dataset.
@@ -358,7 +368,6 @@ int main(int argc, char *argv[]) {
         delete p;
     }
     
-    BackpropagationLearner *bp = new BackpropagationLearner(net);
     bp->setTargetMse(conf->mse);
     bp->setErrorComputer(new MseErrorComputer());
     bp->setEpochLimit(conf->maxEpochs);
