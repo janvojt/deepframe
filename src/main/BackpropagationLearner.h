@@ -65,6 +65,8 @@ protected:
     bool useBias;
     // Computes the Mean Square Error for the output produced in network.
     ErrorComputer *errorComputer;
+    // Number of layers in network.
+    int noLayers;
 private:
     // Validates input dataset provided for learning against neural network.
     void validate(LabeledDataset *dataset);

@@ -27,7 +27,6 @@ void CpuBackpropagationLearner::allocateCache() {
 
 void CpuBackpropagationLearner::computeOutputGradients(double *expectedOutput) {
     int on = network->getOutputNeurons();
-    int noLayers = network->getConfiguration()->getLayers();
     double *localGradient = localGradients + network->getInputOffset(noLayers-1);
     double *output = network->getOutput();
     void (*daf) (double*,double*,int) = network->getConfiguration()->dActivationFnc;
@@ -43,7 +42,7 @@ void CpuBackpropagationLearner::computeOutputGradients(double *expectedOutput) {
 }
 
 void CpuBackpropagationLearner::computeWeightDifferentials() {
-    int noLayers = network->getConfiguration()->getLayers();
+    
     void (*daf) (double*,double*,int) = network->getConfiguration()->dActivationFnc;
     
     for (int l = noLayers-1; l>0; l--) {
@@ -95,7 +94,7 @@ void CpuBackpropagationLearner::computeWeightDifferentials() {
 }
 
 void CpuBackpropagationLearner::adjustWeights() {
-    int wc = network->getWeightsOffset(network->getConfiguration()->getLayers());
+    int wc = network->getWeightsOffset(noLayers);
     double *weights = network->getWeights();
     
     // we should skip the garbage in zero-layer weights

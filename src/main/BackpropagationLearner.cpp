@@ -24,6 +24,7 @@ BackpropagationLearner::BackpropagationLearner(Network *network) {
     targetMse = .0001;
     errorTotal = std::numeric_limits<double>::infinity();
     useBias = network->getConfiguration()->getBias();
+    noLayers = network->getConfiguration()->getLayers();
 }
 
 BackpropagationLearner::BackpropagationLearner(const BackpropagationLearner &orig) {
