@@ -30,6 +30,8 @@ public:
     // Values at the beginning actually belong to the input layer. Activation
     // function is not applied to these, therefore they can represent original
     // network input.
+    virtual double *getInputs() = 0;
+    // Returns pointer to the beginning of the input array.
     virtual double *getInput() = 0;
     // Returns pointer to the beginning of the output array.
     virtual double *getOutput() = 0;

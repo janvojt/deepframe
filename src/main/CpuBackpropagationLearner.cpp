@@ -33,7 +33,7 @@ void CpuBackpropagationLearner::computeOutputGradients(double *expectedOutput) {
     
     // compute local gradients
     double *dv = new double[network->getOutputNeurons()];
-    daf(network->getInput() + network->getInputOffset(noLayers-1), dv, on);
+    daf(network->getInputs() + network->getInputOffset(noLayers-1), dv, on);
     for (int i = 0; i<on; i++) {
         localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
 //        LOG()->debug("Local gradient for neuron [%d, %d] : %f.", noLayers, i, localGradient[i]);
@@ -54,7 +54,7 @@ void CpuBackpropagationLearner::computeWeightDifferentials() {
         double *nextLocalGradient = localGradients + nextInputIdx;
         int thisNeurons = network->getConfiguration()->getNeurons(l-1);
         int nextNeurons = network->getConfiguration()->getNeurons(l);
-        double *thisInput = network->getInput() + thisInputIdx;
+        double *thisInput = network->getInputs() + thisInputIdx;
         double *weights = network->getWeights() + network->getWeightsOffset(l);
         
         

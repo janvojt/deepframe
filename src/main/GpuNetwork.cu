@@ -14,17 +14,6 @@
 #include <cstring>
 #include <string>
 #include <stdlib.h>
-#include <iostream>
-
-#define checkCudaErrors(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
-{
-   if (code != cudaSuccess) 
-   {
-      fprintf(stderr,"GPUassert: %s %s(%d)\n", cudaGetErrorString(code), file, line);
-      if (abort) exit(code);
-   }
-}
 
 // Sets all the values in an array to zeros.
 __global__
@@ -230,6 +219,10 @@ void GpuNetwork::setInput(double* input) {
     int memSize = sizeof(double) * getInputNeurons();
     std::memcpy(inputs, input, memSize);
     checkCudaErrors(cudaMemcpy(dInputs, input, memSize, cudaMemcpyHostToDevice));
+}
+
+double *GpuNetwork::getInputs() {
+    return inputs;
 }
 
 double *GpuNetwork::getInput() {

@@ -125,6 +125,10 @@ void CpuNetwork::setInput(double* input) {
     std::memcpy(inputs, input, sizeof(double) * getInputNeurons());
 }
 
+double *CpuNetwork::getInputs() {
+    return inputs;
+}
+
 double *CpuNetwork::getInput() {
     return inputs;
 }

@@ -13,6 +13,17 @@
 
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <iostream>
+
+#define checkCudaErrors(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess) 
+   {
+      fprintf(stderr,"GPUassert: %s %s(%d)\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
 
 class GpuNetwork : public Network {
 public:
@@ -29,6 +40,8 @@ public:
     // Values at the beginning actually belong to the input layer. Activation
     // function is not applied to these, therefore they can represent original
     // network input.
+    double *getInputs();
+    // Returns pointer to the beginning of the input array.
     double *getInput();
     // Returns pointer to the beginning of the output array.
     double *getOutput();
