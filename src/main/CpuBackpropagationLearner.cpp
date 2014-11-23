@@ -26,15 +26,15 @@ void CpuBackpropagationLearner::allocateCache() {
 }
 
 void CpuBackpropagationLearner::computeOutputGradients(double *expectedOutput) {
-    int on = network->getOutputNeurons();
+    int oNeurons = network->getOutputNeurons();
     double *localGradient = localGradients + network->getInputOffset(noLayers-1);
-    double *output = network->getOutput();
+    double *output = network->getInputs() + network->getInputOffset(noLayers-1);
     void (*daf) (double*,double*,int) = network->getConfiguration()->dActivationFnc;
     
     // compute local gradients
-    double *dv = new double[network->getOutputNeurons()];
-    daf(network->getInputs() + network->getInputOffset(noLayers-1), dv, on);
-    for (int i = 0; i<on; i++) {
+    double *dv = new double[oNeurons];
+    daf(output, dv, oNeurons);
+    for (int i = 0; i<oNeurons; i++) {
         localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
 //        LOG()->debug("Local gradient for neuron [%d, %d] : %f.", noLayers, i, localGradient[i]);
     }

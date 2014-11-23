@@ -134,7 +134,7 @@ double *CpuNetwork::getInput() {
 }
 
 double *CpuNetwork::getOutput() {
-    return inputs + noNeurons - getOutputNeurons();
+    return inputs + neuronsUpToLayerCache[noLayers-1];
 }
 
 int CpuNetwork::getAllNeurons() {
