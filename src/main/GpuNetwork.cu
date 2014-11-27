@@ -137,6 +137,8 @@ void GpuNetwork::initInputs() {
     // allocate device memory
     int memSize = sizeof(double) * noNeurons;
     checkCudaErrors(cudaMalloc(&dInputs, memSize));
+//    // initialize allocated device memory
+//    checkCudaErrors(cudaMemset(dInputs, 0, memSize));
 }
 
 void GpuNetwork::initBias() {
@@ -169,9 +171,9 @@ void GpuNetwork::run() {
     // copy weights and bias from host to device
     int wMemSize = sizeof(double) * getWeightsOffset(noLayers);
     int iMemSize = sizeof(double) * getInputOffset(noLayers);
-    checkCudaErrors(cudaMemcpy(dInputs, inputs, iMemSize, cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(dWeights, weights, wMemSize, cudaMemcpyHostToDevice));
-    if (conf->getBias()) checkCudaErrors(cudaMemcpy(dBias, bias, iMemSize, cudaMemcpyHostToDevice));
+//    checkCudaErrors(cudaMemcpy(dInputs, inputs, iMemSize, cudaMemcpyHostToDevice));
+//    checkCudaErrors(cudaMemcpy(dWeights, weights, wMemSize, cudaMemcpyHostToDevice));
+//    if (conf->getBias()) checkCudaErrors(cudaMemcpy(dBias, bias, iMemSize, cudaMemcpyHostToDevice));
     
     // for every layer
     for (int l = 0; l<noLayers-1; l++) {
@@ -206,23 +208,31 @@ void GpuNetwork::run() {
     }
     
     // copy all weights and bias back to host
-    checkCudaErrors(cudaMemcpy(inputs, dInputs, iMemSize, cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaMemcpy(weights, dWeights, wMemSize, cudaMemcpyDeviceToHost));
-    if (conf->getBias()) checkCudaErrors(cudaMemcpy(bias, dBias, iMemSize, cudaMemcpyDeviceToHost));
+//    checkCudaErrors(cudaMemcpy(inputs, dInputs, iMemSize, cudaMemcpyDeviceToHost));
+//    checkCudaErrors(cudaMemcpy(weights, dWeights, wMemSize, cudaMemcpyDeviceToHost));
+//    if (conf->getBias()) checkCudaErrors(cudaMemcpy(bias, dBias, iMemSize, cudaMemcpyDeviceToHost));
     
 //    compare('w', dWeights, weights, getWeightsOffset(noLayers));
 //    if (conf->getBias()) compare('b', dBias, bias, getInputOffset(noLayers));
 //    compare('i', dInputs, inputs, getInputOffset(noLayers));
+    
+    // copy network output to host
+    double *dOutput = dInputs + getInputOffset(noLayers-1);
+    double *output = inputs + getInputOffset(noLayers-1);
+    int oMemSize = getOutputNeurons() * sizeof(double);
+    checkCudaErrors(cudaMemcpy(output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
 }
 
 void GpuNetwork::setInput(double* input) {
+//    compare('b', dInputs, inputs, getInputOffset(noLayers));
     int memSize = sizeof(double) * getInputNeurons();
     std::memcpy(inputs, input, memSize);
     checkCudaErrors(cudaMemcpy(dInputs, input, memSize, cudaMemcpyHostToDevice));
+//    compare('a', dInputs, inputs, getInputOffset(noLayers));
 }
 
 double *GpuNetwork::getInputs() {
-    return inputs;
+    return dInputs;
 }
 
 double *GpuNetwork::getInput() {
@@ -242,7 +252,7 @@ int GpuNetwork::getInputOffset(int layer) {
 }
 
 double* GpuNetwork::getWeights() {
-    return weights;
+    return dWeights;
 }
 
 int GpuNetwork::getWeightsOffset(int layer) {
@@ -250,5 +260,5 @@ int GpuNetwork::getWeightsOffset(int layer) {
 }
 
 double* GpuNetwork::getBiasValues() {
-    return bias;
+    return dBias;
 }

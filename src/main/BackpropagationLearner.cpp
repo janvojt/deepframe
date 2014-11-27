@@ -31,18 +31,15 @@ BackpropagationLearner::BackpropagationLearner(const BackpropagationLearner &ori
 }
 
 BackpropagationLearner::~BackpropagationLearner() {
-    delete[] weightDiffs;
-    delete[] localGradients;
-    if (useBias) delete[] biasDiff;
     if (errorComputer != NULL) delete errorComputer;
 }
 
 void BackpropagationLearner::train(LabeledDataset *dataset) {
-    double mse;
+    double mse = 0;
     LOG()->info("Started training with limits of %d epochs and target MSE of %f.", epochLimit, targetMse);
     do {
         epochCounter++;
-//        LOG()->debug("Starting epoch %d.", epochCounter);
+        LOG()->debug("Starting epoch %d.", epochCounter);
         dataset->reset();
         int datasetSize = 0;
         mse = 0;
@@ -50,12 +47,14 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
             datasetSize++;
             double *pattern = dataset->next();
             double *expOutput = pattern + dataset->getInputDimension();
+        LOG()->debug("Starting forward phase for dataset %d in epoch %d.", datasetSize, epochCounter);
             doForwardPhase(pattern);
+        LOG()->debug("Starting backward phase for dataset %d in epoch %d.", datasetSize, epochCounter);
             doBackwardPhase(expOutput);
             mse += errorComputer->compute(network, expOutput);
         }
         mse = mse / datasetSize;
-//        LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
+        LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
     } while (mse > targetMse && epochCounter < epochLimit);
     
     if (mse <= targetMse) {
