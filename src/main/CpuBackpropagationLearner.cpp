@@ -6,15 +6,9 @@
  */
 
 #include "CpuBackpropagationLearner.h"
+#include "util/cpuDebugHelpers.h"
 
 #include <iostream>
-
-void dumpHostArray(char flag, double *array, int size) {
-    for (int i = 0; i<size; i++) {
-        std::cout << "Dumping host " << flag << ": " << array[i] << std::endl;
-    }
-    std::cout << "-----------------------------" << std::endl;
-}
 
 CpuBackpropagationLearner::CpuBackpropagationLearner(CpuNetwork *network) : BackpropagationLearner(network) {
     allocateCache();
@@ -76,14 +70,14 @@ void CpuBackpropagationLearner::computeWeightDifferentials() {
                 wdiff[i*nextNeurons+j] = -learningRate * nextLocalGradient[j] * thisInput[i];
             }
         }
-//        dumpHostArray('w', wdiff, thisNeurons * nextNeurons);
+        dumpHostArray('w', wdiff, thisNeurons * nextNeurons);
         
         // COMPUTE BIAS DERIVATIVES for layer l+1
         if (useBias) {
             for (int i = 0; i<nextNeurons; i++) {
                 biasDiff[nextInputIdx + i] = -learningRate * nextLocalGradient[i];
             }
-//            dumpHostArray('b', &biasDiff[nextInputIdx], nextNeurons);
+            dumpHostArray('c', &biasDiff[nextInputIdx], nextNeurons);
         }
         
         // COMPUTE LOCAL GRADIENTS for layer l
@@ -101,7 +95,7 @@ void CpuBackpropagationLearner::computeWeightDifferentials() {
             thisLocalGradient[i] = sumNextGradient * thisInputDerivatives[i];
 //            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
         }
-//        dumpHostArray('l', thisLocalGradient, thisNeurons * nextNeurons);
+        dumpHostArray('l', thisLocalGradient, thisNeurons * nextNeurons);
         
         delete[] thisInputDerivatives;
     }
@@ -115,7 +109,7 @@ void CpuBackpropagationLearner::adjustWeights() {
     for(int i = network->getWeightsOffset(1); i<wc; i++) {
         weights[i] += weightDiffs[i];
     }
-//    dumpHostArray('w', weights, network->getWeightsOffset(noLayers));
+    dumpHostArray('w', weights, network->getWeightsOffset(noLayers));
 }
 
 void CpuBackpropagationLearner::adjustBias() {
@@ -124,4 +118,5 @@ void CpuBackpropagationLearner::adjustBias() {
     for (int i = 0; i<noNeurons; i++) {
         bias[i] += biasDiff[i];
     }
+    dumpHostArray('b', bias, network->getWeightsOffset(noLayers));
 }

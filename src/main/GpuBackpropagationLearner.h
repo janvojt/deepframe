@@ -10,7 +10,6 @@
 
 #include "BackpropagationLearner.h"
 #include "GpuNetwork.h"
-#include <cuda_runtime.h>
 
 
 class GpuBackpropagationLearner : public BackpropagationLearner {

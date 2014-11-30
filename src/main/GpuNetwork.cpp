@@ -11,55 +11,12 @@
 #include "log4cpp/Category.hh"
 #include "GpuConfiguration.h"
 
+#include "util/cudaHelpers.h"
+#include "util/cudaDebugHelpers.h"
+
 #include <cstring>
 #include <string>
 #include <stdlib.h>
-
-// Sets all the values in an array to zeros.
-__global__
-void clearLayer(double *valuePtr) {
-    valuePtr[threadIdx.x] = 0;
-}
-
-// Compute A = A + B.
-__global__
-void sumArrays(double *dA, double *dB) {
-    dA[threadIdx.x] += dB[threadIdx.x];
-}
-
-// Compute the sigmoid function on device array.
-__global__
-void computeSigmoid(double *dArray) {
-	int i = threadIdx.x;
-	dArray[i] = 1.0 / (1.0 + exp(-dArray[i]));
-}
-
-// TODO temporary function for debugging purposes
-void compare(char flag, double *dm, double *hm, int size) {
-    double *hdm = new double[size];
-    checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(double) * size, cudaMemcpyDeviceToHost));
-    
-    for (int i = 0; i<size; i++) {
-        if (hdm[i] == hm[i]) {
-            std::cout << "Comparing " << flag << ": " << hdm[i] << " =?= " << hm[i] << std::endl;
-        } else {
-            std::cout << "Comparing " << flag << ": " << hdm[i] << " =?= " << hm[i] << "        !!!!!!!!!!!!!!!!!!" << std::endl;
-        }
-    }
-    
-    delete[] hdm;
-}
-// TODO temporary function for debugging purposes
-void printArray(char flag, double *dm, int size) {
-    double *hdm = new double[size];
-    checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(double) * size, cudaMemcpyDeviceToHost));
-    
-    for (int i = 0; i<size; i++) {
-        std::cout << "Printing device memory " << flag << ": " << hdm[i] << std::endl;
-    }
-    
-    delete[] hdm;
-}
 
 GpuNetwork::GpuNetwork(NetworkConfiguration *netConf, GpuConfiguration *gpuConf) : Network(netConf) {
     cublasCreate(&cublasHandle);
@@ -181,7 +138,7 @@ void GpuNetwork::run() {
         int nNextLayer = conf->getNeurons(l+1);
         
         // clear the following layer just before working with it
-        clearLayer<<<1,nNextLayer>>>(dInputsPtr + nThisLayer);
+        k_clearLayer(dim3(1), dim3(nNextLayer), dInputsPtr + nThisLayer);
         
         //note cuBLAS is column primary!
         //need to transpose the order
@@ -195,12 +152,12 @@ void GpuNetwork::run() {
                 &beta, dInputsPtr+nThisLayer, 1);
 
         if (conf->getBias()) {
-            sumArrays<<<1,nThisLayer>>>(dInputsPtr + nThisLayer, dBiasPtr + nThisLayer);
+            k_sumArrays(dim3(1), dim3(nThisLayer), dInputsPtr + nThisLayer, dBiasPtr + nThisLayer);
             dBiasPtr += nThisLayer;
         }
         
 //        printArray('a', dInputsPtr + nThisLayer, nNextLayer);
-        computeSigmoid<<<1,nNextLayer>>>(dInputsPtr + nThisLayer);
+        k_computeSigmoid(dim3(1), dim3(nNextLayer), dInputsPtr + nThisLayer);
 //        printArray('b', dInputsPtr + nThisLayer, nNextLayer);
 	
         dWeightsPtr += nThisLayer * nNextLayer;
