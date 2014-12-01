@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include "util/cpuDebugHelpers.h"
+
 CpuNetwork::CpuNetwork(NetworkConfiguration *conf) : Network(conf) {
     initWeights();
     initInputs();

@@ -15,6 +15,7 @@
 
 
 void dumpDeviceArray(char flag, double *dm, int size) {
+    std::cout << flag << std::endl;
     double *hdm = new double[size];
     checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(double) * size, cudaMemcpyDeviceToHost));
     

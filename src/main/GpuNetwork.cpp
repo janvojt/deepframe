@@ -152,13 +152,11 @@ void GpuNetwork::run() {
                 &beta, dInputsPtr+nThisLayer, 1);
 
         if (conf->getBias()) {
-            k_sumArrays(dim3(1), dim3(nThisLayer), dInputsPtr + nThisLayer, dBiasPtr + nThisLayer);
+            k_sumArrays(dim3(1), dim3(nNextLayer), dInputsPtr + nThisLayer, dBiasPtr + nThisLayer);
             dBiasPtr += nThisLayer;
         }
         
-//        printArray('a', dInputsPtr + nThisLayer, nNextLayer);
         k_computeSigmoid(dim3(1), dim3(nNextLayer), dInputsPtr + nThisLayer);
-//        printArray('b', dInputsPtr + nThisLayer, nNextLayer);
 	
         dWeightsPtr += nThisLayer * nNextLayer;
         dInputsPtr += nThisLayer;

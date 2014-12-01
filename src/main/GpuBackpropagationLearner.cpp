@@ -77,21 +77,21 @@ void GpuBackpropagationLearner::computeWeightDifferentials() {
                 learningRate, nextNeurons,
                 thisInput, nextLocalGradient, wdiff);
     
-        dumpDeviceArray('w', wdiff, thisNeurons * nextNeurons);
+//        dumpDeviceArray('w', wdiff, thisNeurons * nextNeurons);
         
         // COMPUTE BIAS DERIVATIVES for layer l+1
         if (useBias) {
             k_computeBiasDerivative(dim3(1), dim3(nextNeurons),
                     learningRate, nextLocalGradient,
                     &biasDiff[nextInputIdx]);
-            dumpDeviceArray('c', &biasDiff[nextInputIdx], nextNeurons);
+//            dumpDeviceArray('c', &biasDiff[nextInputIdx], nextNeurons);
         }
         
         // COMPUTE LOCAL GRADIENTS for layer l
         k_computeHiddenLocalGradient(dim3(1), dim3(thisNeurons),
                 nextNeurons, thisInput, weights,
                 thisLocalGradient, nextLocalGradient);
-        dumpDeviceArray('l', thisLocalGradient, thisNeurons + nextNeurons);
+//        dumpDeviceArray('l', thisLocalGradient, thisNeurons + nextNeurons);
     }
 }
 
@@ -107,7 +107,7 @@ void GpuBackpropagationLearner::adjustWeights() {
     
     k_sumVectors(dim3(1), dim3(wc), weights + trim, weightDiffs + trim);
     
-    dumpDeviceArray('w', weights, network->getWeightsOffset(noLayers));
+//    dumpDeviceArray('w', weights, network->getWeightsOffset(noLayers));
 }
 
 void GpuBackpropagationLearner::adjustBias() {
@@ -119,6 +119,6 @@ void GpuBackpropagationLearner::adjustBias() {
     
     k_sumVectors(dim3(1), dim3(noNeurons), bias, biasDiff);
     
-    dumpDeviceArray('b', network->getInputs(), network->getInputOffset(noLayers));
+//    dumpDeviceArray('b', network->getInputs(), network->getInputOffset(noLayers));
 }
 
