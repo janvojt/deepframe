@@ -95,7 +95,7 @@ void CpuBackpropagationLearner::computeWeightDifferentials() {
             thisLocalGradient[i] = sumNextGradient * thisInputDerivatives[i];
 //            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
         }
-        dumpHostArray('l', thisLocalGradient, thisNeurons * nextNeurons);
+        dumpHostArray('l', thisLocalGradient, thisNeurons + nextNeurons);
         
         delete[] thisInputDerivatives;
     }
