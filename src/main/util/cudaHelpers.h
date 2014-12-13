@@ -24,7 +24,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 // Computes matrix sum A = A + B.
 void k_sumVectors(double *dA, double *dB, int elements);
 
-void k_computeOutputLocalGradient(const dim3 bs, const dim3 ts, double *actualOutput, double *expectedOutput, double *localGradient);
+void k_computeOutputLocalGradient(double *actualOutput, double *expectedOutput, double *localGradient, int elements);
 
 void k_computeTotalDerivative(const dim3 bs, const dim3 ts, 
         double learningRate, int nextNeurons,

@@ -49,7 +49,7 @@ void GpuBackpropagationLearner::computeOutputGradients(double *expectedOutput) {
     double *dExpOutput;
     checkCudaErrors(cudaMalloc(&dExpOutput, memSize));
     checkCudaErrors(cudaMemcpy(dExpOutput, expectedOutput, memSize, cudaMemcpyHostToDevice));
-    k_computeOutputLocalGradient(dim3(1), dim3(oNeurons), output, dExpOutput, localGradient);
+    k_computeOutputLocalGradient(output, dExpOutput, localGradient, oNeurons);
     
 //    dumpDeviceArray('o', localGradients, network->getInputOffset(noLayers));
 }

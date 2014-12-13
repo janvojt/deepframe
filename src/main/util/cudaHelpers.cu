@@ -25,13 +25,17 @@ void k_sumVectors(double *dA, double *dB, int elements) {
 }
 
 __global__
-void computeOutputLocalGradient(double *actualOutput, double *expectedOutput, double *localGradient) {
-    int i = threadIdx.x;
-    double derivative = actualOutput[i] * (1.0 - actualOutput[i]);
-    localGradient[i] = (actualOutput[i] - expectedOutput[i]) * derivative;
+void computeOutputLocalGradient(double *actualOutput, double *expectedOutput, double *localGradient, int elements) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < elements) {
+        double derivative = actualOutput[i] * (1.0 - actualOutput[i]);
+        localGradient[i] = (actualOutput[i] - expectedOutput[i]) * derivative;
+    }
 }
-void k_computeOutputLocalGradient(const dim3 bs, const dim3 ts, double *actualOutput, double *expectedOutput, double *localGradient) {
-    computeOutputLocalGradient<<<bs,ts>>>(actualOutput, expectedOutput, localGradient);
+void k_computeOutputLocalGradient(double *actualOutput, double *expectedOutput, double *localGradient, int elements) {
+    int ts = 512;
+    int bs = (elements + ts - 1) / ts;
+    computeOutputLocalGradient<<<bs,ts>>>(actualOutput, expectedOutput, localGradient, elements);
 }
 
 __global__
