@@ -11,11 +11,17 @@
 
 
 __global__
-void sumVectors(double *dA, double *dB) {
-    dA[threadIdx.x] += dB[threadIdx.x];
+void sumVectors(double *dA, double *dB, int elements) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if (i < elements) {
+        dA[i] += dB[i];
+    }
 }
-void k_sumVectors(const dim3 bs, const dim3 ts, double *dA, double *dB) {
-    sumVectors<<<bs,ts>>>(dA, dB);
+void k_sumVectors(double *dA, double *dB, int elements) {
+    int ts = 512;
+    int bs = (elements + ts - 1) / ts;
+    sumVectors<<<bs,ts>>>(dA, dB, elements);
 }
 
 __global__

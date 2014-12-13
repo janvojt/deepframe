@@ -105,7 +105,7 @@ void GpuBackpropagationLearner::adjustWeights() {
     int wc = network->getWeightsOffset(noLayers) - trim;
     double *weights = network->getWeights();
     
-    k_sumVectors(dim3(1), dim3(wc), weights + trim, weightDiffs + trim);
+    k_sumVectors(weights + trim, weightDiffs + trim, wc);
     
 //    dumpDeviceArray('w', weights, network->getWeightsOffset(noLayers));
 }
@@ -117,7 +117,7 @@ void GpuBackpropagationLearner::adjustBias() {
     double *bias = network->getBiasValues();
     int noNeurons = network->getAllNeurons();
     
-    k_sumVectors(dim3(1), dim3(noNeurons), bias, biasDiff);
+    k_sumVectors(bias, biasDiff, noNeurons);
     
 //    dumpDeviceArray('b', network->getInputs(), network->getInputOffset(noLayers));
 }
