@@ -157,7 +157,7 @@ void GpuNetwork::run() {
             dBiasPtr += nThisLayer;
         }
         
-        k_computeSigmoid(dim3(1), dim3(nNextLayer), dInputsPtr + nThisLayer);
+        k_computeSigmoid(dInputsPtr + nThisLayer, nNextLayer);
 	
         dWeightsPtr += nThisLayer * nNextLayer;
         dInputsPtr += nThisLayer;

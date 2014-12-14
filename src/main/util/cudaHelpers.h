@@ -40,7 +40,7 @@ void k_computeHiddenLocalGradient(
         double *thisLocalGradient, double *nextLocalGradient);
 
 // Compute the sigmoid function on device array.
-void k_computeSigmoid(const dim3 bs, const dim3 ts, double *dArray);
+void k_computeSigmoid(double *dArray, int elements);
 
 #endif	/* CUDAHELPERS_H */
 

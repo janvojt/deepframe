@@ -13,7 +13,6 @@
 __global__
 void sumVectors(double *dA, double *dB, int elements) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
-
     if (i < elements) {
         dA[i] += dB[i];
     }
@@ -23,6 +22,7 @@ void k_sumVectors(double *dA, double *dB, int elements) {
     int bs = (elements + ts - 1) / ts;
     sumVectors<<<bs,ts>>>(dA, dB, elements);
 }
+
 
 __global__
 void computeOutputLocalGradient(double *actualOutput, double *expectedOutput, double *localGradient, int elements) {
@@ -37,6 +37,7 @@ void k_computeOutputLocalGradient(double *actualOutput, double *expectedOutput, 
     int bs = (elements + ts - 1) / ts;
     computeOutputLocalGradient<<<bs,ts>>>(actualOutput, expectedOutput, localGradient, elements);
 }
+
 
 __global__
 void computeTotalDerivative(double learningRate, int nextNeurons,
@@ -60,6 +61,7 @@ void k_computeTotalDerivative(int thisNeurons, int nextNeurons,
         weightDiffs, thisNeurons * nextNeurons);
 }
 
+
 __global__
 void computeBiasDerivative(double learningRate, double *nextLocalGradient,
         double *biasDiffs, int elements) {
@@ -76,6 +78,7 @@ void k_computeBiasDerivative(
     computeBiasDerivative<<<bs,ts>>>(learningRate, nextLocalGradient,
         biasDiffs, elements);
 }
+
 
 __global__
 void computeHiddenLocalGradient(
@@ -110,10 +113,14 @@ void k_computeHiddenLocalGradient(
 
 
 __global__
-void computeSigmoid(double *dArray) {
-	int i = threadIdx.x;
-	dArray[i] = 1.0 / (1.0 + exp(-dArray[i]));
+void computeSigmoid(double *dArray, int elements) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < elements) {
+        dArray[i] = 1.0 / (1.0 + exp(-dArray[i]));
+    }
 }
-void k_computeSigmoid(const dim3 bs, const dim3 ts, double *dArray) {
-	computeSigmoid<<<bs,ts>>>(dArray);
+void k_computeSigmoid(double *dArray, int elements) {
+    int ts = 512;
+    int bs = (elements + ts - 1) / ts;
+	computeSigmoid<<<bs,ts>>>(dArray, elements);
 }
