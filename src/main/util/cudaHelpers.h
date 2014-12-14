@@ -39,9 +39,6 @@ void k_computeHiddenLocalGradient(
         double *thisInput, double *weights,
         double *thisLocalGradient, double *nextLocalGradient);
 
-// Sets all the values in an array to zeros.
-void k_clearLayer(const dim3 bs, const dim3 ts, double *valuePtr);
-
 // Compute A = A + B.
 void k_sumArrays(const dim3 bs, const dim3 ts, double *dA, double *dB);
 

@@ -110,15 +110,6 @@ void k_computeHiddenLocalGradient(
 
 
 __global__
-void clearLayer(double *valuePtr) {
-    valuePtr[threadIdx.x] = 0;
-}
-void k_clearLayer(const dim3 bs, const dim3 ts, double *valuePtr) {
-    clearLayer<<<bs,ts>>>(valuePtr);
-}
-
-
-__global__
 void sumArrays(double *dA, double *dB) {
     dA[threadIdx.x] += dB[threadIdx.x];
 }

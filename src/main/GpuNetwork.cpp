@@ -138,7 +138,8 @@ void GpuNetwork::run() {
         int nNextLayer = conf->getNeurons(l+1);
         
         // clear the following layer just before working with it
-        k_clearLayer(dim3(1), dim3(nNextLayer), dInputsPtr + nThisLayer);
+        int nextLayerSize = nNextLayer * sizeof(double);
+        cudaMemset(dInputsPtr + nThisLayer, 0.0, nextLayerSize);
         
         //note cuBLAS is column primary!
         //need to transpose the order
