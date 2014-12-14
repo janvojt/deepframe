@@ -30,9 +30,9 @@ void k_computeTotalDerivative(int thisNeurons, int nextNeurons,
         double learningRate, double *thisInput, double *nextLocalGradient,
         double *weightDiffs);
 
-void k_computeBiasDerivative(const dim3 bs, const dim3 ts, 
+void k_computeBiasDerivative(
         double learningRate, double *nextLocalGradient,
-        double *biasDiffs);
+        double *biasDiffs, int elements);
 
 void k_computeHiddenLocalGradient(const dim3 bs, const dim3 ts, 
         int nextNeurons,

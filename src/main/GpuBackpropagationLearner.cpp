@@ -81,9 +81,10 @@ void GpuBackpropagationLearner::computeWeightDifferentials() {
         
         // COMPUTE BIAS DERIVATIVES for layer l+1
         if (useBias) {
-            k_computeBiasDerivative(dim3(1), dim3(nextNeurons),
+            k_computeBiasDerivative(
                     learningRate, nextLocalGradient,
-                    &biasDiff[nextInputIdx]);
+                    &biasDiff[nextInputIdx],
+                    nextNeurons);
 //            dumpDeviceArray('c', &biasDiff[nextInputIdx], nextNeurons);
         }
         

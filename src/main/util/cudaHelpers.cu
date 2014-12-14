@@ -62,17 +62,19 @@ void k_computeTotalDerivative(int thisNeurons, int nextNeurons,
 
 __global__
 void computeBiasDerivative(double learningRate, double *nextLocalGradient,
-        double *biasDiffs) {
-    
-    int i = threadIdx.x;
-    
-    biasDiffs[i] = -learningRate * nextLocalGradient[i];
+        double *biasDiffs, int elements) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < elements) {
+        biasDiffs[i] = -learningRate * nextLocalGradient[i];
+    }
 }
-void k_computeBiasDerivative(const dim3 bs, const dim3 ts, 
+void k_computeBiasDerivative(
         double learningRate, double *nextLocalGradient,
-        double *biasDiffs) {
+        double *biasDiffs, int elements) {
+    int ts = 512;
+    int bs = (elements + ts - 1) / ts;
     computeBiasDerivative<<<bs,ts>>>(learningRate, nextLocalGradient,
-        biasDiffs);
+        biasDiffs, elements);
 }
 
 __global__
