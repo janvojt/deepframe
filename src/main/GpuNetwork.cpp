@@ -153,7 +153,7 @@ void GpuNetwork::run() {
                 &beta, dInputsPtr+nThisLayer, 1);
 
         if (conf->getBias()) {
-            k_sumArrays(dim3(1), dim3(nNextLayer), dInputsPtr + nThisLayer, dBiasPtr + nThisLayer);
+            k_sumVectors(dInputsPtr + nThisLayer, dBiasPtr + nThisLayer, nNextLayer);
             dBiasPtr += nThisLayer;
         }
         

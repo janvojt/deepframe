@@ -110,15 +110,6 @@ void k_computeHiddenLocalGradient(
 
 
 __global__
-void sumArrays(double *dA, double *dB) {
-    dA[threadIdx.x] += dB[threadIdx.x];
-}
-void k_sumArrays(const dim3 bs, const dim3 ts, double *dA, double *dB) {
-    sumArrays<<<bs,ts>>>(dA, dB);
-}
-
-
-__global__
 void computeSigmoid(double *dArray) {
 	int i = threadIdx.x;
 	dArray[i] = 1.0 / (1.0 + exp(-dArray[i]));

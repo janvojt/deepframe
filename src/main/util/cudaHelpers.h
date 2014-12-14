@@ -39,9 +39,6 @@ void k_computeHiddenLocalGradient(
         double *thisInput, double *weights,
         double *thisLocalGradient, double *nextLocalGradient);
 
-// Compute A = A + B.
-void k_sumArrays(const dim3 bs, const dim3 ts, double *dA, double *dB);
-
 // Compute the sigmoid function on device array.
 void k_computeSigmoid(const dim3 bs, const dim3 ts, double *dArray);
 
