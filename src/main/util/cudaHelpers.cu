@@ -78,25 +78,32 @@ void k_computeBiasDerivative(
 }
 
 __global__
-void computeHiddenLocalGradient(int nextNeurons,
+void computeHiddenLocalGradient(
+        int thisNeurons, int nextNeurons,
         double *thisInput, double *weights,
         double *thisLocalGradient, double *nextLocalGradient) {
     
-    int i = threadIdx.x;
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
     
-    double derivative = thisInput[i] * (1.0 - thisInput[i]);
-    
-    double sumNextGradient = 0;
-    for (int j = 0; j<nextNeurons; j++) {
-        sumNextGradient += nextLocalGradient[j] * weights[i * nextNeurons + j];
+    if (i < thisNeurons) {
+        double derivative = thisInput[i] * (1.0 - thisInput[i]);
+
+        double sumNextGradient = 0;
+        for (int j = 0; j<nextNeurons; j++) {
+            sumNextGradient += nextLocalGradient[j] * weights[i * nextNeurons + j];
+        }
+        thisLocalGradient[i] = sumNextGradient * derivative;
     }
-    thisLocalGradient[i] = sumNextGradient * derivative;
 }
-void k_computeHiddenLocalGradient(const dim3 bs, const dim3 ts, int nextNeurons,
+void k_computeHiddenLocalGradient(
+        int thisNeurons, int nextNeurons,
         double *thisInput, double *weights,
         double *thisLocalGradient, double *nextLocalGradient) {
     
-    computeHiddenLocalGradient<<<bs,ts>>>(nextNeurons,
+    int ts = 512;
+    int bs = (thisNeurons + ts - 1) / ts;
+    computeHiddenLocalGradient<<<bs,ts>>>(
+        thisNeurons, nextNeurons,
         thisInput, weights,
         thisLocalGradient, nextLocalGradient);
 }

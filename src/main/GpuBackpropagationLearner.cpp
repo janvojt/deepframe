@@ -89,8 +89,9 @@ void GpuBackpropagationLearner::computeWeightDifferentials() {
         }
         
         // COMPUTE LOCAL GRADIENTS for layer l
-        k_computeHiddenLocalGradient(dim3(1), dim3(thisNeurons),
-                nextNeurons, thisInput, weights,
+        k_computeHiddenLocalGradient(
+                thisNeurons, nextNeurons,
+                thisInput, weights,
                 thisLocalGradient, nextLocalGradient);
 //        dumpDeviceArray('l', thisLocalGradient, thisNeurons + nextNeurons);
     }
