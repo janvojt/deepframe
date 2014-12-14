@@ -73,9 +73,9 @@ void GpuBackpropagationLearner::computeWeightDifferentials() {
         
         // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
         double *wdiff = weightDiffs + network->getWeightsOffset(l);
-        k_computeTotalDerivative(dim3(1), dim3(thisNeurons, nextNeurons),
-                learningRate, nextNeurons,
-                thisInput, nextLocalGradient, wdiff);
+        k_computeTotalDerivative(thisNeurons, nextNeurons,
+                learningRate, thisInput, nextLocalGradient,
+                wdiff);
     
 //        dumpDeviceArray('w', wdiff, thisNeurons * nextNeurons);
         

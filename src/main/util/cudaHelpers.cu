@@ -41,20 +41,23 @@ void k_computeOutputLocalGradient(double *actualOutput, double *expectedOutput, 
 __global__
 void computeTotalDerivative(double learningRate, int nextNeurons,
         double *thisInput, double *nextLocalGradient,
-        double *weightDiffs) {
+        double *weightDiffs, int elements) {
     
-    int i = threadIdx.x;
-    int j = threadIdx.y;
-
-    weightDiffs[i*nextNeurons+j] = -learningRate * nextLocalGradient[j] * thisInput[i];
+    int idx = blockDim.x * blockIdx.x + threadIdx.x;
+    if (idx < elements) {
+        int i = idx / nextNeurons;
+        int j = idx % nextNeurons;
+        weightDiffs[i*nextNeurons+j] = -learningRate * nextLocalGradient[j] * thisInput[i];
+    }
 }
-void k_computeTotalDerivative(const dim3 bs, const dim3 ts, 
-        double learningRate, int nextNeurons,
-        double *thisInput, double *nextLocalGradient,
+void k_computeTotalDerivative(int thisNeurons, int nextNeurons, 
+        double learningRate, double *thisInput, double *nextLocalGradient,
         double *weightDiffs) {
+    int ts = 512;
+    int bs = (thisNeurons * nextNeurons + ts - 1) / ts;
     computeTotalDerivative<<<bs,ts>>>(learningRate, nextNeurons,
         thisInput, nextLocalGradient,
-        weightDiffs);
+        weightDiffs, thisNeurons * nextNeurons);
 }
 
 __global__

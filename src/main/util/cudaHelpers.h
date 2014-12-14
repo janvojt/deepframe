@@ -26,9 +26,8 @@ void k_sumVectors(double *dA, double *dB, int elements);
 
 void k_computeOutputLocalGradient(double *actualOutput, double *expectedOutput, double *localGradient, int elements);
 
-void k_computeTotalDerivative(const dim3 bs, const dim3 ts, 
-        double learningRate, int nextNeurons,
-        double *thisInput, double *nextLocalGradient,
+void k_computeTotalDerivative(int thisNeurons, int nextNeurons, 
+        double learningRate, double *thisInput, double *nextLocalGradient,
         double *weightDiffs);
 
 void k_computeBiasDerivative(const dim3 bs, const dim3 ts, 
