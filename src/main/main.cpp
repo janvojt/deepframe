@@ -14,26 +14,26 @@
 #include <cuda_runtime.h>
 #include <curand.h>
 
-#include "log/LoggerFactory.h"
-#include "log4cpp/Category.hh"
-#include "log4cpp/Priority.hh"
-
-#include "NetworkConfiguration.h"
-#include "Network.h"
-#include "CpuNetwork.h"
-#include "GpuNetwork.h"
-#include "activationFunctions.h"
-#include "BackpropagationLearner.h"
-#include "MseErrorComputer.h"
+#include "net/NetworkConfiguration.h"
+#include "net/Network.h"
+#include "net/CpuNetwork.h"
+#include "net/GpuNetwork.h"
+#include "net/CpuNetwork.h"
+#include "net/GpuConfiguration.h"
 #include "ds/SimpleLabeledDataset.h"
 #include "ds/LabeledDatasetParser.h"
 #include "ds/SimpleInputDataset.h"
 #include "ds/InputDatasetParser.h"
+#include "bp/BackpropagationLearner.h"
+#include "bp/CpuBackpropagationLearner.h"
+#include "bp/GpuBackpropagationLearner.h"
+#include "err/MseErrorComputer.h"
+#include "activationFunctions.h"
 #include "FunctionCache.h"
-#include "CpuNetwork.h"
-#include "GpuConfiguration.h"
-#include "CpuBackpropagationLearner.h"
-#include "GpuBackpropagationLearner.h"
+
+#include "log/LoggerFactory.h"
+#include "log4cpp/Category.hh"
+#include "log4cpp/Priority.hh"
 
 // getopts constants
 #define no_argument 0

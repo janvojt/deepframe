@@ -6,7 +6,7 @@
  */
 
 #include "CpuBackpropagationLearner.h"
-#include "util/cpuDebugHelpers.h"
+#include "../util/cpuDebugHelpers.h"
 
 #include <iostream>
 

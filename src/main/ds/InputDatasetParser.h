@@ -9,7 +9,7 @@
 #define	INPUTDATASETPARSER_H
 
 #include "InputDataset.h"
-#include "../NetworkConfiguration.h"
+#include "../net/NetworkConfiguration.h"
 
 class InputDatasetParser {
 public:

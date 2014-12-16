@@ -9,6 +9,7 @@
 #define	MSEERRORCOMPUTER_H
 
 #include "ErrorComputer.h"
+#include "../net/Network.h"
 
 class MseErrorComputer : public ErrorComputer {
 public:

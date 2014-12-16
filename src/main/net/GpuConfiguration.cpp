@@ -7,7 +7,7 @@
 
 #include "GpuConfiguration.h"
 
-#include "log/LoggerFactory.h"
+#include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 GpuConfiguration::GpuConfiguration() {

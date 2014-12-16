@@ -8,7 +8,7 @@
 #ifndef ERRORCOMPUTER_H
 #define	ERRORCOMPUTER_H
 
-#include "Network.h"
+#include "../net/Network.h"
 
 class ErrorComputer {
 public:

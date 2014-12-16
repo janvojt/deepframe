@@ -7,16 +7,17 @@
 
 #include "GpuNetwork.h"
 
-#include "log/LoggerFactory.h"
-#include "log4cpp/Category.hh"
-#include "GpuConfiguration.h"
-
-#include "util/cudaHelpers.h"
-#include "util/cudaDebugHelpers.h"
-
 #include <cstring>
 #include <string>
 #include <stdlib.h>
+
+#include "GpuConfiguration.h"
+
+#include "../util/cudaHelpers.h"
+#include "../util/cudaDebugHelpers.h"
+
+#include "../log/LoggerFactory.h"
+#include "log4cpp/Category.hh"
 
 GpuNetwork::GpuNetwork(NetworkConfiguration *netConf, GpuConfiguration *gpuConf) : Network(netConf) {
     cublasCreate(&cublasHandle);

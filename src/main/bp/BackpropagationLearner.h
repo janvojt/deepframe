@@ -8,9 +8,9 @@
 #ifndef BACKPROPAGATIONLEARNER_H
 #define	BACKPROPAGATIONLEARNER_H
 
-#include "Network.h"
-#include "ds/LabeledDataset.h"
-#include "ErrorComputer.h"
+#include "../net/Network.h"
+#include "../ds/LabeledDataset.h"
+#include "../err/ErrorComputer.h"
 
 class BackpropagationLearner {
 public:

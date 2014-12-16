@@ -1,23 +1,22 @@
 /* 
- * File:   CpuBackpropagationLearner.h
+ * File:   GpuBackpropagationLearner.h
  * Author: janvojt
  *
- * Created on November 20, 2014, 9:40 PM
+ * Created on November 20, 2014, 11:23 PM
  */
 
-#ifndef CPUBACKPROPAGATIONLEARNER_H
-#define	CPUBACKPROPAGATIONLEARNER_H
+#ifndef GPUBACKPROPAGATIONLEARNER_H
+#define	GPUBACKPROPAGATIONLEARNER_H
 
 #include "BackpropagationLearner.h"
-#include "CpuNetwork.h"
+#include "../net/GpuNetwork.h"
 
 
-class CpuBackpropagationLearner : public BackpropagationLearner {
+class GpuBackpropagationLearner : public BackpropagationLearner {
 public:
-    CpuBackpropagationLearner(CpuNetwork *network);
-    CpuBackpropagationLearner(const CpuBackpropagationLearner& orig);
-    virtual ~CpuBackpropagationLearner();
-protected:
+    GpuBackpropagationLearner(GpuNetwork * network);
+    GpuBackpropagationLearner(const GpuBackpropagationLearner& orig);
+    virtual ~GpuBackpropagationLearner();
     // Computes local gradients for output neurons.
     void computeOutputGradients(double *expectedOutput);
     // Computes total differential for all weights
@@ -30,8 +29,7 @@ protected:
 private:
     // Allocates memory for caching variables.
     void allocateCache();
-
 };
 
-#endif	/* CPUBACKPROPAGATIONLEARNER_H */
+#endif	/* GPUBACKPROPAGATIONLEARNER_H */
 

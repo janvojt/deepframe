@@ -1,8 +1,8 @@
 
 #include "gtest/gtest.h"
-#include "Network.h"
-#include "CpuNetwork.h"
-#include "NetworkConfiguration.h"
+#include "net/Network.h"
+#include "net/CpuNetwork.h"
+#include "net/NetworkConfiguration.h"
 #include "activationFunctions.h"
 
 

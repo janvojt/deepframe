@@ -6,14 +6,13 @@
  */
 
 #include "BackpropagationLearner.h"
-#include "Network.h"
-#include "ds/LabeledDataset.h"
+
 #include <cstring>
 #include <string>
 #include <stdexcept>
 #include <limits>
 
-#include "log/LoggerFactory.h"
+#include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 BackpropagationLearner::BackpropagationLearner(Network *network) {

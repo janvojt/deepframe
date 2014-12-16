@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdexcept>
 
-#include "log/LoggerFactory.h"
+#include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 using namespace std;

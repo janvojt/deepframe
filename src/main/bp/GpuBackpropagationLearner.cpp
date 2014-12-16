@@ -6,10 +6,10 @@
  */
 
 #include "GpuBackpropagationLearner.h"
-#include "util/cudaHelpers.h"
-#include "util/cudaDebugHelpers.h"
+#include "../util/cudaHelpers.h"
+#include "../util/cudaDebugHelpers.h"
 
-#include "log/LoggerFactory.h"
+#include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 
