@@ -32,6 +32,7 @@ GpuNetwork::GpuNetwork(const GpuNetwork& orig) : Network(orig) {
 GpuNetwork::~GpuNetwork() {
     cublasDestroy(cublasHandle);
     cudaFree(dWeights);
+    cudaFree(dInputs);
     cudaFree(dBias);
     delete[] weightsUpToLayerCache;
     delete[] neuronsUpToLayerCache;
