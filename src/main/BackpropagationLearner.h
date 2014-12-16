@@ -9,9 +9,8 @@
 #define	BACKPROPAGATIONLEARNER_H
 
 #include "Network.h"
-#include "LabeledDataset.h"
+#include "ds/LabeledDataset.h"
 #include "ErrorComputer.h"
-#include <limits>
 
 class BackpropagationLearner {
 public:
@@ -26,9 +25,7 @@ public:
     void setErrorComputer(ErrorComputer *errorComputer);
     // Set target Mean Square Error. When it is reached, training is finished.
     void setTargetMse(double mse);
-private:
-    // Validates input dataset provided for learning against neural network.
-    void validate(LabeledDataset *dataset);
+protected:
     // We cannot reuse the forward run from the network's implementation,
     // because additional meta results need to be kept for backpropagation
     // algorithm.
@@ -36,18 +33,16 @@ private:
     // Backward phase optimizing network parameters in the learning process.
     void doBackwardPhase(double *expectedOutput);
     // Computes local gradients for output neurons.
-    void computeOutputGradients(double *expectedOutput);
+    virtual void computeOutputGradients(double *expectedOutput) = 0;
     // Computes total differential for all weights
     // and local gradients for hidden neurons.
-    void computeWeightDifferentials();
+    virtual void computeWeightDifferentials() = 0;
     // Adjust network weights according to computed total differentials.
-    void adjustWeights();
+    virtual void adjustWeights() = 0;
     // Adjust network bias according to computed total differentials.
-    void adjustBias();
-    // Helper method for clearing network layer.
-    void clearLayer(double *inputPtr, int layerSize);
+    virtual void adjustBias() = 0;
     // Allocates memory for caching variables.
-    void allocateCache();
+    virtual void allocateCache() = 0;
     // ANN itself. Used for accessing configuration and tuning weights.
     Network *network;
     // Learning parameter. Intended to be decreasing during learning process.
@@ -70,6 +65,11 @@ private:
     bool useBias;
     // Computes the Mean Square Error for the output produced in network.
     ErrorComputer *errorComputer;
+    // Number of layers in network.
+    int noLayers;
+private:
+    // Validates input dataset provided for learning against neural network.
+    void validate(LabeledDataset *dataset);
 };
 
 #endif	/* BACKPROPAGATIONLEARNER_H */

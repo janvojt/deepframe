@@ -10,20 +10,30 @@
 #include <iostream>
 #include <getopt.h>
 #include <unistd.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <curand.h>
 
-#include "NetworkConfiguration.h"
-#include "Network.h"
-#include "activationFunctions.h"
-#include "BackpropagationLearner.h"
-#include "SimpleLabeledDataset.h"
-#include "MseErrorComputer.h"
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 #include "log4cpp/Priority.hh"
-#include "LabeledDatasetParser.h"
-#include "SimpleInputDataset.h"
-#include "InputDatasetParser.h"
+
+#include "NetworkConfiguration.h"
+#include "Network.h"
+#include "CpuNetwork.h"
+#include "GpuNetwork.h"
+#include "activationFunctions.h"
+#include "BackpropagationLearner.h"
+#include "MseErrorComputer.h"
+#include "ds/SimpleLabeledDataset.h"
+#include "ds/LabeledDatasetParser.h"
+#include "ds/SimpleInputDataset.h"
+#include "ds/InputDatasetParser.h"
 #include "FunctionCache.h"
+#include "CpuNetwork.h"
+#include "GpuConfiguration.h"
+#include "CpuBackpropagationLearner.h"
+#include "GpuBackpropagationLearner.h"
 
 // getopts constants
 #define no_argument 0
@@ -46,12 +56,13 @@ const struct option optsLong[] = {
     {"test", required_argument, 0, 't'},
     {"random-seed", required_argument, 0, 'r'},
     {"use-cache", optional_argument, 0, 'u'},
+    {"use-gpu", no_argument, 0, 'p'},
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:i:l:s:t:r:u:d";
+const char* optsList = "hbe:m:f:g:i:l:s:t:r:u:pd";
 
 /* Application configuration. */
 struct config {
@@ -77,6 +88,8 @@ struct config {
     bool useFunctionCache = false;
     /* Number of samples for function cache lookup table. */
     int functionSamples = 10000;
+    /* Whether to use parallel implementation using GPU. */
+    bool useGpu = false;
 };
 
 /* Random seed generator. */
@@ -160,6 +173,7 @@ void printHelp() {
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << "-u <value>  --use-cache <value>   Enables use of precomputed lookup table for activation function. Value specifies the size of the table." << endl;
+    cout << "-p          --use-gpu             Enables parallel implementation of the network using CUDA GPU API." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -237,10 +251,12 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 'u' :
                 conf->useFunctionCache = true;
-                int i = atoi(optarg);
                 if (optarg != NULL) {
                     conf->functionSamples = atoi(optarg);
                 }
+                break;
+            case 'p' :
+                conf->useGpu = true;
                 break;
         }
     }
@@ -251,10 +267,6 @@ config* processOptions(int argc, char *argv[]) {
 /* Factory for network configuration. */
 NetworkConfiguration *createNetworkConfiguration(config* conf) {
     
-    // Seed random generator before initializing weights.
-    if (conf->seed == 0) {
-        conf->seed = getSeed();
-    }
     LOG()->info("Seeding random generator with %d.", conf->seed);
     srand(conf->seed);
     
@@ -274,13 +286,61 @@ NetworkConfiguration *createNetworkConfiguration(config* conf) {
     return netConf;
 }
 
+/* Factory for GPU configuration. */
+GpuConfiguration *createGpuConfiguration(config *conf) {
+    
+    GpuConfiguration *gpuConf = GpuConfiguration::create();
+    curandGenerator_t *gen = new curandGenerator_t;
+    curandCreateGenerator(gen, CURAND_RNG_PSEUDO_DEFAULT);
+    curandSetPseudoRandomGeneratorSeed(*gen, conf->seed);
+    gpuConf->setRandGen(gen);
+    
+    // TODO remove
+    srand(conf->seed);
+    
+    return gpuConf;
+}
+
 /* Entry point of the application. */
 int main(int argc, char *argv[]) {
     
+    // prepare network configuration
     config* conf = processOptions(argc, argv);
+
+    // Configure seed for random generator.
+    if (conf->seed == 0) {
+        conf->seed = getSeed();
+    }
     
     NetworkConfiguration *netConf = createNetworkConfiguration(conf);
-    Network *net = new Network(netConf);
+    
+    // construct the network
+    Network *net;
+    BackpropagationLearner *bp;
+    
+    // probe GPU and fetch specs
+    GpuConfiguration *gpuConf;
+    bool useGpu = conf->useGpu;
+    if (useGpu) {
+        gpuConf = createGpuConfiguration(conf);
+        if (gpuConf == NULL) {
+            LOG()->warn("Falling back to CPU as GPU probe was unsuccessful.");
+            useGpu = false;
+        }
+    }
+    
+    // setup correct implementations for network and BP learner
+    if (useGpu) {
+        LOG()->info("Using GPU for computing the network runs.");
+        GpuNetwork *gpuNet = new GpuNetwork(netConf, gpuConf);
+        bp = new GpuBackpropagationLearner(gpuNet);
+        net = gpuNet;
+    } else {
+        LOG()->info("Using CPU for computing the network runs.");
+        CpuNetwork *cpuNet = new CpuNetwork(netConf);
+        bp = new CpuBackpropagationLearner(cpuNet);
+        net = cpuNet;
+    }
     
     // Prepare test dataset.
     InputDataset *tds;
@@ -312,7 +372,6 @@ int main(int argc, char *argv[]) {
         delete p;
     }
     
-    BackpropagationLearner *bp = new BackpropagationLearner(net);
     bp->setTargetMse(conf->mse);
     bp->setErrorComputer(new MseErrorComputer());
     bp->setEpochLimit(conf->maxEpochs);

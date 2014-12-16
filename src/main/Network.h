@@ -21,81 +21,53 @@ public:
     // Returns the network configuration.
     NetworkConfiguration *getConfiguration();
     // run the network
-    void run();
+    virtual void run() = 0;
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
-    void setInput(double *input);
+    virtual void setInput(double *input) = 0;
     // Returns pointer to the beginning of array with neuron inputs
     // (potential after being processed by the activation function).
     // Values at the beginning actually belong to the input layer. Activation
     // function is not applied to these, therefore they can represent original
     // network input.
-    double *getInput();
+    virtual double *getInputs() = 0;
+    // Returns pointer to the beginning of the input array.
+    virtual double *getInput() = 0;
     // Returns pointer to the beginning of the output array.
-    double *getOutput();
+    virtual double *getOutput() = 0;
     // Returns number of neurons in the first layer.
     int getInputNeurons();
     // Returns number of neurons in the last layer.
     int getOutputNeurons();
     // Returns the total number of all neurons in all layers.
-    int getAllNeurons();
+    virtual int getAllNeurons() = 0;
     // Returns offset where the input array index starts for given layer.
     // Input layer has index zero, while its returned offset is also zero.
     // Therefore offset for the output layer can be obtained by asking
     // for layer index (number of layers - 1). Furthermore, if number of layers
     // is provided as layer index, number of all neurons in the net is returned.
-    int getInputOffset(int layer);
+    virtual int getInputOffset(int layer) = 0;
     // Returns pointer to the beginning of array with weights
     // for neuron connections.
     // This internal network property is usually needed
     // in the process of learning.
-    double *getWeights();
+    virtual double *getWeights() = 0;
     // Returns offset where the weight array index starts for weights between
     // given layer and the preceeding layer.
     // Input layer has index zero, while its returned offset is also zero.
     // Therefore offset for the output layer can be obtained by asking
     // for layer index (number of layers - 1). Furthermore, if number of layers
     // is provided as layer index, number of all weights in the net is returned.
-    int getWeightsOffset(int layer);
+    virtual int getWeightsOffset(int layer) = 0;
     // Provides access to bias values,
     // so the learning algorithm may adjust them.
-    double *getBiasValues();
-private:
-    // initialize network weights
-    void initWeights();
-    // initialize input potential for neurons
-    void initInputs();
-    // Initialize bias if it is enabled in network configuration.
-    void initBias();
-    // Clears neuron potentials in given layer
-    // (zero index represents input layer).
-    void clearLayer(double *inputPtr, int layerSize);
-    // Applies bias to layer l (if it is enabled, otherwise does nothing).
-    void applyBias(int l);
-    // Number of layers in the network.
-    int noLayers;
-    // Total number of neurons in the network.
-    int noNeurons;
+    virtual double *getBiasValues() = 0;
+protected:
     // Network configuration.
     NetworkConfiguration *conf;
-    // Array representing weights for each edge in the neural network.
-    // The zero-layer weights are for edges coming into input neurons,
-    // therefore always initialized to 1.
-    double *weights;
-    // Array representing input coming into each neuron.
-    double *inputs;
-    // Network bias. Each neuron has its own bias.
-    double *bias;
-    // Cache of number of neurons up to the layer determined by the array index.
-    // Used for optimization of calculating indexes for inputs.
-    // Method returns zero neurons in zero-th layer.
-    int *neuronsUpToLayerCache;
-    // Cache of number of weights up to the layer determined by the array index.
-    // Used for optimization of calculating indexes for weights.
-    // Method returns number of input neurons for first layer.
-    // Method further returns number of weights between input and the first
-    // hidden layer for layer 2 (weights between first and second layer).
-    int *weightsUpToLayerCache;
+    // Number of layers in the network.
+    int noLayers;
+    
 };
 
 #endif	/* NETWORK_H */

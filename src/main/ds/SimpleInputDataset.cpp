@@ -7,7 +7,7 @@
 
 #include "SimpleInputDataset.h"
 #include <cstring>
-#include "log/LoggerFactory.h"
+#include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 SimpleInputDataset::SimpleInputDataset(int dimension, int size) {

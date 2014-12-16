@@ -7,10 +7,11 @@
 
 #include "BackpropagationLearner.h"
 #include "Network.h"
-#include "LabeledDataset.h"
+#include "ds/LabeledDataset.h"
 #include <cstring>
 #include <string>
 #include <stdexcept>
+#include <limits>
 
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -22,33 +23,23 @@ BackpropagationLearner::BackpropagationLearner(Network *network) {
     epochLimit = 1000000;
     targetMse = .0001;
     errorTotal = std::numeric_limits<double>::infinity();
-    allocateCache();
+    useBias = network->getConfiguration()->getBias();
+    noLayers = network->getConfiguration()->getLayers();
 }
 
 BackpropagationLearner::BackpropagationLearner(const BackpropagationLearner &orig) {
 }
 
 BackpropagationLearner::~BackpropagationLearner() {
-    delete[] weightDiffs;
-    delete[] localGradients;
-    if (useBias) delete[] biasDiff;
     if (errorComputer != NULL) delete errorComputer;
 }
 
-void BackpropagationLearner::allocateCache() {
-    weightDiffs = new double[network->getWeightsOffset(network->getConfiguration()->getLayers())];
-    localGradients = new double[network->getAllNeurons()];
-    
-    useBias = network->getConfiguration()->getBias();
-    biasDiff = useBias ? new double[network->getAllNeurons()] : NULL;
-}
-
 void BackpropagationLearner::train(LabeledDataset *dataset) {
-    double mse;
+    double mse = 0;
     LOG()->info("Started training with limits of %d epochs and target MSE of %f.", epochLimit, targetMse);
     do {
         epochCounter++;
-//        LOG()->debug("Starting epoch %d.", epochCounter);
+        LOG()->debug("Starting epoch %d.", epochCounter);
         dataset->reset();
         int datasetSize = 0;
         mse = 0;
@@ -56,12 +47,14 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
             datasetSize++;
             double *pattern = dataset->next();
             double *expOutput = pattern + dataset->getInputDimension();
+        LOG()->debug("Starting forward phase for dataset %d in epoch %d.", datasetSize, epochCounter);
             doForwardPhase(pattern);
+        LOG()->debug("Starting backward phase for dataset %d in epoch %d.", datasetSize, epochCounter);
             doBackwardPhase(expOutput);
             mse += errorComputer->compute(network, expOutput);
         }
         mse = mse / datasetSize;
-//        LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
+        LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
     } while (mse > targetMse && epochCounter < epochLimit);
     
     if (mse <= targetMse) {
@@ -83,97 +76,6 @@ void BackpropagationLearner::doBackwardPhase(double *expectedOutput) {
     if (network->getConfiguration()->getBias()) {
         adjustBias();
     }
-}
-
-void BackpropagationLearner::computeOutputGradients(double *expectedOutput) {
-    int on = network->getOutputNeurons();
-    int noLayers = network->getConfiguration()->getLayers();
-    double *localGradient = localGradients + network->getInputOffset(noLayers-1);
-    double *output = network->getOutput();
-    void (*daf) (double*,double*,int) = network->getConfiguration()->dActivationFnc;
-    
-    // compute local gradients
-    double *dv = new double[network->getOutputNeurons()];
-    daf(network->getInput() + network->getInputOffset(noLayers-1), dv, on);
-    for (int i = 0; i<on; i++) {
-        localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
-//        LOG()->debug("Local gradient for neuron [%d, %d] : %f.", noLayers, i, localGradient[i]);
-    }
-    delete[] dv;
-}
-
-void BackpropagationLearner::computeWeightDifferentials() {
-    int noLayers = network->getConfiguration()->getLayers();
-    void (*daf) (double*,double*,int) = network->getConfiguration()->dActivationFnc;
-    
-    for (int l = noLayers-1; l>0; l--) {
-        
-        // INITIALIZE HELPER VARIABLES
-        int thisInputIdx = network->getInputOffset(l-1);
-        double *thisLocalGradient = localGradients + thisInputIdx;
-        int nextInputIdx = network->getInputOffset(l);
-        double *nextLocalGradient = localGradients + nextInputIdx;
-        int thisNeurons = network->getConfiguration()->getNeurons(l-1);
-        int nextNeurons = network->getConfiguration()->getNeurons(l);
-        double *thisInput = network->getInput() + thisInputIdx;
-        double *weights = network->getWeights() + network->getWeightsOffset(l);
-        
-        
-        // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
-        double *wdiff = weightDiffs + network->getWeightsOffset(l);
-        for (int i = 0; i<thisNeurons; i++) {
-            for (int j = 0; j<nextNeurons; j++) {
-                wdiff[i*nextNeurons+j] = -learningRate * nextLocalGradient[j] * thisInput[i];
-            }
-        }
-        
-        // COMPUTE BIAS DERIVATIVES for layer l+1
-        if (useBias) {
-            for (int i = 0; i<nextNeurons; i++) {
-                biasDiff[nextInputIdx + i] = -learningRate * nextLocalGradient[i];
-            }
-        }
-        
-        // COMPUTE LOCAL GRADIENTS for layer l
-        
-        // compute derivatives of neuron inputs in layer l
-        double *thisInputDerivatives = new double[thisNeurons];
-        daf(thisInput, thisInputDerivatives, thisNeurons);
-        
-        // compute local gradients for layer l
-        for (int i = 0; i<thisNeurons; i++) {
-            double sumNextGradient = 0;
-            for (int j = 0; j<nextNeurons; j++) {
-                sumNextGradient += nextLocalGradient[j] * weights[i * nextNeurons + j];
-            }
-            thisLocalGradient[i] = sumNextGradient * thisInputDerivatives[i];
-//            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
-        }
-        
-        delete[] thisInputDerivatives;
-    }
-}
-
-void BackpropagationLearner::adjustWeights() {
-    int wc = network->getWeightsOffset(network->getConfiguration()->getLayers());
-    double *weights = network->getWeights();
-    
-    // we should skip the garbage in zero-layer weights
-    for(int i = network->getWeightsOffset(1); i<wc; i++) {
-        weights[i] += weightDiffs[i];
-    }
-}
-
-void BackpropagationLearner::adjustBias() {
-    double *bias = network->getBiasValues();
-    int noNeurons = network->getAllNeurons();
-    for (int i = 0; i<noNeurons; i++) {
-        bias[i] += biasDiff[i];
-    }
-}
-
-void BackpropagationLearner::clearLayer(double *inputPtr, int layerSize) {
-    std::fill_n(inputPtr, layerSize, 0);
 }
 
 void BackpropagationLearner::validate(LabeledDataset *dataset) {

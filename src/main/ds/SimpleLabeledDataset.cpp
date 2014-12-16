@@ -7,7 +7,7 @@
 
 #include "SimpleLabeledDataset.h"
 #include <cstring>
-#include "log/LoggerFactory.h"
+#include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 SimpleLabeledDataset::SimpleLabeledDataset(int inputDimension, int outputDimension, int size) {

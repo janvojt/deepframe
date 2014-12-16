@@ -1,6 +1,7 @@
 
 #include "gtest/gtest.h"
 #include "Network.h"
+#include "CpuNetwork.h"
 #include "NetworkConfiguration.h"
 #include "activationFunctions.h"
 
@@ -29,7 +30,7 @@ void setAllWeights(Network *net, double value) {
 
 // Test network neurons counters.
 TEST(Network, NeuronCounters) {
-    Network *net = new Network(createConf());
+    Network *net = new CpuNetwork(createConf());
     
     EXPECT_EQ(5, net->getAllNeurons());
     EXPECT_EQ(2, net->getInputNeurons());
@@ -38,7 +39,7 @@ TEST(Network, NeuronCounters) {
 
 // Test network input setup.
 TEST(Network, InputSetTest) {
-    Network *net = new Network(createConf());
+    Network *net = new CpuNetwork(createConf());
     
     double input[] = {.1, .1};
     net->setInput(input);
@@ -55,7 +56,7 @@ TEST(Network, SimpleRun) {
     conf->activationFnc = identityFunction;
     conf->dActivationFnc = dIdentityFunction;
     
-    Network *net = new Network(conf);
+    Network *net = new CpuNetwork(conf);
     setAllWeights(net, 1);
     
     double input[] = {0, 0};
@@ -91,7 +92,7 @@ TEST(Network, SimpleWeightTest) {
     conf->activationFnc = identityFunction;
     conf->dActivationFnc = dIdentityFunction;
     
-    Network *net = new Network(conf);
+    Network *net = new CpuNetwork(conf);
     setAllWeights(net, .5);
     
     double input[] = {0, 0};
@@ -121,7 +122,7 @@ TEST(Network, SimpleWeightTest) {
 
 // Test network weight offsets.
 TEST(Network, WeightsOffsetTest) {
-    Network *net = new Network(createConf());
+    Network *net = new CpuNetwork(createConf());
     
     EXPECT_EQ(0, net->getWeightsOffset(0));
     EXPECT_EQ(2, net->getWeightsOffset(1));
@@ -131,7 +132,7 @@ TEST(Network, WeightsOffsetTest) {
 
 // Test neuron input offsets.
 TEST(Network, NeuronInputOffsetTest) {
-    Network *net = new Network(createConf());
+    Network *net = new CpuNetwork(createConf());
     
     EXPECT_EQ(0, net->getInputOffset(0));
     EXPECT_EQ(2, net->getInputOffset(1));
