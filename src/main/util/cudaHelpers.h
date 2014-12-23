@@ -8,6 +8,7 @@
 #ifndef CUDAHELPERS_H
 #define	CUDAHELPERS_H
 
+#include <stdio.h>
 #include <cstdlib>
 #include <iostream>
 
@@ -16,7 +17,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 {
    if (code != cudaSuccess) 
    {
-      fprintf(stderr,"GPUassert: %s %s(%d)\n", cudaGetErrorString(code), file, line);
+      fprintf(stderr,"GPUassert: %s (%s:%d)\n", cudaGetErrorString(code), file, line);
       if (abort) exit(code);
    }
 }

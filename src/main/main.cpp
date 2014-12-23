@@ -290,6 +290,8 @@ NetworkConfiguration *createNetworkConfiguration(config* conf) {
 GpuConfiguration *createGpuConfiguration(config *conf) {
     
     GpuConfiguration *gpuConf = GpuConfiguration::create();
+    if (gpuConf == NULL) return NULL;
+    
     curandGenerator_t *gen = new curandGenerator_t;
     curandCreateGenerator(gen, CURAND_RNG_PSEUDO_DEFAULT);
     curandSetPseudoRandomGeneratorSeed(*gen, conf->seed);

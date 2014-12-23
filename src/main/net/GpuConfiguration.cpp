@@ -30,14 +30,14 @@ GpuConfiguration *GpuConfiguration::create() {
     error = cudaGetDevice(&devID);
 
     if (error != cudaSuccess) {
-        LOG()->error("cudaGetDevice returned error code %d, line(%d).", error, __LINE__);
+        LOG()->error("Call cudaGetDevice returned error code %d. (%s:%d)", error, __FILE__, __LINE__);
         return NULL;
     }
 
     error = cudaGetDeviceProperties(deviceProp, devID);
 
     if (error != cudaSuccess) {
-        LOG()->error("cudaGetDeviceProperties returned error code %d, line(%d)\n", error, __LINE__);
+        LOG()->error("Call cudaGetDeviceProperties returned error code %d. (%s:%d)\n", error, __FILE__, __LINE__);
         return NULL;
     }
 
