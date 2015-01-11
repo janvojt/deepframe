@@ -24,6 +24,7 @@
 #include "ds/LabeledDatasetParser.h"
 #include "ds/SimpleInputDataset.h"
 #include "ds/InputDatasetParser.h"
+#include "ds/LabeledMnistParser.h"
 #include "bp/BackpropagationLearner.h"
 #include "bp/CpuBackpropagationLearner.h"
 #include "bp/GpuBackpropagationLearner.h"
@@ -50,10 +51,10 @@ const struct option optsLong[] = {
     {"max-epochs", required_argument, 0, 'm'},
     {"func", required_argument, 0, 'f'},
     {"d-func", required_argument, 0, 'g'},
-    {"init", required_argument, 0, 'i'},
     {"lconf", required_argument, 0, 'l'},
     {"labels", required_argument, 0, 's'},
     {"test", required_argument, 0, 't'},
+    {"idx", no_argument, 0, 'i'},
     {"random-seed", required_argument, 0, 'r'},
     {"use-cache", optional_argument, 0, 'u'},
     {"use-gpu", no_argument, 0, 'p'},
@@ -62,7 +63,7 @@ const struct option optsLong[] = {
 };
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:i:l:s:t:r:u:pd";
+const char* optsList = "hbe:m:f:g:il:s:t:r:u:pd";
 
 /* Application configuration. */
 struct config {
@@ -78,6 +79,8 @@ struct config {
     char* labeledData = NULL;
     /* File path with test data. */
     char* testData = NULL;
+    /* Use IDX data format when parsing input files? */
+    bool useIdx = false;
     /* Seed for random generator. */
     int seed = 0;
     /* activation function */
@@ -171,6 +174,7 @@ void printHelp() {
     cout << "-l <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
+    cout << "-i          --idx                 Use IDX data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << "-u <value>  --use-cache <value>   Enables use of precomputed lookup table for activation function. Value specifies the size of the table." << endl;
     cout << "-p          --use-gpu             Enables parallel implementation of the network using CUDA GPU API." << endl;
@@ -217,6 +221,9 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 't' :
                 conf->testData = optarg;
+                break;
+            case 'i' :
+                conf->useIdx = true;
                 break;
             case 'r' :
                 conf->seed = atoi(optarg);
@@ -305,7 +312,7 @@ GpuConfiguration *createGpuConfiguration(config *conf) {
 
 /* Entry point of the application. */
 int main(int argc, char *argv[]) {
-    
+        
     // prepare network configuration
     config* conf = processOptions(argc, argv);
 
@@ -353,6 +360,10 @@ int main(int argc, char *argv[]) {
         d->addInput((const double[2]){1, 0});
         d->addInput((const double[2]){1, 1});
         tds = (InputDataset *) d;
+    } else if (conf->useIdx) {
+        LabeledMnistParser *p = new LabeledMnistParser();
+        tds = p->parse(conf->testData);
+        delete p;
     } else {
         InputDatasetParser *p = new InputDatasetParser(conf->testData, netConf);
         tds = p->parse();
@@ -368,6 +379,10 @@ int main(int argc, char *argv[]) {
     LabeledDataset *ds;
     if (conf->labeledData == NULL) {
         ds = createXorDataset();
+    } else if (conf->useIdx) {
+        LabeledMnistParser *p = new LabeledMnistParser();
+        ds = p->parse(conf->labeledData);
+        delete p;
     } else {
         LabeledDatasetParser *p = new LabeledDatasetParser(conf->labeledData, netConf);
         ds = p->parse();
