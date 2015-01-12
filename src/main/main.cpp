@@ -43,6 +43,12 @@
 
 using namespace std;
 
+/* Maximum array size to print on stdout. */
+const int MAX_PRINT_ARRAY_SIZE = 8;
+
+/* Application short options. */
+const char* optsList = "hbe:m:f:g:il:s:t:r:u:pd";
+
 /* Application long options. */
 const struct option optsLong[] = {
     {"help", no_argument, 0, 'h'},
@@ -61,9 +67,6 @@ const struct option optsLong[] = {
     {"debug", no_argument, 0, 'd'},
     {0, 0, 0, 0},
 };
-
-/* Application short options. */
-const char* optsList = "hbe:m:f:g:il:s:t:r:u:pd";
 
 /* Application configuration. */
 struct config {
@@ -142,11 +145,27 @@ void printSeperator() {
 
 /* Runs the given test dataset through given network and prints results. */
 void runTest(Network *net, InputDataset *ds) {
+    
     ds->reset();
-    while (ds->hasNext()) {
-        net->setInput(ds->next());
-        net->run();
-        printOutput(net);
+    if (ds->getInputDimension() <= MAX_PRINT_ARRAY_SIZE) {
+        while (ds->hasNext()) {
+            net->setInput(ds->next());
+            net->run();
+            printOutput(net);
+        }
+    } else {
+        LabeledDataset *lds = (LabeledDataset *) ds;
+        ErrorComputer *ec = new MseErrorComputer();
+        int i = 0;
+        while (lds->hasNext()) {
+            double *pattern = lds->next();
+            i++;
+            double *label = pattern + lds->getInputDimension();
+            net->setInput(pattern);
+            net->run();
+            double error = ec->compute(net, label);
+            cout << "Error for pattern " << i << " is " << error << endl;
+        }
     }
 }
 
