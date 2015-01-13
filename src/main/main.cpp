@@ -13,6 +13,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
+#include <typeinfo>
 
 #include "net/NetworkConfiguration.h"
 #include "net/Network.h"
@@ -110,8 +111,7 @@ unsigned getSeed(void)
   return seed;
 }
 
-
-void printOutput(Network *net) {
+void printInput(Network *net) {
     
     // print input
     cout << "[ ";
@@ -122,9 +122,10 @@ void printOutput(Network *net) {
         cout << ", " << *in;
         in++;
     }
-    cout << " ] -> ";
-    
-    // print output
+    cout << " ]";
+}
+
+void printOutput(Network *net) {
     cout << "[ ";
     double *out = net->getOutput();
     int oNeurons = net->getOutputNeurons();
@@ -134,7 +135,14 @@ void printOutput(Network *net) {
         cout << ", " << *out;
         out++;
     }
-    cout << " ]" << endl;
+    cout << " ]";
+}
+
+void printInout(Network *net) {
+    printInput(net);
+    cout << " -> ";
+    printOutput(net);
+    cout << endl;
 }
 
 void printSeperator() {
@@ -142,6 +150,8 @@ void printSeperator() {
     cout << "################################################################################" << endl;
     cout << endl;
 }
+
+const SimpleLabeledDataset *LABELED_DATASET_CLASS = new SimpleLabeledDataset(0,0,0);
 
 /* Runs the given test dataset through given network and prints results. */
 void runTest(Network *net, InputDataset *ds) {
@@ -151,7 +161,7 @@ void runTest(Network *net, InputDataset *ds) {
         while (ds->hasNext()) {
             net->setInput(ds->next());
             net->run();
-            printOutput(net);
+            printInout(net);
         }
     } else {
         LabeledDataset *lds = (LabeledDataset *) ds;
@@ -163,8 +173,16 @@ void runTest(Network *net, InputDataset *ds) {
             double *label = pattern + lds->getInputDimension();
             net->setInput(pattern);
             net->run();
-            double error = ec->compute(net, label);
-            cout << "Error for pattern " << i << " is " << error << endl;
+            if (typeid(*ds)==typeid(*LABELED_DATASET_CLASS)) {
+                double error = ec->compute(net, label);
+                cout << "Output for pattern " << i << ": ";
+                printOutput(net);
+                cout << ", MSE error: " << error << endl;
+            } else {
+                cout << "Output for pattern " << i << ": ";
+                printOutput(net);
+                cout << "." << endl;
+            }
         }
     }
 }
@@ -329,6 +347,44 @@ GpuConfiguration *createGpuConfiguration(config *conf) {
     return gpuConf;
 }
 
+void printImage(int x, int y, double *arr) {
+    for (int i = 0; i<x; i++) {
+        char sep = ' ';
+        cout << sep;
+        for (int j = 0; j<y; j++) {
+            double d = arr[i*x+j];
+            if (d<.5) {
+                cout << " ";
+            } else if (d<.9) {
+                cout << "0";
+            } else {
+                cout << "#";
+            }
+        }
+        cout << endl;
+    }
+}
+
+void printImageLabels(LabeledDataset *lds) {
+    int i = 0;
+    lds->reset();
+    while (lds->hasNext()) {
+        double* x = lds->next();
+        printImage(28, 28, x);
+        cout << endl;
+        char sep = ' ';
+        int dim = lds->getOutputDimension();
+        cout << ++i << ":";
+        for (int j = 0; j<dim; j++) {
+            cout << sep << x[lds->getInputDimension() + j];
+            sep = ',';
+        }
+        cout << "." << endl;
+        cout << endl;
+        cout << endl;
+    }
+}
+
 /* Entry point of the application. */
 int main(int argc, char *argv[]) {
         
@@ -382,6 +438,8 @@ int main(int argc, char *argv[]) {
     } else if (conf->useIdx) {
         LabeledMnistParser *p = new LabeledMnistParser();
         tds = p->parse(conf->testData);
+//        printImageLabels(ds);
+//        return 0;
         delete p;
     } else {
         InputDatasetParser *p = new InputDatasetParser(conf->testData, netConf);
