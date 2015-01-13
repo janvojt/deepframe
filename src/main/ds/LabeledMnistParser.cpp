@@ -91,6 +91,7 @@ LabeledDataset* LabeledMnistParser::parse(char *filePath) {
         fill_n(out, LABEL_CLASSES, 0);
         if (*pLabels < LABEL_CLASSES) {
             out[*pLabels] = 1.0;
+            pLabels++;
         }
         
         // assign to dataset
