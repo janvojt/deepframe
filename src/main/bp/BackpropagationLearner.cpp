@@ -53,7 +53,7 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
             mse += errorComputer->compute(network, expOutput);
         }
         mse = mse / datasetSize;
-        LOG()->debug("Finished epoch %d with MSE: %f.", epochCounter, mse);
+        LOG()->info("Finished epoch %d with MSE: %f.", epochCounter, mse);
     } while (mse > targetMse && epochCounter < epochLimit);
     
     if (mse <= targetMse) {
