@@ -42,15 +42,3 @@ void compare(char flag, double *dm, double *hm, int size) {
     
     delete[] hdm;
 }
-
-
-void printArray(char flag, double *dm, int size) {
-    double *hdm = new double[size];
-    checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(double) * size, cudaMemcpyDeviceToHost));
-    
-    for (int i = 0; i<size; i++) {
-        std::cout << "Printing device memory " << flag << ": " << hdm[i] << std::endl;
-    }
-    
-    delete[] hdm;
-}

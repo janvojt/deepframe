@@ -14,7 +14,5 @@ void dumpDeviceArray(char flag, double *dm, int size);
 
 void compare(char flag, double *dm, double *hm, int size);
 
-void printArray(char flag, double *dm, int size);
-
 #endif	/* CUDADEBUGHELPERS_H */
 
