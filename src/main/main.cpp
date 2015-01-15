@@ -438,7 +438,7 @@ int main(int argc, char *argv[]) {
     } else if (conf->useIdx) {
         LabeledMnistParser *p = new LabeledMnistParser();
         tds = p->parse(conf->testData);
-//        printImageLabels(ds);
+//        printImageLabels((LabeledDataset *)tds);
 //        return 0;
         delete p;
     } else {
@@ -459,6 +459,8 @@ int main(int argc, char *argv[]) {
     } else if (conf->useIdx) {
         LabeledMnistParser *p = new LabeledMnistParser();
         ds = p->parse(conf->labeledData);
+//        printImageLabels((LabeledDataset *)ds);
+//        return 0;
         delete p;
     } else {
         LabeledDatasetParser *p = new LabeledDatasetParser(conf->labeledData, netConf);
