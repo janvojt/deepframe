@@ -341,9 +341,6 @@ GpuConfiguration *createGpuConfiguration(config *conf) {
     curandSetPseudoRandomGeneratorSeed(*gen, conf->seed);
     gpuConf->setRandGen(gen);
     
-    // TODO remove
-    srand(conf->seed);
-    
     return gpuConf;
 }
 

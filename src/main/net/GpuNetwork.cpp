@@ -19,6 +19,10 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
+// Define interval for random initialization of weights and bias.
+const double INIT_MIN = -1.0;
+const double INIT_MAX = 1.0;
+
 GpuNetwork::GpuNetwork(NetworkConfiguration *netConf, GpuConfiguration *gpuConf) : Network(netConf) {
     cublasCreate(&cublasHandle);
     this->gpuConf = gpuConf;
@@ -49,6 +53,7 @@ void GpuNetwork::randomizeDoublesOnGpu(double **hMemory, double **dMemory, int s
     
     // Initialize random values on GPU device memory.
     curandGenerateUniformDouble(*gpuConf->getRandGen(), *dMemory, size);
+    k_spreadInterval(INIT_MIN, INIT_MAX, *dMemory, size);
     
     // Copy to host memory.
     *hMemory = new double[size];
@@ -67,17 +72,8 @@ void GpuNetwork::initWeights() {
         pLayer = tLayer;
     }
     
-    int memSize = sizeof(double) * noWeights;
-    checkCudaErrors(cudaMalloc(&dWeights, memSize));
-    
-    // TODO use GPU random init,
-    // init on CPU is done for debugging purposes so we can compare results.
-//    randomizeDoublesOnGpu(&weights, &dWeights, noWeights);
-    weights = new double[noWeights];
-    for (int i = 0; i < noWeights; i++) {
-        weights[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
-    }
-    checkCudaErrors(cudaMemcpy(dWeights, weights, memSize, cudaMemcpyHostToDevice));
+    // use GPU random init,
+    randomizeDoublesOnGpu(&weights, &dWeights, noWeights);
 }
 
 void GpuNetwork::initInputs() {
@@ -103,18 +99,8 @@ void GpuNetwork::initInputs() {
 void GpuNetwork::initBias() {
     if (conf->getBias()) {
     
-        int memSize = sizeof(double) * noNeurons;
-        checkCudaErrors(cudaMalloc(&dBias, memSize));
-        
-        // TODO uncomment to initialize on GPU
         // Initialize bias.
-//        randomizeDoublesOnGpu(&bias, &dBias, noNeurons);
-        // Randomly initialize bias between -1 and 1.
-        bias = new double[noNeurons];
-        for (int i = 0; i < noNeurons; i++) {
-            bias[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
-        }
-        checkCudaErrors(cudaMemcpy(dBias, bias, memSize, cudaMemcpyHostToDevice));
+        randomizeDoublesOnGpu(&bias, &dBias, noNeurons);
         
     } else {
         bias = NULL;
@@ -128,8 +114,8 @@ void GpuNetwork::run() {
     double *dBiasPtr = dBias;
     
     // copy weights and bias from host to device
-    int wMemSize = sizeof(double) * getWeightsOffset(noLayers);
-    int iMemSize = sizeof(double) * getInputOffset(noLayers);
+//    int wMemSize = sizeof(double) * getWeightsOffset(noLayers);
+//    int iMemSize = sizeof(double) * getInputOffset(noLayers);
 //    checkCudaErrors(cudaMemcpy(dInputs, inputs, iMemSize, cudaMemcpyHostToDevice));
 //    checkCudaErrors(cudaMemcpy(dWeights, weights, wMemSize, cudaMemcpyHostToDevice));
 //    if (conf->getBias()) checkCudaErrors(cudaMemcpy(dBias, bias, iMemSize, cudaMemcpyHostToDevice));

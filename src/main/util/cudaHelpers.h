@@ -43,5 +43,9 @@ void k_computeHiddenLocalGradient(
 // Compute the sigmoid function on device array.
 void k_computeSigmoid(double *dArray, int elements);
 
+// Assumes array of double values between 0 and 1 in dArray and 
+// spreads this to given interval.
+void k_spreadInterval(double min, double max, double *dArray, int size);
+
 #endif	/* CUDAHELPERS_H */
 
