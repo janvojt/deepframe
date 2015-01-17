@@ -66,7 +66,7 @@ private:
     // Initialize bias if it is enabled in network configuration.
     void initBias();
     // Generates random numbers on GPU and copies them to host memory.
-    void randomizeDoublesOnGpu(double **hMemory, double **dMemory, int size);
+    void randomizeDoublesOnGpu(double **dMemory, int size);
     // Applies bias to layer l (if it is enabled, otherwise does nothing).
     void applyBias(int l);
     // Total number of neurons in the network.
@@ -75,14 +75,11 @@ private:
     // The zero-layer weights are for edges coming into input neurons,
     // therefore always initialized to 1.
     double *weights;
-    // Array of weights on GPU device memory.
-    double *dWeights;
     // Array representing input coming into each neuron.
     double *inputs;
     double *dInputs;
     // Network bias. Each neuron has its own bias.
     double *bias;
-    double *dBias;
     // Cache of number of neurons up to the layer determined by the array index.
     // Used for optimization of calculating indexes for inputs.
     // Method returns zero neurons in zero-th layer.

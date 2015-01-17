@@ -33,17 +33,15 @@ GpuNetwork::GpuNetwork(const GpuNetwork& orig) : Network(orig) {
 
 GpuNetwork::~GpuNetwork() {
     cublasDestroy(cublasHandle);
-    cudaFree(dWeights);
+    cudaFree(weights);
     cudaFree(dInputs);
-    cudaFree(dBias);
+    cudaFree(bias);
     delete[] weightsUpToLayerCache;
     delete[] neuronsUpToLayerCache;
-    delete[] weights;
     delete[] inputs;
-    delete[] bias;
 }
 
-void GpuNetwork::randomizeDoublesOnGpu(double **hMemory, double **dMemory, int size) {
+void GpuNetwork::randomizeDoublesOnGpu(double **dMemory, int size) {
 
     int memSize = sizeof(double) * size;
     checkCudaErrors(cudaMalloc(dMemory, memSize));
@@ -51,10 +49,6 @@ void GpuNetwork::randomizeDoublesOnGpu(double **hMemory, double **dMemory, int s
     // Initialize random values on GPU device memory.
     curandGenerateUniformDouble(*gpuConf->getRandGen(), *dMemory, size);
     k_spreadInterval(conf->getInitMin(), conf->getInitMax(), *dMemory, size);
-    
-    // Copy to host memory.
-    *hMemory = new double[size];
-    checkCudaErrors(cudaMemcpy(*hMemory, *dMemory, memSize, cudaMemcpyDeviceToHost));
 }
 
 void GpuNetwork::initWeights() {
@@ -70,7 +64,7 @@ void GpuNetwork::initWeights() {
     }
     
     // use GPU random init,
-    randomizeDoublesOnGpu(&weights, &dWeights, noWeights);
+    randomizeDoublesOnGpu(&weights, noWeights);
 }
 
 void GpuNetwork::initInputs() {
@@ -97,7 +91,7 @@ void GpuNetwork::initBias() {
     if (conf->getBias()) {
     
         // Initialize bias.
-        randomizeDoublesOnGpu(&bias, &dBias, noNeurons);
+        randomizeDoublesOnGpu(&bias, noNeurons);
         
     } else {
         bias = NULL;
@@ -106,9 +100,9 @@ void GpuNetwork::initBias() {
 
 void GpuNetwork::run() {
     // number of neurons in so far processed layers
-    double *dWeightsPtr = dWeights + getInputNeurons();
+    double *dWeightsPtr = weights + getInputNeurons();
     double *dInputsPtr = dInputs;
-    double *dBiasPtr = dBias;
+    double *dBiasPtr = bias;
     
     // copy weights and bias from host to device
 //    int wMemSize = sizeof(double) * getWeightsOffset(noLayers);
@@ -193,7 +187,7 @@ int GpuNetwork::getInputOffset(int layer) {
 }
 
 double* GpuNetwork::getWeights() {
-    return dWeights;
+    return weights;
 }
 
 int GpuNetwork::getWeightsOffset(int layer) {
@@ -201,5 +195,5 @@ int GpuNetwork::getWeightsOffset(int layer) {
 }
 
 double* GpuNetwork::getBiasValues() {
-    return dBias;
+    return bias;
 }
