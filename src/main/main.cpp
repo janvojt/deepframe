@@ -48,13 +48,14 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbl:e:m:f:g:ic:s:t:r:u:pd";
+const char* optsList = "hbl:a:e:m:f:g:ic:s:t:r:u:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
     {"help", no_argument, 0, 'h'},
     {"no-bias", no_argument, 0, 'b'},
     {"rate", required_argument, 0, 'l'},
+    {"init", required_argument, 0, 'a'},
     {"mse", required_argument, 0, 'e'},
     {"max-epochs", required_argument, 0, 'm'},
     {"func", required_argument, 0, 'f'},
@@ -74,6 +75,8 @@ const struct option optsLong[] = {
 struct config {
     /* learning rate */
     double lr = .3;
+    /* Interval network weights are initialized in. */
+    char* initInterval = NULL;
     /* mean square error */
     double mse = .0001;
     /* use bias? */
@@ -208,6 +211,7 @@ void printHelp() {
     cout << "-h          --help                This help." << endl;
     cout << "-b          --no-bias             Disables bias in neural network. Bias is enabled by default." << endl;
     cout << "-l <value>  --rate <value>        Learning rate influencing the speed and quality of learning. Default value is 0.3." << endl;
+    cout << "-a <value>  --init <value>        Minimum and maximum value network weights are initialized to. Default is -1,1." << endl;
     cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning." << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met. Default is 100,000" << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
@@ -231,6 +235,7 @@ config* processOptions(int argc, char *argv[]) {
     conf->activationFnc = sigmoidFunction;
     conf->dActivationFnc = dSigmoidFunction;
     conf->layerConf = (char*) "2,2,1";
+    conf->initInterval = (char*) "-1,1";
     
     int index;
     int iarg = 0;
@@ -246,6 +251,10 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 'b':
                 conf->bias = false;
+                break;
+            case 'a':
+                conf->initInterval = new char[strlen(optarg)+1];
+                strcpy(conf->initInterval, optarg);
                 break;
             case 'l':
                 conf->lr = atof(optarg);
@@ -333,6 +342,7 @@ NetworkConfiguration *createNetworkConfiguration(config* conf) {
     netConf->activationFnc = conf->activationFnc;
     netConf->dActivationFnc = conf->dActivationFnc;
     netConf->setBias(conf->bias);
+    netConf->parseInitInterval(conf->initInterval);
     
     return netConf;
 }

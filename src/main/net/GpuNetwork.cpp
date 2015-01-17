@@ -19,9 +19,6 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-// Define interval for random initialization of weights and bias.
-const double INIT_MIN = -1.0;
-const double INIT_MAX = 1.0;
 
 GpuNetwork::GpuNetwork(NetworkConfiguration *netConf, GpuConfiguration *gpuConf) : Network(netConf) {
     cublasCreate(&cublasHandle);
@@ -53,7 +50,7 @@ void GpuNetwork::randomizeDoublesOnGpu(double **hMemory, double **dMemory, int s
     
     // Initialize random values on GPU device memory.
     curandGenerateUniformDouble(*gpuConf->getRandGen(), *dMemory, size);
-    k_spreadInterval(INIT_MIN, INIT_MAX, *dMemory, size);
+    k_spreadInterval(conf->getInitMin(), conf->getInitMax(), *dMemory, size);
     
     // Copy to host memory.
     *hMemory = new double[size];

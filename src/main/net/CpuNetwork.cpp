@@ -42,12 +42,9 @@ void CpuNetwork::initWeights() {
         weightsUpToLayerCache[i+1] = noWeights;
         pLayer = tLayer;
     }
-    weights = new double[noWeights];
 
     // Initialize weights.
-    for (int i = 0; i < noWeights; i++) {
-        weights[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
-    }
+    randomizeDoubles(&weights, noWeights);
 }
 
 void CpuNetwork::initInputs() {
@@ -67,10 +64,8 @@ void CpuNetwork::initBias() {
         bias = new double[noNeurons];
         
         // Initialize bias.
-        // Randomly initialize bias between -1 and 1.
-        for (int i = 0; i < noNeurons; i++) {
-            bias[i] = (double) (rand()) / (RAND_MAX / 2) - 1;
-        }
+        randomizeDoubles(&bias, noNeurons);
+
     } else {
         bias = NULL;
     }
@@ -108,6 +103,17 @@ void CpuNetwork::run() {
         conf->activationFnc(inputs+nPrevLayers+nThisLayer, inputs+nPrevLayers+nThisLayer, nNextLayer);
         
         nPrevLayers += nThisLayer;
+    }
+}
+
+void CpuNetwork::randomizeDoubles(double** memPtr, int size) {
+    *memPtr = new double[size];
+    double *mem = *memPtr;
+    double min = conf->getInitMin();
+    double max = conf->getInitMax();
+    double interval = max - min;
+    for (int i = 0; i < size; i++) {
+        mem[i] = ((double) (rand()) / RAND_MAX * interval) + min;
     }
 }
 

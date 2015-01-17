@@ -75,6 +75,20 @@ void NetworkConfiguration::initConf() {
     neuronConf = new int[layers];
 }
 
+void NetworkConfiguration::parseInitInterval(char* intervalConf) {
+    double v = 0;
+    char *haystack = new char[strlen(intervalConf)+1];
+    strcpy(haystack, intervalConf);
+    char *token = strtok(haystack, ",");
+    sscanf(token, "%lf", &v);
+    this->initMin = v;
+    token = strtok(NULL, ",");
+    sscanf(token, "%lf", &v);
+    this->initMax = v;
+    delete[] haystack;
+}
+
+
 void NetworkConfiguration::parseLayerConf(char* layerConf) {
 
     // Configure layers.
@@ -96,4 +110,20 @@ void NetworkConfiguration::parseLayerConf(char* layerConf) {
         token = strtok(NULL, ",");
     }
     delete[] haystack;
+}
+
+void NetworkConfiguration::setInitMin(double min) {
+    initMin = min;
+}
+
+double NetworkConfiguration::getInitMin() {
+    return initMin;
+}
+
+void NetworkConfiguration::setInitMax(double max) {
+    initMax = max;
+}
+
+double NetworkConfiguration::getInitMax() {
+    return initMax;
 }
