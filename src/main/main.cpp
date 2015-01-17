@@ -48,17 +48,18 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbe:m:f:g:il:s:t:r:u:pd";
+const char* optsList = "hbl:e:m:f:g:ic:s:t:r:u:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
     {"help", no_argument, 0, 'h'},
     {"no-bias", no_argument, 0, 'b'},
+    {"rate", required_argument, 0, 'l'},
     {"mse", required_argument, 0, 'e'},
     {"max-epochs", required_argument, 0, 'm'},
     {"func", required_argument, 0, 'f'},
     {"d-func", required_argument, 0, 'g'},
-    {"lconf", required_argument, 0, 'l'},
+    {"lconf", required_argument, 0, 'c'},
     {"labels", required_argument, 0, 's'},
     {"test", required_argument, 0, 't'},
     {"idx", no_argument, 0, 'i'},
@@ -71,6 +72,8 @@ const struct option optsLong[] = {
 
 /* Application configuration. */
 struct config {
+    /* learning rate */
+    double lr = .3;
     /* mean square error */
     double mse = .0001;
     /* use bias? */
@@ -204,11 +207,12 @@ void printHelp() {
     cout << "--------------------------------------------------------------------------------" << endl;
     cout << "-h          --help                This help." << endl;
     cout << "-b          --no-bias             Disables bias in neural network. Bias is enabled by default." << endl;
+    cout << "-l <value>  --rate <value>        Learning rate influencing the speed and quality of learning. Default value is 0.3." << endl;
     cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning." << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met. Default is 100,000" << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-g <value>  --d-func <value>      Specifies the derivative of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
-    cout << "-l <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
+    cout << "-c <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
     cout << "-i          --idx                 Use IDX data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
@@ -243,13 +247,16 @@ config* processOptions(int argc, char *argv[]) {
             case 'b':
                 conf->bias = false;
                 break;
+            case 'l':
+                conf->lr = atof(optarg);
+                break;
             case 'e':
                 conf->mse = atof(optarg);
                 break;
             case 'm' :
                 conf->maxEpochs = atol(optarg);
                 break;
-            case 'l' :
+            case 'c' :
                 conf->layerConf = new char[strlen(optarg)+1];
                 strcpy(conf->layerConf, optarg);
                 break;
@@ -465,9 +472,13 @@ int main(int argc, char *argv[]) {
         delete p;
     }
     
+    // configure BP learner
+    bp->setLearningRate(conf->lr);
     bp->setTargetMse(conf->mse);
     bp->setErrorComputer(new MseErrorComputer());
     bp->setEpochLimit(conf->maxEpochs);
+    
+    // train network
     bp->train(ds);
     
     // Run (hopefully) learnt network.

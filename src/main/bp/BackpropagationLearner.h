@@ -19,6 +19,8 @@ public:
     virtual ~BackpropagationLearner();
     // Launches the learning process.
     void train(LabeledDataset *dataset);
+    // Sets the learning rate influencing speed and quality of learning.
+    void setLearningRate(double learningRate);
     // Sets the maximum number of epochs.
     void setEpochLimit(long limit);
     // Sets object for computing network error.

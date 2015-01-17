@@ -97,3 +97,7 @@ void BackpropagationLearner::setErrorComputer(ErrorComputer* errorComputer) {
 void BackpropagationLearner::setTargetMse(double mse) {
     targetMse = mse;
 }
+
+void BackpropagationLearner::setLearningRate(double learningRate) {
+    this->learningRate = learningRate;
+}

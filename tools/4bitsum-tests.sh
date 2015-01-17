@@ -20,7 +20,7 @@ for (( i=1;i<=$ITERATIONS;i++ )); do
 		-e -1 \
 		-s "$DATASET_LABELS" \
 		-t "$DATASET_TESTS" \
-		-l "8,$l,5" \
+		-c "8,$l,5" \
 		) &>> "$TEST_OUT/test-$l.log"
 done
 done
