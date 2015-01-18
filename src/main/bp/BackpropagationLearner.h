@@ -27,6 +27,8 @@ public:
     void setErrorComputer(ErrorComputer *errorComputer);
     // Set target Mean Square Error. When it is reached, training is finished.
     void setTargetMse(double mse);
+    // Set minimal improvement of MSE required to keep learning.
+    void setDeltaError(double deltaError);
 protected:
     // We cannot reuse the forward run from the network's implementation,
     // because additional meta results need to be kept for backpropagation
@@ -57,6 +59,8 @@ protected:
     long epochLimit;
     // Target Mean Square Error. When it is reached, training is finished.
     double targetMse;
+    // Minimal improvement of MSE required to keep learning.
+    double deltaError;
     // Total differential for weight adjustment.
     double *weightDiffs;
     // Cache for local gradients of respective neurons.

@@ -34,33 +34,47 @@ BackpropagationLearner::~BackpropagationLearner() {
 }
 
 void BackpropagationLearner::train(LabeledDataset *dataset) {
-    double mse = 0;
+    double mse = std::numeric_limits<double>::infinity();
+    double prevMse;
     LOG()->info("Started training with limits of %d epochs and target MSE of %f.", epochLimit, targetMse);
     do {
         epochCounter++;
         LOG()->debug("Starting epoch %d.", epochCounter);
+        
         dataset->reset();
         int datasetSize = 0;
+        prevMse = mse;
         mse = 0;
         while (dataset->hasNext()) {
             datasetSize++;
             double *pattern = dataset->next();
             double *expOutput = pattern + dataset->getInputDimension();
-        LOG()->debug("Starting forward phase for dataset %d in epoch %d.", datasetSize, epochCounter);
+            
+            LOG()->debug("Starting forward phase for dataset %d in epoch %d.", datasetSize, epochCounter);
             doForwardPhase(pattern);
-        LOG()->debug("Starting backward phase for dataset %d in epoch %d.", datasetSize, epochCounter);
+            
+            LOG()->debug("Starting backward phase for dataset %d in epoch %d.", datasetSize, epochCounter);
             doBackwardPhase(expOutput);
+            
             mse += errorComputer->compute(network, expOutput);
         }
         mse = mse / datasetSize;
         LOG()->info("Finished epoch %d with MSE: %f.", epochCounter, mse);
-    } while (mse > targetMse && epochCounter < epochLimit);
     
-    if (mse <= targetMse) {
-        LOG()->info("Training successful after %d epochs with MSE of %f.", epochCounter, mse);
-    } else {
-        LOG()->info("Training interrupted after %d epochs with MSE of %f.", epochCounter, mse);
-    }
+        // check criteria for stopping learning
+        if (mse <= targetMse) {
+            LOG()->info("Training successful after %d epochs with MSE of %f.", epochCounter, mse);
+            break;
+        } else if ((prevMse - deltaError) < mse) {
+            LOG()->info("Training interrupted after %d epochs with MSE of %f, because MSE improvement was less than %f.", epochCounter, mse, deltaError);
+            break;
+        } else if (epochCounter >= epochLimit) {
+            LOG()->info("Training interrupted after %d epochs with MSE of %f.", epochCounter, mse);
+            break;
+        }
+        
+    } while (true); // stopping checks are at the end of the loop
+    
 }
 
 void BackpropagationLearner::doForwardPhase(double *input) {
@@ -100,4 +114,8 @@ void BackpropagationLearner::setTargetMse(double mse) {
 
 void BackpropagationLearner::setLearningRate(double learningRate) {
     this->learningRate = learningRate;
+}
+
+void BackpropagationLearner::setDeltaError(double deltaError) {
+    this->deltaError = deltaError;
 }
