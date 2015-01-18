@@ -38,7 +38,8 @@ GpuNetwork::~GpuNetwork() {
     cudaFree(bias);
     delete[] weightsUpToLayerCache;
     delete[] neuronsUpToLayerCache;
-    delete[] inputs;
+    delete[] input;
+    delete[] output;
 }
 
 void GpuNetwork::randomizeDoublesOnGpu(double **dMemory, int size) {
@@ -78,7 +79,8 @@ void GpuNetwork::initInputs() {
     this->noNeurons = noNeurons;
     
     // allocate host memory
-    inputs = new double[noNeurons];
+    input = new double[this->getInputNeurons()];
+    output = new double[this->getOutputNeurons()];
     
     // allocate device memory
     int memSize = sizeof(double) * noNeurons;
@@ -153,15 +155,14 @@ void GpuNetwork::run() {
     
     // copy network output to host
     double *dOutput = dInputs + getInputOffset(noLayers-1);
-    double *output = inputs + getInputOffset(noLayers-1);
     int oMemSize = getOutputNeurons() * sizeof(double);
-    checkCudaErrors(cudaMemcpy(output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(this->output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
 }
 
 void GpuNetwork::setInput(double* input) {
 //    compare('b', dInputs, inputs, getInputOffset(noLayers));
     int memSize = sizeof(double) * getInputNeurons();
-    std::memcpy(inputs, input, memSize);
+    std::memcpy(this->input, input, memSize);
     checkCudaErrors(cudaMemcpy(dInputs, input, memSize, cudaMemcpyHostToDevice));
 //    compare('a', dInputs, inputs, getInputOffset(noLayers));
 }
@@ -171,11 +172,11 @@ double *GpuNetwork::getInputs() {
 }
 
 double *GpuNetwork::getInput() {
-    return inputs;
+    return input;
 }
 
 double *GpuNetwork::getOutput() {
-    return inputs + noNeurons - getOutputNeurons();
+    return output;
 }
 
 int GpuNetwork::getAllNeurons() {

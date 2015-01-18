@@ -75,8 +75,14 @@ private:
     // The zero-layer weights are for edges coming into input neurons,
     // therefore always initialized to 1.
     double *weights;
-    // Array representing input coming into each neuron.
-    double *inputs;
+    // Array representing input coming into the network.
+    // Allocated on host memory.
+    double *input;
+    // Array representing network output.
+    // Allocated on host memory.
+    double *output;
+    // Array representing input coming into each neuron in the network.
+    // Allocated on device memory.
     double *dInputs;
     // Network bias. Each neuron has its own bias.
     double *bias;
