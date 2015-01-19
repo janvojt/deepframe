@@ -152,11 +152,6 @@ void GpuNetwork::run() {
 //    compare('w', dWeights, weights, getWeightsOffset(noLayers));
 //    if (conf->getBias()) compare('b', dBias, bias, getInputOffset(noLayers));
 //    compare('i', dInputs, inputs, getInputOffset(noLayers));
-    
-    // copy network output to host
-    double *dOutput = dInputs + getInputOffset(noLayers-1);
-    int oMemSize = getOutputNeurons() * sizeof(double);
-    checkCudaErrors(cudaMemcpy(this->output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
 }
 
 void GpuNetwork::setInput(double* input) {
@@ -176,7 +171,13 @@ double *GpuNetwork::getInput() {
 }
 
 double *GpuNetwork::getOutput() {
-    return output;
+    
+    // copy network output to host
+    double *dOutput = dInputs + getInputOffset(noLayers-1);
+    int oMemSize = getOutputNeurons() * sizeof(double);
+    checkCudaErrors(cudaMemcpy(this->output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
+    
+    return this->output;
 }
 
 int GpuNetwork::getAllNeurons() {
