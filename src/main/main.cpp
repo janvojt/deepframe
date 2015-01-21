@@ -154,12 +154,6 @@ void printInout(Network *net) {
     cout << endl;
 }
 
-void printSeperator() {
-    cout << endl;
-    cout << "################################################################################" << endl;
-    cout << endl;
-}
-
 const SimpleLabeledDataset *LABELED_DATASET_CLASS = new SimpleLabeledDataset(0,0,0);
 
 /* Runs the given test dataset through given network and prints results. */
@@ -468,10 +462,6 @@ int main(int argc, char *argv[]) {
         delete p;
     }
     
-    // Run network without learning.
-    runTest(net, tds);
-    printSeperator();
-
     // Prepare labeled dataset.
     // If none was provided in options use XOR dataset by default.
     LabeledDataset *ds;
