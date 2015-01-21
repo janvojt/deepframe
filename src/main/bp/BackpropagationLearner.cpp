@@ -15,6 +15,8 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
+const int MAX_IMPROVEMENT_EPOCHS = 1000;
+
 BackpropagationLearner::BackpropagationLearner(Network *network) {
     this->network = network;
     learningRate = 1;
@@ -24,6 +26,8 @@ BackpropagationLearner::BackpropagationLearner(Network *network) {
     errorTotal = std::numeric_limits<double>::infinity();
     useBias = network->getConfiguration()->getBias();
     noLayers = network->getConfiguration()->getLayers();
+    deltaError = 0;
+    improveEpochs = 0;
 }
 
 BackpropagationLearner::BackpropagationLearner(const BackpropagationLearner &orig) {
@@ -31,6 +35,7 @@ BackpropagationLearner::BackpropagationLearner(const BackpropagationLearner &ori
 
 BackpropagationLearner::~BackpropagationLearner() {
     if (errorComputer != NULL) delete errorComputer;
+    if (improveEpochs > 0) delete[] errorCache;
 }
 
 void BackpropagationLearner::train(LabeledDataset *dataset) {
@@ -65,8 +70,8 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
         if (mse <= targetMse) {
             LOG()->info("Training successful after %d epochs with MSE of %f.", epochCounter, mse);
             break;
-        } else if ((prevMse - deltaError) < mse) {
-            LOG()->info("Training interrupted after %d epochs with MSE of %f, because MSE improvement was less than %f.", epochCounter, mse, deltaError);
+        } else if (!isErrorImprovement(mse, epochCounter)) {
+            LOG()->info("Training interrupted after %d epochs with MSE of %f, because MSE improvement in last %d epochs was less than %f.", epochCounter, mse, improveEpochs, deltaError);
             break;
         } else if (epochCounter >= epochLimit) {
             LOG()->info("Training interrupted after %d epochs with MSE of %f.", epochCounter, mse);
@@ -98,6 +103,41 @@ void BackpropagationLearner::validate(LabeledDataset *dataset) {
     if (dataset->getOutputDimension() != network->getOutputNeurons()) {
         throw new std::invalid_argument("Provided dataset must have the same output dimension as the number of output neurons!");
     }
+}
+
+bool BackpropagationLearner::isErrorImprovement(double error, int epoch) {
+    if (improveEpochs <= 0) {
+        return true;
+    }
+    
+    if (epoch > improveEpochs) {
+        if ((errorCache[errorCachePtr] - deltaError) < error) {
+            return false;
+        } 
+    }
+    
+    errorCache[errorCachePtr] = error;
+    errorCachePtr = (errorCachePtr+1) % improveEpochs;
+    
+    return true;
+}
+
+void BackpropagationLearner::setImproveEpochs(int improveEpochs) {
+    if (improveEpochs > MAX_IMPROVEMENT_EPOCHS) {
+        LOG()->warn("Allowed maximum for error improvement epochs is %d, however %d was  requested. Going with %d.", MAX_IMPROVEMENT_EPOCHS, improveEpochs, MAX_IMPROVEMENT_EPOCHS);
+        improveEpochs = MAX_IMPROVEMENT_EPOCHS;
+    }
+    
+    if (this->improveEpochs > 0) {
+        delete[] errorCache;
+    }
+    
+    if (improveEpochs > 0) {
+        errorCache = new double[improveEpochs];
+        errorCachePtr = 0;
+    }
+    
+    this->improveEpochs = improveEpochs;
 }
 
 void BackpropagationLearner::setEpochLimit(long limit) {

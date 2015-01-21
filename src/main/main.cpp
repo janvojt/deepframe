@@ -58,7 +58,7 @@ const struct option optsLong[] = {
     {"init", required_argument, 0, 'a'},
     {"mse", required_argument, 0, 'e'},
     {"max-epochs", required_argument, 0, 'm'},
-    {"delta-error", required_argument, 0, 'k'},
+    {"improve-err", required_argument, 0, 'k'},
     {"func", required_argument, 0, 'f'},
     {"d-func", required_argument, 0, 'g'},
     {"lconf", required_argument, 0, 'c'},
@@ -80,8 +80,9 @@ struct config {
     char* initInterval = NULL;
     /* mean square error */
     double mse = .0001;
-    /* Minimal error improvement to required to keep learning. */
-    double deltaError = 0;
+    /* Number of epochs during which error improvement
+     *  is required to keep learning. */
+    int improveEpochs = 0;
     /* use bias? */
     bool bias = true;
     /* epoch limit */
@@ -210,7 +211,7 @@ void printHelp() {
     cout << "-l <value>  --rate <value>        Learning rate influencing the speed and quality of learning. Default value is 0.3." << endl;
     cout << "-a <value>  --init <value>        Minimum and maximum value network weights are initialized to. Default is -1,1." << endl;
     cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning." << endl;
-    cout << "-k <value>  --delta-error <value> Minimal improvement of error required to keep learning. Default is zero." << endl;
+    cout << "-k <value>  --improve-err <value> Number of epochs during which improvement of error is required to keep learning. Default is zero (=disabled)." << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met. Default is 100,000" << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-g <value>  --d-func <value>      Specifies the derivative of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
@@ -261,7 +262,7 @@ config* processOptions(int argc, char *argv[]) {
                 conf->mse = atof(optarg);
                 break;
             case 'k':
-                conf->deltaError = atof(optarg);
+                conf->improveEpochs = atoi(optarg);
                 break;
             case 'm' :
                 conf->maxEpochs = atol(optarg);
@@ -484,7 +485,7 @@ int main(int argc, char *argv[]) {
     bp->setTargetMse(conf->mse);
     bp->setErrorComputer(new MseErrorComputer());
     bp->setEpochLimit(conf->maxEpochs);
-    bp->setDeltaError(conf->deltaError);
+    bp->setImproveEpochs(conf->improveEpochs);
     
     // train network
     bp->train(ds);

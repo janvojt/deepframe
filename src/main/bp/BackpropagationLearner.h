@@ -27,6 +27,9 @@ public:
     void setErrorComputer(ErrorComputer *errorComputer);
     // Set target Mean Square Error. When it is reached, training is finished.
     void setTargetMse(double mse);
+    // Set the number of epochs after which error improvement is required
+    // to continue the learning process.
+    void setImproveEpochs(int improvementEpochs);
     // Set minimal improvement of MSE required to keep learning.
     void setDeltaError(double deltaError);
 protected:
@@ -59,6 +62,9 @@ protected:
     long epochLimit;
     // Target Mean Square Error. When it is reached, training is finished.
     double targetMse;
+    // Number of epochs after which at least deltaError improvement
+    // is required to continue learning.
+    int improveEpochs;
     // Minimal improvement of MSE required to keep learning.
     double deltaError;
     // Total differential for weight adjustment.
@@ -76,6 +82,12 @@ protected:
 private:
     // Validates input dataset provided for learning against neural network.
     void validate(LabeledDataset *dataset);
+    // Checks whether there was sufficient error improvement during last epochs.
+    bool isErrorImprovement(double error, int epoch);
+    // Cache with last error rates.
+    double *errorCache;
+    // Cursor for iterating the error cache.
+    int errorCachePtr;
 };
 
 #endif	/* BACKPROPAGATIONLEARNER_H */
