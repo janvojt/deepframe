@@ -17,10 +17,12 @@ for l in $HIDDEN_NEURONS; do
 for (( i=1;i<=$ITERATIONS;i++ )); do
 	(/usr/bin/time -f "%U user\n%S system\n%e real\n%M max memory (kB)\n" \
 		"$EXEC" -m $EPOCHS \
+		-l "$LEARNING_RATE" \
 		-e -1 \
 		-s "$DATASET_LABELS" \
 		-t "$DATASET_TESTS" \
 		-c "8,$l,5" \
+		$@ \
 		) &>> "$TEST_OUT/test-$l.log"
 done
 done
