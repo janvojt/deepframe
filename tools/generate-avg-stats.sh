@@ -6,11 +6,13 @@ basedir=`dirname $script`
 
 source "$basedir/vars.sh"
 
-TEST_OUTPUT="$basedir/../$TESTDIR"
+TEST_OUT="$basedir/../$TESTDIR"
+STATS_OUT="$TEST_OUT/stats"
 
-rm -f $TEST_OUTPUT/*-avg*.csv
+mkdir -p "$STATS_OUT"
+rm -f $STATS_OUT/*-avg*.csv
 for t in $MEASURES; do
-	rm -f "$TEST_OUTPUT/$t-avg.csv"
+	rm -f "$STATS_OUT/$t-avg.csv"
 	for l in $HIDDEN_NEURONS; do
 		total=0
 		total2=0
@@ -18,7 +20,7 @@ for t in $MEASURES; do
 		min=99999999999999
 		max=0
 
-		for i in $(cat "$TEST_OUTPUT/$t-$l.csv"); do
+		for i in $(cat "$STATS_OUT/$t-$l.csv"); do
 			total=$(echo $total+$i | bc -l)
 			total2=$(echo $total2+$i^2 | bc -l)
 			if [ 1 -eq $(echo "$i < $min" | bc -l) ]; then min=$i; fi
@@ -36,9 +38,9 @@ for t in $MEASURES; do
 		layers=$(echo "$l" | grep -o "," | wc -l)
 		((layers++))
 		if [ $layers -gt 1 -o "$l" = "8" ]; then
-			echo "$layers,$avg,$min,$varLow,$max,$varHigh" >> "$TEST_OUTPUT/$t-avg-ml.csv"
+			echo "$layers,$avg,$min,$varLow,$max,$varHigh" >> "$STATS_OUT/$t-avg-ml.csv"
 		else
-			echo "$l,$avg,$min,$varLow,$max,$varHigh" >> "$TEST_OUTPUT/$t-avg.csv"
+			echo "$l,$avg,$min,$varLow,$max,$varHigh" >> "$STATS_OUT/$t-avg.csv"
 		fi
 	done
 done
