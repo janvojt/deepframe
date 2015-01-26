@@ -27,7 +27,20 @@ public:
     void reset();
     // Adds a single input vector with its label.
     void addPattern(const double *input, const double *output);
+    
+    /** Creates a new dataset taking patterns from this dataset.
+
+        This method is useful for creating validation sets.
+        
+        @param size number of patterns taken from the end of this dataset
+        that is put into the newly created dataset
+        
+        @return the newly created dataset
+     */
+    SimpleLabeledDataset* takeAway(int size);
+    
 private:
+    SimpleLabeledDataset();
     void initDataset();
     int inDimension;
     int outDimension;

@@ -48,7 +48,7 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbl:a:e:k:m:f:g:ic:s:t:r:u:pd";
+const char* optsList = "hbl:a:e:k:m:f:g:ic:s:t:v:r:u:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
@@ -64,6 +64,7 @@ const struct option optsLong[] = {
     {"lconf", required_argument, 0, 'c'},
     {"labels", required_argument, 0, 's'},
     {"test", required_argument, 0, 't'},
+    {"validation", required_argument, 0, 'v'},
     {"idx", no_argument, 0, 'i'},
     {"random-seed", required_argument, 0, 'r'},
     {"use-cache", optional_argument, 0, 'u'},
@@ -93,6 +94,8 @@ struct config {
     char* labeledData = NULL;
     /* File path with test data. */
     char* testData = NULL;
+    /* Validation data set size */
+    int validationSize = 0;
     /* Use IDX data format when parsing input files? */
     bool useIdx = false;
     /* Seed for random generator. */
@@ -218,6 +221,7 @@ void printHelp() {
     cout << "-c <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
+    cout << "-v <value>  --validation <value>  Size of the validation set. Patterns are taken from the training set. Default is zero." << endl;
     cout << "-i          --idx                 Use IDX data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << "-u <value>  --use-cache <value>   Enables use of precomputed lookup table for activation function. Value specifies the size of the table." << endl;
@@ -276,6 +280,9 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 't' :
                 conf->testData = optarg;
+                break;
+            case 'v' :
+                conf->validationSize = atoi(optarg);
                 break;
             case 'i' :
                 conf->useIdx = true;
@@ -465,19 +472,27 @@ int main(int argc, char *argv[]) {
     
     // Prepare labeled dataset.
     // If none was provided in options use XOR dataset by default.
-    LabeledDataset *ds;
+    LabeledDataset *lds;
     if (conf->labeledData == NULL) {
-        ds = createXorDataset();
+        lds = createXorDataset();
     } else if (conf->useIdx) {
         LabeledMnistParser *p = new LabeledMnistParser();
-        ds = p->parse(conf->labeledData);
-//        printImageLabels((LabeledDataset *)ds);
+        lds = p->parse(conf->labeledData);
+//        printImageLabels((LabeledDataset *)lds);
 //        return 0;
         delete p;
     } else {
         LabeledDatasetParser *p = new LabeledDatasetParser(conf->labeledData, netConf);
-        ds = p->parse();
+        lds = p->parse();
         delete p;
+    }
+    
+    // Prepare validation dataset
+    LabeledDataset *vds;
+    if (conf->validationSize > 0) {
+        vds = lds->takeAway(conf->validationSize);
+    } else {
+        vds = (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     
     // configure BP learner
@@ -488,13 +503,13 @@ int main(int argc, char *argv[]) {
     bp->setImproveEpochs(conf->improveEpochs);
     
     // train network
-    bp->train(ds);
+    bp->train(lds, vds);
     
     // Run (hopefully) learnt network.
     runTest(net, tds);
     
     delete bp;
-    delete ds;
+    delete lds;
     delete tds;
     delete netConf;
     delete conf;

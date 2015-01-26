@@ -10,6 +10,10 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
+SimpleLabeledDataset::SimpleLabeledDataset() {
+
+}
+
 SimpleLabeledDataset::SimpleLabeledDataset(int inputDimension, int outputDimension, int size) {
     addedCounter = 0;
     inDimension = inputDimension;
@@ -62,4 +66,27 @@ bool SimpleLabeledDataset::hasNext() {
 
 void SimpleLabeledDataset::reset() {
     cursor = 0;
+}
+
+SimpleLabeledDataset* SimpleLabeledDataset::takeAway(int size) {
+    
+    // we cannot take more than we have
+    if (size > this->size) {
+        size = this->size;
+    }
+    
+    // fix the size of this dataset
+    this->size -= size;
+    if (this->addedCounter > this->size) {
+        this->addedCounter = this->size;
+    }
+    
+    // create the new dataset
+    SimpleLabeledDataset *ds = new SimpleLabeledDataset();
+    ds->inDimension = this->inDimension;
+    ds->outDimension = this->outDimension;
+    ds->size = size;
+    ds->data = this->data + (this->inDimension + this->outDimension) * this->size;
+    
+    return ds;
 }

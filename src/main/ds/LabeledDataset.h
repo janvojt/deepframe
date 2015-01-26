@@ -19,6 +19,18 @@ public:
     virtual ~LabeledDataset();
     // Returns the dimension of labels for input data.
     virtual int getOutputDimension() = 0;
+    
+    /** Creates a new dataset taking patterns from this dataset.
+
+        This method is useful for creating validation sets.
+        
+        @param size
+        number of patterns taken from the end of this dataset
+        that is put into the newly created dataset
+        
+        @return the newly created dataset
+     */
+    virtual LabeledDataset *takeAway(int size) = 0;
 private:
 
 };

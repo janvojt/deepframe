@@ -38,7 +38,7 @@ BackpropagationLearner::~BackpropagationLearner() {
     if (improveEpochs > 0) delete[] errorCache;
 }
 
-void BackpropagationLearner::train(LabeledDataset *dataset) {
+void BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset *validationSet) {
     double mse = std::numeric_limits<double>::infinity();
     double prevMse;
     LOG()->info("Started training with limits of %d epochs and target MSE of %f.", epochLimit, targetMse);
@@ -46,14 +46,14 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
         epochCounter++;
         LOG()->debug("Starting epoch %d.", epochCounter);
         
-        dataset->reset();
+        trainingSet->reset();
         int datasetSize = 0;
         prevMse = mse;
         mse = 0;
-        while (dataset->hasNext()) {
+        while (trainingSet->hasNext()) {
             datasetSize++;
-            double *pattern = dataset->next();
-            double *expOutput = pattern + dataset->getInputDimension();
+            double *pattern = trainingSet->next();
+            double *expOutput = pattern + trainingSet->getInputDimension();
             
             LOG()->debug("Starting forward phase for dataset %d in epoch %d.", datasetSize, epochCounter);
             doForwardPhase(pattern);
@@ -65,6 +65,13 @@ void BackpropagationLearner::train(LabeledDataset *dataset) {
         }
         mse = mse / datasetSize;
         LOG()->info("Finished epoch %d with MSE: %f.", epochCounter, mse);
+        
+        // calculate error on validation dataset
+        validationSet->reset();
+        if (validationSet->hasNext()) {
+            mse = computeError(validationSet);
+            LOG()->info("Computed MSE of %f on validation dataset.", mse);
+        }
     
         // check criteria for stopping learning
         if (mse <= targetMse) {
@@ -120,6 +127,19 @@ bool BackpropagationLearner::isErrorImprovement(double error, int epoch) {
     errorCachePtr = (errorCachePtr+1) % improveEpochs;
     
     return true;
+}
+
+double BackpropagationLearner::computeError(LabeledDataset* ds) {
+    int datasetSize = 0;
+    double vMse = 0;
+    while (ds->hasNext()) {
+        datasetSize++;
+        double *pattern = ds->next();
+        double *expOutput = pattern + ds->getInputDimension();
+        vMse += errorComputer->compute(network, expOutput);
+    }
+    
+    return vMse / datasetSize;
 }
 
 void BackpropagationLearner::setImproveEpochs(int improveEpochs) {

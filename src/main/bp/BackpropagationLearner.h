@@ -17,8 +17,8 @@ public:
     BackpropagationLearner(Network *network);
     BackpropagationLearner(const BackpropagationLearner& orig);
     virtual ~BackpropagationLearner();
-    // Launches the learning process.
-    void train(LabeledDataset *dataset);
+    // Launches the learning process with given training set and validation set.
+    void train(LabeledDataset *trainingSet, LabeledDataset *validationSet);
     // Sets the learning rate influencing speed and quality of learning.
     void setLearningRate(double learningRate);
     // Sets the maximum number of epochs.
@@ -84,6 +84,16 @@ private:
     void validate(LabeledDataset *dataset);
     // Checks whether there was sufficient error improvement during last epochs.
     bool isErrorImprovement(double error, int epoch);
+    
+    /** Computes error on given dataset.
+    
+        @param ds Dataset with labels to run through the neural network
+        and calculate error on.
+    
+        @return error computed by #errorComputer.
+     */
+    double computeError(LabeledDataset *ds);
+    
     // Cache with last error rates.
     double *errorCache;
     // Cursor for iterating the error cache.
