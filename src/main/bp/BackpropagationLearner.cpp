@@ -40,7 +40,6 @@ BackpropagationLearner::~BackpropagationLearner() {
 
 void BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset *validationSet) {
     double mse = std::numeric_limits<double>::infinity();
-    double prevMse;
     LOG()->info("Started training with limits of %d epochs and target MSE of %f.", epochLimit, targetMse);
     do {
         epochCounter++;
@@ -48,7 +47,6 @@ void BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset *
         
         trainingSet->reset();
         int datasetSize = 0;
-        prevMse = mse;
         mse = 0;
         while (trainingSet->hasNext()) {
             datasetSize++;
