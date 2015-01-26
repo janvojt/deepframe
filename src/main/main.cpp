@@ -124,37 +124,21 @@ unsigned getSeed(void)
   return seed;
 }
 
-void printInput(Network *net) {
+void printArray(double *arr, int size) {
     
     // print input
     cout << "[ ";
-    double *in = net->getInput();
-    int iNeurons = net->getInputNeurons();
-    cout << *in++;
-    for (int i = 1; i<iNeurons; i++) {
-        cout << ", " << *in;
-        in++;
-    }
-    cout << " ]";
-}
-
-void printOutput(Network *net) {
-    cout << "[ ";
-    double *out = net->getOutput();
-    int oNeurons = net->getOutputNeurons();
-    
-    cout << *out++;
-    for (int i = 1; i<oNeurons; i++) {
-        cout << ", " << *out;
-        out++;
+    cout << arr[0];
+    for (int i = 1; i<size; i++) {
+        cout << ", " << arr[i];
     }
     cout << " ]";
 }
 
 void printInout(Network *net) {
-    printInput(net);
+    printArray(net->getInput(), net->getInputNeurons());
     cout << " -> ";
-    printOutput(net);
+    printArray(net->getOutput(), net->getOutputNeurons());
     cout << endl;
 }
 
@@ -183,11 +167,13 @@ void runTest(Network *net, InputDataset *ds) {
             if (typeid(*ds)==typeid(*LABELED_DATASET_CLASS)) {
                 double error = ec->compute(net, label);
                 cout << "Output for pattern " << i << ": ";
-                printOutput(net);
+                printArray(net->getOutput(), net->getOutputNeurons());
+                cout << ", label: ";
+                printArray(label, net->getOutputNeurons());
                 cout << ", MSE error: " << error << endl;
             } else {
                 cout << "Output for pattern " << i << ": ";
-                printOutput(net);
+                printArray(net->getOutput(), net->getOutputNeurons());
                 cout << "." << endl;
             }
         }
