@@ -13,6 +13,8 @@ EXEC="$basedir/../bin/ffwdnet"
 #rm -rf "$TEST_OUT"
 mkdir -p "$TEST_OUT"
 
+ulimit -t unlimited
+
 for l in $HIDDEN_NEURONS; do
 for (( i=1;i<=$ITERATIONS;i++ )); do
 	(/usr/bin/time -f "%U user\n%S system\n%e real\n%M max memory (kB)\n" \
