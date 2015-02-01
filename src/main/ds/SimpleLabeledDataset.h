@@ -39,6 +39,10 @@ public:
      */
     SimpleLabeledDataset* takeAway(int size);
     
+    /** Shuffles all elements in the dataset so that they are ordered randomly.
+     */
+    void shuffle();
+    
 private:
     SimpleLabeledDataset();
     void initDataset();

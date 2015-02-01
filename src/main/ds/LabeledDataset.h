@@ -31,6 +31,10 @@ public:
         @return the newly created dataset
      */
     virtual LabeledDataset *takeAway(int size) = 0;
+    
+    /** Shuffles all elements in the dataset so that they are ordered randomly.
+     */
+    virtual void shuffle() = 0;
 private:
 
 };

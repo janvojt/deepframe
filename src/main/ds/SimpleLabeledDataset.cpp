@@ -7,6 +7,8 @@
 
 #include "SimpleLabeledDataset.h"
 #include <cstring>
+#include <stdlib.h>
+
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
@@ -89,4 +91,21 @@ SimpleLabeledDataset* SimpleLabeledDataset::takeAway(int size) {
     ds->data = this->data + (this->inDimension + this->outDimension) * this->size;
     
     return ds;
+}
+
+void SimpleLabeledDataset::shuffle() {
+    
+    int entrySize = inDimension + outDimension;
+    int memSize = sizeof(double) * entrySize;
+    double *swap = new double[entrySize];
+    
+    int limit = size * entrySize;
+    for (int i = 0; i<limit; i+=entrySize) {
+        int rnd = ((double) (rand()) / (RAND_MAX-1) * size);
+        rnd *= entrySize;
+
+        std::memcpy(swap, data+i, memSize);
+        std::memcpy(data+i, data+rnd, memSize);
+        std::memcpy(data+rnd, swap, memSize);
+    }
 }

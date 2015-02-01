@@ -48,7 +48,7 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbl:a:e:k:m:f:g:ic:s:t:v:r:u:pd";
+const char* optsList = "hbl:a:e:k:m:f:g:ic:s:t:v:r:ju:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
@@ -67,6 +67,7 @@ const struct option optsLong[] = {
     {"validation", required_argument, 0, 'v'},
     {"idx", no_argument, 0, 'i'},
     {"random-seed", required_argument, 0, 'r'},
+    {"shuffle", no_argument, 0, 'j'},
     {"use-cache", optional_argument, 0, 'u'},
     {"use-gpu", no_argument, 0, 'p'},
     {"debug", no_argument, 0, 'd'},
@@ -100,6 +101,8 @@ struct config {
     bool useIdx = false;
     /* Seed for random generator. */
     int seed = 0;
+    /* Determines whether training datasets should be shuffled. */
+    bool shuffle = false;
     /* activation function */
     void (*activationFnc)(double *x, double *y, int layerSize);
     /* derivative of activation function */
@@ -210,6 +213,7 @@ void printHelp() {
     cout << "-v <value>  --validation <value>  Size of the validation set. Patterns are taken from the training set. Default is zero." << endl;
     cout << "-i          --idx                 Use IDX data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
+    cout << "-j          --shuffle             Shuffles training and validation dataset do the patterns are in random order." << endl;
     cout << "-u <value>  --use-cache <value>   Enables use of precomputed lookup table for activation function. Value specifies the size of the table." << endl;
     cout << "-p          --use-gpu             Enables parallel implementation of the network using CUDA GPU API." << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
@@ -275,6 +279,9 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 'r' :
                 conf->seed = atoi(optarg);
+                break;
+            case 'j' :
+                conf->shuffle = true;
                 break;
             case 'f' :
                 switch (optarg[0]) {
@@ -464,14 +471,17 @@ int main(int argc, char *argv[]) {
     } else if (conf->useIdx) {
         LabeledMnistParser *p = new LabeledMnistParser();
         lds = p->parse(conf->labeledData);
-//        printImageLabels((LabeledDataset *)lds);
-//        return 0;
         delete p;
     } else {
         LabeledDatasetParser *p = new LabeledDatasetParser(conf->labeledData, netConf);
         lds = p->parse();
         delete p;
     }
+    
+    // Shuffle labeled data
+    if (conf->shuffle) lds->shuffle();
+//    printImageLabels((LabeledDataset *)lds);
+//    return 0;
     
     // Prepare validation dataset
     LabeledDataset *vds;
