@@ -25,6 +25,7 @@ public:
     double *next();
     bool hasNext();
     void reset();
+    int getSize();
     // Adds a single input vector with its label.
     void addPattern(const double *input, const double *output);
     

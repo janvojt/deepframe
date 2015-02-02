@@ -20,6 +20,12 @@ public:
     // Returns the dimension of labels for input data.
     virtual int getOutputDimension() = 0;
     
+    /** Gets the dataset size.
+        
+        @return number of patterns in this dataset.
+     */
+    virtual int getSize() = 0;
+    
     /** Creates a new dataset taking patterns from this dataset.
 
         This method is useful for creating validation sets.

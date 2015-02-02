@@ -36,6 +36,7 @@
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 #include "log4cpp/Priority.hh"
+#include "ds/fold/FoldDatasetFactory.h"
 
 // getopts constants
 #define no_argument 0
@@ -48,7 +49,7 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbl:a:e:k:m:f:g:ic:s:t:v:r:ju:pd";
+const char* optsList = "hbl:a:e:k:m:f:g:ic:s:t:v:q:r:ju:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
@@ -65,6 +66,7 @@ const struct option optsLong[] = {
     {"labels", required_argument, 0, 's'},
     {"test", required_argument, 0, 't'},
     {"validation", required_argument, 0, 'v'},
+    {"k-fold", required_argument, 0, 'q'},
     {"idx", no_argument, 0, 'i'},
     {"random-seed", required_argument, 0, 'r'},
     {"shuffle", no_argument, 0, 'j'},
@@ -97,6 +99,8 @@ struct config {
     char* testData = NULL;
     /* Validation data set size */
     int validationSize = 0;
+    /* Number of folds to be used in k-fold cross validation. */
+    int kFold = 0;
     /* Use IDX data format when parsing input files? */
     bool useIdx = false;
     /* Seed for random generator. */
@@ -211,6 +215,7 @@ void printHelp() {
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
     cout << "-v <value>  --validation <value>  Size of the validation set. Patterns are taken from the training set. Default is zero." << endl;
+    cout << "-q <value>  --k-fold <value>      Number of folds to use in k-fold cross validation. Default is zero (=disabled)." << endl;
     cout << "-i          --idx                 Use IDX data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << "-j          --shuffle             Shuffles training and validation dataset do the patterns are in random order." << endl;
@@ -273,6 +278,11 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 'v' :
                 conf->validationSize = atoi(optarg);
+                conf->kFold = 0;
+                break;
+            case 'q' :
+                conf->validationSize = 0;
+                conf->kFold = atoi(optarg);
                 break;
             case 'i' :
                 conf->useIdx = true;
@@ -484,8 +494,13 @@ int main(int argc, char *argv[]) {
 //    return 0;
     
     // Prepare validation dataset
+    FoldDatasetFactory *df;
     LabeledDataset *vds;
-    if (conf->validationSize > 0) {
+    if (conf->kFold > 0) {
+        df = new FoldDatasetFactory(lds, conf->kFold);
+        lds = (LabeledDataset *) df->getTrainingDataset();
+        vds = (LabeledDataset *) df->getValidationDataset();
+    } else if (conf->validationSize > 0) {
         vds = lds->takeAway(conf->validationSize);
     } else {
         vds = (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
@@ -503,6 +518,11 @@ int main(int argc, char *argv[]) {
     
     // Run (hopefully) learnt network.
     runTest(net, tds);
+    
+    // Release dynamically allocated memory
+    if (conf->kFold > 0) {
+        delete df;
+    }
     
     delete bp;
     delete lds;

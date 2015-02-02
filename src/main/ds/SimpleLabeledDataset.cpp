@@ -70,6 +70,11 @@ void SimpleLabeledDataset::reset() {
     cursor = 0;
 }
 
+int SimpleLabeledDataset::getSize() {
+    return size;
+}
+
+
 SimpleLabeledDataset* SimpleLabeledDataset::takeAway(int size) {
     
     // we cannot take more than we have
