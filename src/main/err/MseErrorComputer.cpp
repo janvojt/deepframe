@@ -24,6 +24,6 @@ double MseErrorComputer::compute(Network* net, double* expectedOutput) {
     for (int i = 0; i<oNeurons; i++) {
         mse += pow(output[i] - expectedOutput[i], 2);
     }
-    mse = mse / 2;
+    mse = mse / oNeurons;
     return mse;
 }
