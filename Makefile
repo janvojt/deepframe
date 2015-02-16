@@ -3,8 +3,8 @@ CC=/usr/bin/g++ # This is the main compiler
 #CC=clang --analyze # and comment out the linker last line for sanity
 
 # Location of the CUDA Toolkit
-CUDA_PATH="/usr/local/cuda"
-NVCC=$(CUDA_PATH)/bin/nvcc -ccbin $(CC)
+CUDA_HOME?="/usr/local/cuda"
+NVCC=$(CUDA_HOME)/bin/nvcc -ccbin $(CC)
 
 SRCDIR=src/main
 BUILDDIR=build/main
