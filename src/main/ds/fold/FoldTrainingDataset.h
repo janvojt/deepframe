@@ -19,8 +19,9 @@ public:
         
         @param folds array of labeled datasets representing respective folds
         @param k number of folds
+        @param valIdx specifies which fold is fixed for validation
      */
-    FoldTrainingDataset(LabeledDataset **folds, int k);
+    FoldTrainingDataset(LabeledDataset **folds, int k, int valIdx);
     
     /** Copy constructor.
         

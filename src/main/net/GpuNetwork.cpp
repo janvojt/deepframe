@@ -26,9 +26,24 @@ GpuNetwork::GpuNetwork(NetworkConfiguration *netConf, GpuConfiguration *gpuConf)
     initWeights();
     initInputs();
     initBias();
+    reinit();
 }
 
-GpuNetwork::GpuNetwork(const GpuNetwork& orig) : Network(orig) {
+GpuNetwork::GpuNetwork(const GpuNetwork& orig) : Network(orig.conf) {
+    
+    // initialize network and allocate memory
+    cublasCreate(&cublasHandle);
+    this->gpuConf = orig.gpuConf;
+    initWeights();
+    initInputs();
+    initBias();
+    
+    // copy data
+    int wMemSize = sizeof(double) * getWeightsOffset(noLayers);
+    int iMemSize = sizeof(double) * getInputOffset(noLayers);
+    checkCudaErrors(cudaMemcpy(dInputs, orig.dInputs, iMemSize, cudaMemcpyDeviceToDevice));
+    checkCudaErrors(cudaMemcpy(weights, orig.weights, wMemSize, cudaMemcpyDeviceToDevice));
+    if (conf->getBias()) checkCudaErrors(cudaMemcpy(bias, orig.bias, iMemSize, cudaMemcpyDeviceToDevice));
 }
 
 GpuNetwork::~GpuNetwork() {
@@ -42,10 +57,42 @@ GpuNetwork::~GpuNetwork() {
     delete[] output;
 }
 
-void GpuNetwork::randomizeDoublesOnGpu(double **dMemory, int size) {
+GpuNetwork* GpuNetwork::clone() {
+    return new GpuNetwork(*this);
+}
 
-    int memSize = sizeof(double) * size;
-    checkCudaErrors(cudaMalloc(dMemory, memSize));
+void GpuNetwork::merge(Network** nets, int size) {
+    
+    int noWeights = weightsUpToLayerCache[noLayers];
+    for (int i = 0; i<size; i++) {
+        
+        // add weights
+        k_sumVectors(weights, nets[i]->getWeights(), noWeights);
+        
+        // add bias
+        k_sumVectors(bias, nets[i]->getBiasValues(), noNeurons);
+    }
+    
+    // divide to get the average
+    k_divideVector(weights, size+1, noWeights);
+    k_divideVector(bias, size+1, noNeurons);
+}
+
+void GpuNetwork::reinit() {
+    
+    // overwrite weights with random doubles
+    randomizeDoublesOnGpu(&weights, weightsUpToLayerCache[noLayers]);
+    
+    // overwrite bias with random doubles
+    if (conf->getBias()) {
+        if (bias == NULL) {
+            initBias();
+        }
+        randomizeDoublesOnGpu(&bias, noNeurons);
+    }
+}
+
+void GpuNetwork::randomizeDoublesOnGpu(double **dMemory, int size) {
     
     // Initialize random values on GPU device memory.
     curandGenerateUniformDouble(*gpuConf->getRandGen(), *dMemory, size);
@@ -65,7 +112,8 @@ void GpuNetwork::initWeights() {
     }
     
     // use GPU random init,
-    randomizeDoublesOnGpu(&weights, noWeights);
+    int memSize = sizeof(double) * noWeights;
+    checkCudaErrors(cudaMalloc(&weights, memSize));
 }
 
 void GpuNetwork::initInputs() {
@@ -91,10 +139,8 @@ void GpuNetwork::initInputs() {
 
 void GpuNetwork::initBias() {
     if (conf->getBias()) {
-    
-        // Initialize bias.
-        randomizeDoublesOnGpu(&bias, noNeurons);
-        
+        int memSize = sizeof(double) * noNeurons;
+        checkCudaErrors(cudaMalloc(&bias, memSize));
     } else {
         bias = NULL;
     }

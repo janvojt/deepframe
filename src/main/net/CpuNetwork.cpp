@@ -18,9 +18,17 @@ CpuNetwork::CpuNetwork(NetworkConfiguration *conf) : Network(conf) {
     initWeights();
     initInputs();
     initBias();
+    reinit();
 }
 
-CpuNetwork::CpuNetwork(const CpuNetwork& orig) : Network(orig) {
+CpuNetwork::CpuNetwork(const CpuNetwork& orig) : Network(orig.conf) {
+    initWeights();
+    initInputs();
+    initBias();
+    
+    std::memcpy(inputs, orig.inputs, sizeof(double) * noNeurons);
+    std::memcpy(weights, orig.weights, sizeof(double) * weightsUpToLayerCache[noLayers]);
+    std::memcpy(bias, orig.bias, sizeof(double) * getInputNeurons());
 }
 
 CpuNetwork::~CpuNetwork() {
@@ -30,6 +38,53 @@ CpuNetwork::~CpuNetwork() {
     delete[] inputs;
     delete[] bias;
 }
+
+CpuNetwork* CpuNetwork::clone() {
+    return new CpuNetwork(*this);
+}
+
+void CpuNetwork::merge(Network** nets, int size) {
+    
+    int noWeights = weightsUpToLayerCache[noLayers];
+    for (int i = 0; i<size; i++) {
+        
+        // add weights
+        double *oWeights = nets[i]->getWeights();
+        for (int j = 0; j<noWeights; j++) {
+            weights[j] += oWeights[j];
+        }
+        
+        // add bias
+        double *oBias = nets[i]->getBiasValues();
+        for (int j = 0; j<noNeurons; j++) {
+            bias[j] += oBias[j];
+        }
+    }
+    
+    // divide to get the average
+    for (int j = 0; j<noWeights; j++) {
+        weights[j] /= size+1;
+    }
+    for (int j = 0; j<noNeurons; j++) {
+        bias[j] /= size+1;
+    }
+}
+
+void CpuNetwork::reinit() {
+    
+    // overwrite weights with random doubles
+    randomizeDoubles(&weights, weightsUpToLayerCache[noLayers]);
+    
+    if (conf->getBias()) {
+        if (bias == NULL) {
+            initBias();
+        }
+        
+        // overwrite bias with random doubles
+        randomizeDoubles(&bias, noNeurons);
+    }
+}
+
 
 void CpuNetwork::initWeights() {
     int noWeights = 0;
@@ -42,9 +97,6 @@ void CpuNetwork::initWeights() {
         weightsUpToLayerCache[i+1] = noWeights;
         pLayer = tLayer;
     }
-
-    // Initialize weights.
-    randomizeDoubles(&weights, noWeights);
 }
 
 void CpuNetwork::initInputs() {
@@ -62,10 +114,6 @@ void CpuNetwork::initInputs() {
 void CpuNetwork::initBias() {
     if (conf->getBias()) {
         bias = new double[noNeurons];
-        
-        // Initialize bias.
-        randomizeDoubles(&bias, noNeurons);
-
     } else {
         bias = NULL;
     }

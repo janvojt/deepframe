@@ -100,7 +100,7 @@ struct config {
     /* Validation data set size */
     int validationSize = 0;
     /* Number of folds to be used in k-fold cross validation. */
-    int kFold = 0;
+    int kFold = 1;
     /* Use IDX data format when parsing input files? */
     bool useIdx = false;
     /* Seed for random generator. */
@@ -215,7 +215,7 @@ void printHelp() {
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
     cout << "-v <value>  --validation <value>  Size of the validation set. Patterns are taken from the training set. Default is zero." << endl;
-    cout << "-q <value>  --k-fold <value>      Number of folds to use in k-fold cross validation. Default is zero (=disabled)." << endl;
+    cout << "-q <value>  --k-fold <value>      Number of folds to use in k-fold cross validation. Default is one (=disabled)." << endl;
     cout << "-i          --idx                 Use IDX data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << "-j          --shuffle             Shuffles training and validation dataset do the patterns are in random order." << endl;
@@ -493,19 +493,6 @@ int main(int argc, char *argv[]) {
 //    printImageLabels((LabeledDataset *)lds);
 //    return 0;
     
-    // Prepare validation dataset
-    FoldDatasetFactory *df;
-    LabeledDataset *vds;
-    if (conf->kFold > 0) {
-        df = new FoldDatasetFactory(lds, conf->kFold);
-        lds = (LabeledDataset *) df->getTrainingDataset();
-        vds = (LabeledDataset *) df->getValidationDataset();
-    } else if (conf->validationSize > 0) {
-        vds = lds->takeAway(conf->validationSize);
-    } else {
-        vds = (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
-    }
-    
     // configure BP learner
     bp->setLearningRate(conf->lr);
     bp->setTargetMse(conf->mse);
@@ -513,14 +500,49 @@ int main(int argc, char *argv[]) {
     bp->setEpochLimit(conf->maxEpochs);
     bp->setImproveEpochs(conf->improveEpochs);
     
-    // train network
-    bp->train(lds, vds);
+    // Prepare validation dataset
+    FoldDatasetFactory *df;
+    LabeledDataset *vds;
+    if (conf->kFold > 1) {
+
+        // we are using k-fold validation
+        df = new FoldDatasetFactory(lds, conf->kFold);
+        Network **nets = new Network*[conf->kFold-1];
+        
+        // train each fold
+        for (int i = 0; i<conf->kFold-1; i++) {
+            lds = (LabeledDataset *) df->getTrainingDataset(i);
+            vds = (LabeledDataset *) df->getValidationDataset(i);
+            
+            net->reinit();
+            bp->train(lds, vds);
+            nets[i] = net->clone();
+        }
+        
+        // cloning is not necessary for the last training
+        net->reinit();
+        bp->train(lds, vds);
+        
+        // merge results
+        net->merge(nets, conf->kFold-1);
+        
+        // release memory
+        for (int i = 0; i<conf->kFold-1; i++) delete nets[i];
+        delete[] nets;
+
+    } else if (conf->validationSize > 0) {
+        vds = lds->takeAway(conf->validationSize);
+        bp->train(lds, vds);
+    } else {
+        vds = (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
+        bp->train(lds, vds);
+    }
     
     // Run (hopefully) learnt network.
     runTest(net, tds);
     
     // Release dynamically allocated memory
-    if (conf->kFold > 0) {
+    if (conf->kFold > 1) {
         delete df;
     }
     

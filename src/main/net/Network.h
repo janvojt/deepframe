@@ -18,8 +18,31 @@ public:
     Network(NetworkConfiguration *conf);
     Network(const Network& orig);
     virtual ~Network();
-    // Returns the network configuration.
+    
+    /** Creates a network clone.
+        
+        @return network clone with copied weights, potentials, bias, etc.
+     */
+    virtual Network *clone() = 0;
+    
+    /**
+     * Merges weights and bias from given networks into this network.
+     * 
+     * @param nets array of networks to be merged into this network
+     * @param size number of networks in given array
+     */
+    virtual void merge(Network **nets, int size) = 0;
+    
+    /** Returns the network configuration.
+     */
     NetworkConfiguration *getConfiguration();
+    
+    /** Reinitializes network so it forgets everything it learnt.
+
+        This usually means random reinitialization of weights and bias.
+     */
+    virtual void reinit() = 0;
+    
     // run the network
     virtual void run() = 0;
     // Sets the input values for the network.

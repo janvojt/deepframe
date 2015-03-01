@@ -25,10 +25,10 @@ FoldDatasetFactory::~FoldDatasetFactory() {
     delete[] folds;
 }
 
-FoldTrainingDataset* FoldDatasetFactory::getTrainingDataset() {
-    return new FoldTrainingDataset(folds, noFolds);
+FoldTrainingDataset* FoldDatasetFactory::getTrainingDataset(int valIdx) {
+    return new FoldTrainingDataset(folds, noFolds, valIdx);
 }
 
-FoldValidationDataset* FoldDatasetFactory::getValidationDataset() {
-    return new FoldValidationDataset(folds, noFolds);
+FoldValidationDataset* FoldDatasetFactory::getValidationDataset(int valIdx) {
+    return new FoldValidationDataset(folds, noFolds, valIdx);
 }

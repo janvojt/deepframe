@@ -5,15 +5,18 @@
  * Created on February 1, 2015, 10:26 PM
  */
 
+#include <assert.h>
+
 #include "FoldValidationDataset.h"
 
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-FoldValidationDataset::FoldValidationDataset(LabeledDataset **folds, int k) {
+FoldValidationDataset::FoldValidationDataset(LabeledDataset **folds, int k, int valIdx) {
+    assert(valIdx >= 0 && valIdx < k);
     noFolds = k;
     this->folds = folds;
-    valIdx = k-1;
+    this->valIdx = valIdx;
 }
 
 FoldValidationDataset::FoldValidationDataset(const FoldValidationDataset& orig) {
@@ -43,10 +46,6 @@ double* FoldValidationDataset::next() {
 }
 
 void FoldValidationDataset::reset() {
-    valIdx++;
-    if (valIdx >= noFolds) {
-        valIdx = 0;
-    }
     folds[valIdx]->reset();
 }
 

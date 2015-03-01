@@ -40,15 +40,17 @@ public:
     
     /** Factory for the k-fold training dataset.
      
+        @param valIdx specifies the fold index to use as validation dataset
         @return k-fold training dataset
      */
-    FoldTrainingDataset *getTrainingDataset();
+    FoldTrainingDataset *getTrainingDataset(int valIdx);
     
     /** Factory for the k-fold validation dataset.
         
+        @param valIdx specifies the fold index to use as validation dataset
         @return k-fold validation dataset
      */
-    FoldValidationDataset *getValidationDataset();
+    FoldValidationDataset *getValidationDataset(int valIdx);
     
 private:
     /** Number of folds in the dataset. */

@@ -5,6 +5,8 @@
  * Created on February 2, 2015, 12:36 AM
  */
 
+#include <assert.h>
+
 #include "FoldTrainingDataset.h"
 #include "../InputDataset.h"
 #include "../LabeledDataset.h"
@@ -12,10 +14,11 @@
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-FoldTrainingDataset::FoldTrainingDataset(LabeledDataset **folds, int k) {
+FoldTrainingDataset::FoldTrainingDataset(LabeledDataset **folds, int k, int valIdx) {
+    assert(valIdx >= 0 && valIdx < k);
     noFolds = k;
     this->folds = folds;
-    valIdx = k-1;
+    this->valIdx = valIdx;
     foldIdx = 0;
 }
 
@@ -60,7 +63,11 @@ double* FoldTrainingDataset::next() {
 }
 
 void FoldTrainingDataset::reset() {
-    valIdx = nextFold(valIdx);
+    foldIdx = nextFold(valIdx);
+    while (foldIdx != valIdx) {
+        folds[foldIdx]->reset();
+        foldIdx = nextFold(foldIdx);
+    }
     foldIdx = nextFold(valIdx);
 }
 
@@ -73,8 +80,13 @@ LabeledDataset* FoldTrainingDataset::takeAway(int size) {
     return NULL;
 }
 
-int FoldTrainingDataset::nextFold(int currFold) {
-    int nFoldIdx = currFold + 1;
+/** Determines the next fold in line.
+    
+    @param refFold referential fold to move by 1 from
+    @return next fold in line from refFold
+ */
+int FoldTrainingDataset::nextFold(int refFold) {
+    int nFoldIdx = refFold + 1;
     if (nFoldIdx >= noFolds) {
         nFoldIdx = 0;
     }

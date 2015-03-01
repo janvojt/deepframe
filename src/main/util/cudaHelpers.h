@@ -25,6 +25,15 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 // Computes matrix sum A = A + B.
 void k_sumVectors(double *dA, double *dB, int elements);
 
+/**
+ * Divides every array element by given divisor.
+ * 
+ * @param dA array to divide
+ * @param divisor
+ * @param elements size of the array
+ */
+void k_divideVector(double *dA, double divisor, int elements);
+
 void k_computeOutputLocalGradient(double *actualOutput, double *expectedOutput, double *localGradient, int elements);
 
 void k_computeTotalDerivative(int thisNeurons, int nextNeurons, 

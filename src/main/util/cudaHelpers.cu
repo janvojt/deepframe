@@ -25,6 +25,20 @@ void k_sumVectors(double *dA, double *dB, int elements) {
 
 
 __global__
+void divideVector(double *dA, double divisor, int elements) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < elements) {
+        dA[i] /= divisor;
+    }
+}
+void k_divideVector(double *dA, double divisor, int elements) {
+    int ts = 512;
+    int bs = (elements + ts - 1) / ts;
+    divideVector<<<bs,ts>>>(dA, divisor, elements);
+}
+
+
+__global__
 void computeOutputLocalGradient(double *actualOutput, double *expectedOutput, double *localGradient, int elements) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     if (i < elements) {

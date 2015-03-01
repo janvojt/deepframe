@@ -15,6 +15,27 @@ public:
     CpuNetwork(NetworkConfiguration *conf);
     CpuNetwork(const CpuNetwork& orig);
     virtual ~CpuNetwork();
+    
+    /** Creates a network clone.
+        
+        @return network clone with copied weights, potentials, bias, etc.
+     */
+    CpuNetwork *clone();
+    
+    /**
+     * Merges weights and bias from given networks into this network.
+     * 
+     * @param nets array of networks to be merged into this network
+     * @param size number of networks in given array
+     */
+    void merge(Network **nets, int size);
+    
+    /** Reinitializes network so it forgets everything it learnt.
+
+        This means random reinitialization of weights and bias.
+     */
+    void reinit();
+    
     // run the network
     void run();
     // Sets the input values for the network.
