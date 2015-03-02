@@ -21,6 +21,9 @@ using namespace std;
 // Number of label classes (0-9 numerals for MNIST).
 const unsigned int LABEL_CLASSES = 10;
 
+// data dimensions
+const unsigned int INPUT_DIMENSIONS = 3;
+const unsigned int LABEL_DIMENSIONS = 1;
 
 LabeledMnistParser::LabeledMnistParser() {
 }
@@ -40,29 +43,29 @@ LabeledDataset* LabeledMnistParser::parse(char *filePath) {
     dataPath = strtok(filePath, ":");
     labelPath = strtok(NULL, ":");
     
-    LOG()->info("Parsing IDX file '%s' for training dataset.", dataPath);
+    LOG()->info("Parsing IDX file '%s' to build the dataset with input patterns.", dataPath);
     IdxData *data = parser->parse(dataPath);
     if (data == NULL) {
         return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     
-    LOG()->info("Parsing IDX file '%s' for training labels.", labelPath);
+    LOG()->info("Parsing IDX file '%s' to build the dataset with labels.", labelPath);
     IdxData *labels = parser->parse(labelPath);
     if (labels == NULL) {
         return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     
     // validate input IDX data
-    if (data->getNoDimensions() != 3) {
-        LOG()->error("IDX files with training data have unexpected number of dimensions (actual %d, expected %d).", data->getNoDimensions(), 3);
+    if (data->getNoDimensions() != INPUT_DIMENSIONS) {
+        LOG()->error("IDX file with the input patterns has unexpected number of dimensions (actual %d, expected %d).", data->getNoDimensions(), INPUT_DIMENSIONS);
         return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
-    if (data->getNoDimensions() != 3) {
-        LOG()->error("IDX files with training labels have unexpected number of dimensions (actual %d, expected %d).", labels->getNoDimensions(), 1);
+    if (labels->getNoDimensions() != LABEL_DIMENSIONS) {
+        LOG()->error("IDX file with the labels has unexpected number of dimensions (actual %d, expected %d).", labels->getNoDimensions(), LABEL_DIMENSIONS);
         return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     if (data->getDimensionSize(0) < labels->getDimensionSize(0)) {
-        LOG()->error("IDX files with training data have inconsistent dataset sizes (%d vs. %d).", data->getDimensionSize(0), labels->getDimensionSize(0));
+        LOG()->error("IDX files with input patterns and labels have inconsistent dataset sizes (%d vs. %d).", data->getDimensionSize(0), labels->getDimensionSize(0));
         return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     
