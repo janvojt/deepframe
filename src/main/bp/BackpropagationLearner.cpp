@@ -10,7 +10,6 @@
 #include <cstring>
 #include <string>
 #include <stdexcept>
-#include <limits>
 
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -20,10 +19,8 @@ const int MAX_IMPROVEMENT_EPOCHS = 1000;
 BackpropagationLearner::BackpropagationLearner(Network *network) {
     this->network = network;
     learningRate = 1;
-    epochCounter = 0;
     epochLimit = 1000000;
     targetMse = .0001;
-    errorTotal = std::numeric_limits<double>::infinity();
     useBias = network->getConfiguration()->getBias();
     noLayers = network->getConfiguration()->getLayers();
     deltaError = 0;
@@ -38,9 +35,12 @@ BackpropagationLearner::~BackpropagationLearner() {
     if (improveEpochs > 0) delete[] errorCache;
 }
 
-void BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset *validationSet) {
-    double mse = std::numeric_limits<double>::infinity();
+double BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset *validationSet) {
+    
+    long epochCounter = 0;
+    double mse = 1.0; // maximum possible error
     LOG()->info("Started training with limits of %d epochs and target MSE of %f.", epochLimit, targetMse);
+    
     do {
         epochCounter++;
         LOG()->debug("Starting epoch %d.", epochCounter);
@@ -85,6 +85,7 @@ void BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset *
         
     } while (true); // stopping checks are at the end of the loop
     
+    return mse;
 }
 
 void BackpropagationLearner::doForwardPhase(double *input) {

@@ -507,28 +507,27 @@ int main(int argc, char *argv[]) {
 
         // we are using k-fold validation
         df = new FoldDatasetFactory(lds, conf->kFold);
-        Network **nets = new Network*[conf->kFold-1];
+        double bestError = 2.0; // start with impossibly bad error
+        Network *bestNet = NULL;
         
         // train each fold
-        for (int i = 0; i<conf->kFold-1; i++) {
+        for (int i = 0; i<conf->kFold; i++) {
             lds = (LabeledDataset *) df->getTrainingDataset(i);
             vds = (LabeledDataset *) df->getValidationDataset(i);
             
             net->reinit();
-            bp->train(lds, vds);
-            nets[i] = net->clone();
+            double mse = bp->train(lds, vds);
+            
+            if (mse < bestError) {
+                if (bestNet != NULL) delete bestNet;
+                bestError = mse;
+                bestNet = net->clone();
+            }
         }
         
-        // cloning is not necessary for the last training
-        net->reinit();
-        bp->train(lds, vds);
-        
-        // merge results
-        net->merge(nets, conf->kFold-1);
-        
-        // release memory
-        for (int i = 0; i<conf->kFold-1; i++) delete nets[i];
-        delete[] nets;
+        // use the best network
+        delete net;
+        net = bestNet;
 
     } else if (conf->validationSize > 0) {
         vds = lds->takeAway(conf->validationSize);

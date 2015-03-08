@@ -18,7 +18,16 @@ public:
     BackpropagationLearner(const BackpropagationLearner& orig);
     virtual ~BackpropagationLearner();
     // Launches the learning process with given training set and validation set.
-    void train(LabeledDataset *trainingSet, LabeledDataset *validationSet);
+    
+    /**
+     * Launches the learning process with given training set and validation set.
+     * 
+     * @param trainingSet
+     * @param validationSet
+     * @return error in the validation dataset
+     *  (or training dataset if no validation dataset is given)
+     */
+    double train(LabeledDataset *trainingSet, LabeledDataset *validationSet);
     // Sets the learning rate influencing speed and quality of learning.
     void setLearningRate(double learningRate);
     // Sets the maximum number of epochs.
@@ -54,10 +63,6 @@ protected:
     Network *network;
     // Learning parameter. Intended to be decreasing during learning process.
     double learningRate;
-    // Represents average error of the current network configuration.
-    double errorTotal;
-    // Counter of epochs, incremented right before new epoch is started.
-    long epochCounter;
     // Stop learning when given number of epochs passes.
     long epochLimit;
     // Target Mean Square Error. When it is reached, training is finished.
