@@ -83,7 +83,7 @@ struct config {
     /* Interval network weights are initialized in. */
     char* initInterval = NULL;
     /* mean square error */
-    double mse = .0001;
+    double mse = .01;
     /* Number of epochs during which error improvement
      *  is required to keep learning. */
     int improveEpochs = 0;
@@ -206,7 +206,7 @@ void printHelp() {
     cout << "-b          --no-bias             Disables bias in neural network. Bias is enabled by default." << endl;
     cout << "-l <value>  --rate <value>        Learning rate influencing the speed and quality of learning. Default value is 0.3." << endl;
     cout << "-a <value>  --init <value>        Minimum and maximum value network weights are initialized to. Default is -1,1." << endl;
-    cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning." << endl;
+    cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning. Default is 0.01." << endl;
     cout << "-k <value>  --improve-err <value> Number of epochs during which improvement of error is required to keep learning. Default is zero (=disabled)." << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met. Default is 100,000" << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
