@@ -80,11 +80,15 @@ void GpuNetwork::merge(Network** nets, int size) {
 
 void GpuNetwork::reinit() {
     
+    LOG()->info("Randomly initializing weights and bias within the interval (%f,%f).", conf->getInitMin(), conf->getInitMax());
+    
     // overwrite weights with random doubles
     randomizeDoublesOnGpu(&weights, weightsUpToLayerCache[noLayers]);
     
     // overwrite bias with random doubles
     if (conf->getBias()) {
+    
+        LOG()->info("Randomly initializing bias within the interval (%f,%f).", conf->getInitMin(), conf->getInitMax());
         if (bias == NULL) {
             initBias();
         }

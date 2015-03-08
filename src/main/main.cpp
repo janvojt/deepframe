@@ -473,7 +473,7 @@ int main(int argc, char *argv[]) {
         delete p;
     }
     
-    // Prepare labeled dataset.
+    // Prepare training dataset.
     // If none was provided in options use XOR dataset by default.
     LabeledDataset *lds;
     if (conf->labeledData == NULL) {
@@ -489,7 +489,11 @@ int main(int argc, char *argv[]) {
     }
     
     // Shuffle labeled data
-    if (conf->shuffle) lds->shuffle();
+    if (conf->shuffle) {
+        LOG()->info("Randomly shuffling the training dataset.");
+        lds->shuffle();
+    }
+    
 //    printImageLabels((LabeledDataset *)lds);
 //    return 0;
     
@@ -505,9 +509,10 @@ int main(int argc, char *argv[]) {
     LabeledDataset *vds;
     if (conf->kFold > 1) {
 
-        // we are using k-fold validation
+        LOG()->info("Training with %d-fold cross validation.", conf->kFold);
         df = new FoldDatasetFactory(lds, conf->kFold);
         double bestError = 2.0; // start with impossibly bad error
+        double bestValIdx = 0;
         Network *bestNet = NULL;
         
         // train each fold
@@ -516,11 +521,12 @@ int main(int argc, char *argv[]) {
             vds = (LabeledDataset *) df->getValidationDataset(i);
             
             net->reinit();
-            double mse = bp->train(lds, vds);
+            double mse = bp->train(lds, vds, i+1);
             
             if (mse < bestError) {
                 if (bestNet != NULL) delete bestNet;
                 bestError = mse;
+                bestValIdx = i;
                 bestNet = net->clone();
             }
         }
@@ -528,13 +534,18 @@ int main(int argc, char *argv[]) {
         // use the best network
         delete net;
         net = bestNet;
+        LOG()->info("Best error of %f achieved using validation fold %d.", bestError, bestValIdx);
 
     } else if (conf->validationSize > 0) {
+        
+        LOG()->info("Picking the last %d samples from the training dataset to be used for validation.");
         vds = lds->takeAway(conf->validationSize);
-        bp->train(lds, vds);
+        bp->train(lds, vds, 0);
+        
     } else {
+        
         vds = (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
-        bp->train(lds, vds);
+        bp->train(lds, vds, 0);
     }
     
     // Run (hopefully) learnt network.

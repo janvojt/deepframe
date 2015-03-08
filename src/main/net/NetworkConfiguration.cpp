@@ -90,6 +90,8 @@ void NetworkConfiguration::parseInitInterval(char* intervalConf) {
 
 
 void NetworkConfiguration::parseLayerConf(char* layerConf) {
+    
+    this->layerConf = layerConf;
 
     // Configure layers.
     // Count and set number of layers.
@@ -126,4 +128,8 @@ void NetworkConfiguration::setInitMax(double max) {
 
 double NetworkConfiguration::getInitMax() {
     return initMax;
+}
+
+char* NetworkConfiguration::getLayerConf() {
+    return layerConf;
 }

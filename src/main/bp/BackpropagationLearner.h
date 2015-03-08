@@ -17,17 +17,18 @@ public:
     BackpropagationLearner(Network *network);
     BackpropagationLearner(const BackpropagationLearner& orig);
     virtual ~BackpropagationLearner();
-    // Launches the learning process with given training set and validation set.
     
     /**
      * Launches the learning process with given training set and validation set.
      * 
-     * @param trainingSet
-     * @param validationSet
+     * @param trainingSet dataset with patterns to be used for training
+     * @param validationSet validation dataset used for calculating error
+     * @param valIdx index of the fold used for validation,
+     *  use zero if not using k-fold cross validation
      * @return error in the validation dataset
      *  (or training dataset if no validation dataset is given)
      */
-    double train(LabeledDataset *trainingSet, LabeledDataset *validationSet);
+    double train(LabeledDataset *trainingSet, LabeledDataset *validationSet, int valIdx);
     // Sets the learning rate influencing speed and quality of learning.
     void setLearningRate(double learningRate);
     // Sets the maximum number of epochs.

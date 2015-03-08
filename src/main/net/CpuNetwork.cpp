@@ -14,6 +14,9 @@
 
 #include "../util/cpuDebugHelpers.h"
 
+#include "../log/LoggerFactory.h"
+#include "log4cpp/Category.hh"
+
 CpuNetwork::CpuNetwork(NetworkConfiguration *conf) : Network(conf) {
     initWeights();
     initInputs();
@@ -72,10 +75,14 @@ void CpuNetwork::merge(Network** nets, int size) {
 
 void CpuNetwork::reinit() {
     
+    LOG()->info("Randomly initializing weights within the interval (%f,%f).", conf->getInitMin(), conf->getInitMax());
+    
     // overwrite weights with random doubles
     randomizeDoubles(&weights, weightsUpToLayerCache[noLayers]);
     
     if (conf->getBias()) {
+    
+        LOG()->info("Randomly initializing bias within the interval (%f,%f).", conf->getInitMin(), conf->getInitMax());
         if (bias == NULL) {
             initBias();
         }
