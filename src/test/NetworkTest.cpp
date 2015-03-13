@@ -5,10 +5,13 @@
 #include "net/NetworkConfiguration.h"
 #include "activationFunctions.h"
 
+#define DATA_TYPE float
 
-NetworkConfiguration* createConf() {
+
+template <typename dType>
+NetworkConfiguration<dType>* createConf() {
     
-    NetworkConfiguration *netConf = new NetworkConfiguration();
+    NetworkConfiguration<dType> *netConf = new NetworkConfiguration<dType>();
     netConf->setLayers(3);
     netConf->setNeurons(0, 2);
     netConf->setNeurons(1, 2);
@@ -19,18 +22,21 @@ NetworkConfiguration* createConf() {
     
     return netConf;
 }
+template NetworkConfiguration<DATA_TYPE>* createConf<DATA_TYPE>();
 
 // Sets all the network weights to given value.
-void setAllWeights(Network *net, double value) {
-    double *weights = net->getWeights();
+template <typename dType>
+void setAllWeights(Network<dType> *net, dType value) {
+    dType *weights = net->getWeights();
     long noWeights = net->getWeightsOffset(net->getConfiguration()->getLayers());
     
     std::fill_n(weights, noWeights, value);
 }
+template void setAllWeights<DATA_TYPE>(Network<DATA_TYPE>*, DATA_TYPE);
 
 // Test network neurons counters.
 TEST(Network, NeuronCounters) {
-    Network *net = new CpuNetwork(createConf());
+    Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
     
     EXPECT_EQ(5, net->getAllNeurons());
     EXPECT_EQ(2, net->getInputNeurons());
@@ -39,9 +45,9 @@ TEST(Network, NeuronCounters) {
 
 // Test network input setup.
 TEST(Network, InputSetTest) {
-    Network *net = new CpuNetwork(createConf());
+    Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
     
-    double input[] = {.1, .1};
+    DATA_TYPE input[] = {.1, .1};
     net->setInput(input);
     
     EXPECT_EQ(input[0], net->getInput()[0]);
@@ -51,15 +57,15 @@ TEST(Network, InputSetTest) {
 // Test run of a simple network with no bias and weights of 1.
 TEST(Network, SimpleRun) {
     
-    NetworkConfiguration *conf = createConf();
+    NetworkConfiguration<DATA_TYPE> *conf = createConf<DATA_TYPE>();
     conf->setBias(false);
     conf->activationFnc = identityFunction;
     conf->dActivationFnc = dIdentityFunction;
     
-    Network *net = new CpuNetwork(conf);
-    setAllWeights(net, 1);
+    Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(conf);
+    setAllWeights<DATA_TYPE>(net, 1);
     
-    double input[] = {0, 0};
+    DATA_TYPE input[] = {0, 0};
     
     net->setInput(input);
     net->run();
@@ -87,15 +93,15 @@ TEST(Network, SimpleRun) {
 // Test run of a simple network with no bias and weights of 1/2.
 TEST(Network, SimpleWeightTest) {
     
-    NetworkConfiguration *conf = createConf();
+    NetworkConfiguration<DATA_TYPE> *conf = createConf<DATA_TYPE>();
     conf->setBias(false);
     conf->activationFnc = identityFunction;
     conf->dActivationFnc = dIdentityFunction;
     
-    Network *net = new CpuNetwork(conf);
-    setAllWeights(net, .5);
+    Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(conf);
+    setAllWeights<DATA_TYPE>(net, .5);
     
-    double input[] = {0, 0};
+    DATA_TYPE input[] = {0, 0};
     
     net->setInput(input);
     net->run();
@@ -122,7 +128,7 @@ TEST(Network, SimpleWeightTest) {
 
 // Test network weight offsets.
 TEST(Network, WeightsOffsetTest) {
-    Network *net = new CpuNetwork(createConf());
+    Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
     
     EXPECT_EQ(0, net->getWeightsOffset(0));
     EXPECT_EQ(2, net->getWeightsOffset(1));
@@ -132,7 +138,7 @@ TEST(Network, WeightsOffsetTest) {
 
 // Test neuron input offsets.
 TEST(Network, NeuronInputOffsetTest) {
-    Network *net = new CpuNetwork(createConf());
+    Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
     
     EXPECT_EQ(0, net->getInputOffset(0));
     EXPECT_EQ(2, net->getInputOffset(1));

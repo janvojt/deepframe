@@ -11,15 +11,15 @@
 #include "BackpropagationLearner.h"
 #include "../net/CpuNetwork.h"
 
-
-class CpuBackpropagationLearner : public BackpropagationLearner {
+template <typename dType>
+class CpuBackpropagationLearner : public BackpropagationLearner<dType> {
 public:
-    CpuBackpropagationLearner(CpuNetwork *network);
+    CpuBackpropagationLearner(CpuNetwork<dType> *network);
     CpuBackpropagationLearner(const CpuBackpropagationLearner& orig);
     virtual ~CpuBackpropagationLearner();
 protected:
     // Computes local gradients for output neurons.
-    void computeOutputGradients(double *expectedOutput);
+    void computeOutputGradients(dType *expectedOutput);
     // Computes total differential for all weights
     // and local gradients for hidden neurons.
     void computeWeightDifferentials();

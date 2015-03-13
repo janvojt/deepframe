@@ -11,41 +11,47 @@
 #include <string>
 #include <stdexcept>
 
+#include "../common.h"
+
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 const int MAX_IMPROVEMENT_EPOCHS = 1000;
 
-BackpropagationLearner::BackpropagationLearner(Network *network) {
+template <typename dType>
+BackpropagationLearner<dType>::BackpropagationLearner(Network<dType> *network) {
     this->network = network;
-    learningRate = 1;
-    epochLimit = 1000000;
-    targetMse = .0001;
-    useBias = network->getConfiguration()->getBias();
-    noLayers = network->getConfiguration()->getLayers();
-    deltaError = 0;
-    improveEpochs = 0;
+    this->learningRate = 1;
+    this->epochLimit = 1000000;
+    this->targetMse = .0001;
+    this->useBias = network->getConfiguration()->getBias();
+    this->noLayers = network->getConfiguration()->getLayers();
+    this->deltaError = 0;
+    this->improveEpochs = 0;
 }
 
-BackpropagationLearner::BackpropagationLearner(const BackpropagationLearner &orig) {
+template <typename dType>
+BackpropagationLearner<dType>::BackpropagationLearner(const BackpropagationLearner &orig) {
 }
 
-BackpropagationLearner::~BackpropagationLearner() {
-    if (errorComputer != NULL) delete errorComputer;
-    if (improveEpochs > 0) delete[] errorCache;
+template <typename dType>
+BackpropagationLearner<dType>::~BackpropagationLearner() {
+    if (this->errorComputer != NULL) delete this->errorComputer;
+    if (this->improveEpochs > 0) delete[] this->errorCache;
 }
 
-double BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset *validationSet, int valIdx) {
+template <typename dType>
+dType BackpropagationLearner<dType>::train(LabeledDataset<dType> *trainingSet, LabeledDataset<dType> *validationSet, int valIdx) {
     
     long epochCounter = 0;
-    double mse = 1.0; // maximum possible error
+    dType mse = 1.0; // maximum possible error
     LOG()->info("Started training with:\n"
             "   - cross-validation fold: %d,\n"
             "   - epoch limit: %d,\n"
             "   - target MSE: %f,\n"
             "   - epochs in which improvement is required: %d,\n"
             "   - learning rate: %f."
-            , valIdx, epochLimit, targetMse, improveEpochs, learningRate);
+            , valIdx, this->epochLimit, this->targetMse, this->improveEpochs, this->learningRate);
     
     do {
         epochCounter++;
@@ -56,8 +62,8 @@ double BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset
         mse = 0;
         while (trainingSet->hasNext()) {
             datasetSize++;
-            double *pattern = trainingSet->next();
-            double *expOutput = pattern + trainingSet->getInputDimension();
+            dType *pattern = trainingSet->next();
+            dType *expOutput = pattern + trainingSet->getInputDimension();
             
             LOG()->debug("Validation fold %d: Starting forward phase for dataset %d in epoch %d.", valIdx, datasetSize, epochCounter);
             doForwardPhase(pattern);
@@ -65,7 +71,7 @@ double BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset
             LOG()->debug("Validation fold %d: Starting backward phase for dataset %d in epoch %d.", valIdx, datasetSize, epochCounter);
             doBackwardPhase(expOutput);
             
-            mse += errorComputer->compute(network, expOutput);
+            mse += this->errorComputer->compute(this->network, expOutput);
         }
         mse = mse / datasetSize;
         LOG()->info("Validation fold %d: Finished epoch %d with MSE: %f.", valIdx, epochCounter, mse);
@@ -78,13 +84,13 @@ double BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset
         }
     
         // check criteria for stopping learning
-        if (mse <= targetMse) {
+        if (mse <= this->targetMse) {
             LOG()->info("Validation fold %d: Training successful after %d epochs with MSE of %f.", valIdx, epochCounter, mse);
             break;
         } else if (!isErrorImprovement(mse, epochCounter)) {
             LOG()->info("Validation fold %d: Training interrupted after %d epochs with MSE of %f, because MSE improvement in last %d epochs was less than %f.", valIdx, epochCounter, mse, improveEpochs, deltaError);
             break;
-        } else if (epochCounter >= epochLimit) {
+        } else if (epochCounter >= this->epochLimit) {
             LOG()->info("Validation fold %d: Training interrupted after %d epochs with MSE of %f.", valIdx, epochCounter, mse);
             break;
         }
@@ -94,93 +100,106 @@ double BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset
     return mse;
 }
 
-void BackpropagationLearner::doForwardPhase(double *input) {
-    network->setInput(input);
-    network->run();
+template <typename dType>
+void BackpropagationLearner<dType>::doForwardPhase(dType *input) {
+    this->network->setInput(input);
+    this->network->run();
 }
 
-void BackpropagationLearner::doBackwardPhase(double *expectedOutput) {
+template <typename dType>
+void BackpropagationLearner<dType>::doBackwardPhase(dType *expectedOutput) {
     computeOutputGradients(expectedOutput);
     computeWeightDifferentials();
     adjustWeights();
-    if (network->getConfiguration()->getBias()) {
+    if (this->network->getConfiguration()->getBias()) {
         adjustBias();
     }
 }
 
-void BackpropagationLearner::validate(LabeledDataset *dataset) {
-    if (dataset->getInputDimension() != network->getInputNeurons()) {
+template <typename dType>
+void BackpropagationLearner<dType>::validate(LabeledDataset<dType> *dataset) {
+    if (dataset->getInputDimension() != this->network->getInputNeurons()) {
         throw new std::invalid_argument("Provided dataset must have the same input dimension as the number of input neurons!");
     }
-    if (dataset->getOutputDimension() != network->getOutputNeurons()) {
+    if (dataset->getOutputDimension() != this->network->getOutputNeurons()) {
         throw new std::invalid_argument("Provided dataset must have the same output dimension as the number of output neurons!");
     }
 }
 
-bool BackpropagationLearner::isErrorImprovement(double error, int epoch) {
-    if (improveEpochs <= 0) {
+template <typename dType>
+bool BackpropagationLearner<dType>::isErrorImprovement(dType error, int epoch) {
+    if (this->improveEpochs <= 0) {
         return true;
     }
     
-    if (epoch > improveEpochs) {
-        if ((errorCache[errorCachePtr] - deltaError) < error) {
+    if (epoch > this->improveEpochs) {
+        if ((this->errorCache[this->errorCachePtr] - this->deltaError) < error) {
             return false;
         } 
     }
     
-    errorCache[errorCachePtr] = error;
-    errorCachePtr = (errorCachePtr+1) % improveEpochs;
+    this->errorCache[this->errorCachePtr] = error;
+    this->errorCachePtr = (this->errorCachePtr+1) % this->improveEpochs;
     
     return true;
 }
 
-double BackpropagationLearner::computeError(LabeledDataset* ds) {
+template <typename dType>
+dType BackpropagationLearner<dType>::computeError(LabeledDataset<dType>* ds) {
     int datasetSize = 0;
-    double vMse = 0;
+    dType vMse = 0;
     while (ds->hasNext()) {
         datasetSize++;
-        double *pattern = ds->next();
-        double *expOutput = pattern + ds->getInputDimension();
-        vMse += errorComputer->compute(network, expOutput);
+        dType *pattern = ds->next();
+        dType *expOutput = pattern + ds->getInputDimension();
+        vMse += this->errorComputer->compute(this->network, expOutput);
     }
     
     return vMse / datasetSize;
 }
 
-void BackpropagationLearner::setImproveEpochs(int improveEpochs) {
+template <typename dType>
+void BackpropagationLearner<dType>::setImproveEpochs(int improveEpochs) {
     if (improveEpochs > MAX_IMPROVEMENT_EPOCHS) {
         LOG()->warn("Allowed maximum for error improvement epochs is %d, however %d was  requested. Going with %d.", MAX_IMPROVEMENT_EPOCHS, improveEpochs, MAX_IMPROVEMENT_EPOCHS);
         improveEpochs = MAX_IMPROVEMENT_EPOCHS;
     }
     
     if (this->improveEpochs > 0) {
-        delete[] errorCache;
+        delete[] this->errorCache;
     }
     
     if (improveEpochs > 0) {
-        errorCache = new double[improveEpochs];
-        errorCachePtr = 0;
+        this->errorCache = new dType[improveEpochs];
+        this->errorCachePtr = 0;
     }
     
     this->improveEpochs = improveEpochs;
 }
 
-void BackpropagationLearner::setEpochLimit(long limit) {
-    epochLimit = limit;
+template <typename dType>
+void BackpropagationLearner<dType>::setEpochLimit(long limit) {
+    this->epochLimit = limit;
 }
 
-void BackpropagationLearner::setErrorComputer(ErrorComputer* errorComputer) {
+template <typename dType>
+void BackpropagationLearner<dType>::setErrorComputer(ErrorComputer<dType>* errorComputer) {
     this->errorComputer = errorComputer;
 }
 
-void BackpropagationLearner::setTargetMse(double mse) {
-    targetMse = mse;
+template <typename dType>
+void BackpropagationLearner<dType>::setTargetMse(dType mse) {
+    this->targetMse = mse;
 }
 
-void BackpropagationLearner::setLearningRate(double learningRate) {
+template <typename dType>
+void BackpropagationLearner<dType>::setLearningRate(dType learningRate) {
     this->learningRate = learningRate;
 }
 
-void BackpropagationLearner::setDeltaError(double deltaError) {
+template <typename dType>
+void BackpropagationLearner<dType>::setDeltaError(dType deltaError) {
     this->deltaError = deltaError;
 }
+
+INSTANTIATE_DATA_CLASS(BackpropagationLearner);

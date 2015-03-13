@@ -9,24 +9,30 @@
 #include "SimpleInputDataset.h"
 #include "InputDataset.h"
 
+#include "../common.h"
+
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 #include <iostream>
 #include <fstream>
 
-InputDatasetParser::InputDatasetParser(char* filepath, NetworkConfiguration* netConf) {
+template <typename dType>
+InputDatasetParser<dType>::InputDatasetParser(char* filepath, NetworkConfiguration<dType>* netConf) {
     this->netConf = netConf;
     this->filepath = filepath;
 }
 
-InputDatasetParser::InputDatasetParser(const InputDatasetParser& orig) {
+template <typename dType>
+InputDatasetParser<dType>::InputDatasetParser(const InputDatasetParser& orig) {
 }
 
-InputDatasetParser::~InputDatasetParser() {
+template <typename dType>
+InputDatasetParser<dType>::~InputDatasetParser() {
 }
 
-InputDataset* InputDatasetParser::parse() {
+template <typename dType>
+InputDataset<dType>* InputDatasetParser<dType>::parse() {
     
     std::ifstream fp(filepath);
     LOG()->info("Parsing file '%s' for test dataset.", filepath);
@@ -42,12 +48,12 @@ InputDataset* InputDatasetParser::parse() {
     // read dataset size
     fp >> size;
     
-    SimpleInputDataset *ds = new SimpleInputDataset(inNeurons, size);
+    SimpleInputDataset<dType> *ds = new SimpleInputDataset<dType>(inNeurons, size);
     
     for (int l = 0; l<size; l++) {
         
         // read input
-        double *input = new double[inNeurons];
+        dType *input = new dType[inNeurons];
         for (int i = 0; i<inNeurons; i++) {
             fp >> input[i]; // read number
         }
@@ -55,12 +61,13 @@ InputDataset* InputDatasetParser::parse() {
         // truncate LF or CRLF
         fp.get() == 13 && fp.get();
         
-        ds->addInput((const double *) input);
+        ds->addInput((const dType *) input);
         delete[] input;
     }
     
     fp.close();
 
-    return (InputDataset *) ds;
+    return (InputDataset<dType> *) ds;
 }
 
+INSTANTIATE_DATA_CLASS(InputDatasetParser);

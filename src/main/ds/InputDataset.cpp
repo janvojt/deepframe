@@ -7,11 +7,18 @@
 
 #include "InputDataset.h"
 
-InputDataset::InputDataset() {
+#include "../common.h"
+
+template <typename dType>
+InputDataset<dType>::InputDataset() {
 }
 
-InputDataset::InputDataset(const InputDataset& orig) {
+template <typename dType>
+InputDataset<dType>::InputDataset(const InputDataset& orig) {
 }
 
-InputDataset::~InputDataset() {
+template <typename dType>
+InputDataset<dType>::~InputDataset() {
 }
+
+INSTANTIATE_DATA_CLASS(InputDataset);

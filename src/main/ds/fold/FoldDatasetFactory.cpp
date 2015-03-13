@@ -6,29 +6,38 @@
  */
 
 #include "FoldDatasetFactory.h"
+
 #include "FoldTrainingDataset.h"
 #include "FoldValidationDataset.h"
+#include "../../common.h"
 
-FoldDatasetFactory::FoldDatasetFactory(LabeledDataset *ds, int k) {
+template <typename dType>
+FoldDatasetFactory<dType>::FoldDatasetFactory(LabeledDataset<dType> *ds, int k) {
     noFolds = k;
-    folds = new LabeledDataset*[k];
+    folds = new LabeledDataset<dType>*[k];
     int foldSize = ds->getSize() / k;
     for (int i = k-1; i>=0; i--) {
         folds[i] = ds->takeAway(foldSize);
     }
 }
 
-FoldDatasetFactory::FoldDatasetFactory(const FoldDatasetFactory& orig) {
+template <typename dType>
+FoldDatasetFactory<dType>::FoldDatasetFactory(const FoldDatasetFactory& orig) {
 }
 
-FoldDatasetFactory::~FoldDatasetFactory() {
+template <typename dType>
+FoldDatasetFactory<dType>::~FoldDatasetFactory() {
     delete[] folds;
 }
 
-FoldTrainingDataset* FoldDatasetFactory::getTrainingDataset(int valIdx) {
-    return new FoldTrainingDataset(folds, noFolds, valIdx);
+template <typename dType>
+FoldTrainingDataset<dType>* FoldDatasetFactory<dType>::getTrainingDataset(int valIdx) {
+    return new FoldTrainingDataset<dType>(folds, noFolds, valIdx);
 }
 
-FoldValidationDataset* FoldDatasetFactory::getValidationDataset(int valIdx) {
-    return new FoldValidationDataset(folds, noFolds, valIdx);
+template <typename dType>
+FoldValidationDataset<dType>* FoldDatasetFactory<dType>::getValidationDataset(int valIdx) {
+    return new FoldValidationDataset<dType>(folds, noFolds, valIdx);
 }
+
+INSTANTIATE_DATA_CLASS(FoldDatasetFactory);

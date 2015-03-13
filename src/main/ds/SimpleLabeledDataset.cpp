@@ -9,73 +9,88 @@
 #include <cstring>
 #include <stdlib.h>
 
+#include "../common.h"
+
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-SimpleLabeledDataset::SimpleLabeledDataset() {
+template <typename dType>
+SimpleLabeledDataset<dType>::SimpleLabeledDataset() {
 
 }
 
-SimpleLabeledDataset::SimpleLabeledDataset(int inputDimension, int outputDimension, int size) {
+template <typename dType>
+SimpleLabeledDataset<dType>::SimpleLabeledDataset(int inputDimension, int outputDimension, int size) {
     addedCounter = 0;
     inDimension = inputDimension;
     outDimension = outputDimension;
     this->size = size;
-    data = new double[(inputDimension + outputDimension) * size];
+    data = new dType[(inputDimension + outputDimension) * size];
 }
 
-SimpleLabeledDataset::SimpleLabeledDataset(const SimpleLabeledDataset& orig) {
+template <typename dType>
+SimpleLabeledDataset<dType>::SimpleLabeledDataset(const SimpleLabeledDataset& orig) {
 }
 
-SimpleLabeledDataset::~SimpleLabeledDataset() {
+template <typename dType>
+SimpleLabeledDataset<dType>::~SimpleLabeledDataset() {
     delete[] data;
 }
 
-void SimpleLabeledDataset::addPattern(const double *input, const double *output) {
+template <typename dType>
+void SimpleLabeledDataset<dType>::addPattern(const dType *input, const dType *output) {
     
     if (addedCounter >= size) {
         LOG()->error("Trying to add %d learning patterns while the dataset size is only %d.", addedCounter+1, size);
     }
     
-    int inputSize = sizeof(double) * inDimension;
-    int outputSize = sizeof(double) * outDimension;
+    int inputSize = sizeof(dType) * inDimension;
+    int outputSize = sizeof(dType) * outDimension;
     int patternSize = inDimension + outDimension;
-    double *dataPtr = data + (addedCounter * patternSize);
+    dType *dataPtr = data + (addedCounter * patternSize);
     std::memcpy(dataPtr, input, inputSize);
     std::memcpy(dataPtr + inDimension, output, outputSize);
     addedCounter++;
 }
 
-int SimpleLabeledDataset::getInputDimension() {
+template <typename dType>
+int SimpleLabeledDataset<dType>::getInputDimension() {
     return inDimension;
 }
 
-int SimpleLabeledDataset::getOutputDimension() {
+template <typename dType>
+int SimpleLabeledDataset<dType>::getOutputDimension() {
     return outDimension;
 }
 
-void SimpleLabeledDataset::initDataset() {
-    data = new double[size * (inDimension + outDimension)];
+template <typename dType>
+void SimpleLabeledDataset<dType>::initDataset() {
+    data = new dType[size * (inDimension + outDimension)];
 }
 
-double* SimpleLabeledDataset::next() {
+template <typename dType>
+dType* SimpleLabeledDataset<dType>::next() {
     return data + (cursor++ * (inDimension + outDimension));
 }
 
-bool SimpleLabeledDataset::hasNext() {
+template <typename dType>
+bool SimpleLabeledDataset<dType>::hasNext() {
     return cursor < size;
 }
 
-void SimpleLabeledDataset::reset() {
+template <typename dType>
+void SimpleLabeledDataset<dType>::reset() {
     cursor = 0;
 }
 
-int SimpleLabeledDataset::getSize() {
+template <typename dType>
+int SimpleLabeledDataset<dType>::getSize() {
     return size;
 }
 
 
-SimpleLabeledDataset* SimpleLabeledDataset::takeAway(int size) {
+template <typename dType>
+SimpleLabeledDataset<dType>* SimpleLabeledDataset<dType>::takeAway(int size) {
     
     // we cannot take more than we have
     if (size > this->size) {
@@ -89,7 +104,7 @@ SimpleLabeledDataset* SimpleLabeledDataset::takeAway(int size) {
     }
     
     // create the new dataset
-    SimpleLabeledDataset *ds = new SimpleLabeledDataset();
+    SimpleLabeledDataset<dType> *ds = new SimpleLabeledDataset<dType>();
     ds->inDimension = this->inDimension;
     ds->outDimension = this->outDimension;
     ds->size = size;
@@ -98,15 +113,16 @@ SimpleLabeledDataset* SimpleLabeledDataset::takeAway(int size) {
     return ds;
 }
 
-void SimpleLabeledDataset::shuffle() {
+template <typename dType>
+void SimpleLabeledDataset<dType>::shuffle() {
     
     int entrySize = inDimension + outDimension;
-    int memSize = sizeof(double) * entrySize;
-    double *swap = new double[entrySize];
+    int memSize = sizeof(dType) * entrySize;
+    dType *swap = new dType[entrySize];
     
     int limit = size * entrySize;
     for (int i = 0; i<limit; i+=entrySize) {
-        int rnd = ((double) (rand()) / (RAND_MAX-1) * size);
+        int rnd = ((dType) (rand()) / (RAND_MAX-1) * size);
         rnd *= entrySize;
 
         std::memcpy(swap, data+i, memSize);
@@ -114,3 +130,5 @@ void SimpleLabeledDataset::shuffle() {
         std::memcpy(data+rnd, swap, memSize);
     }
 }
+
+INSTANTIATE_DATA_CLASS(SimpleLabeledDataset);

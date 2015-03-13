@@ -6,20 +6,23 @@
  */
 
 #include "gtest/gtest.h"
+
 #include "ds/SimpleInputDataset.h"
+
+#define DATA_TYPE float
 
 // Test binary data set creation.
 TEST(SimpleInputDataset, BinaryDatasetCreation) {
-    SimpleInputDataset *ds = new SimpleInputDataset(2, 4);
-    ds->addInput((const double[2]){0, 0});
-    ds->addInput((const double[2]){0, 1});
-    ds->addInput((const double[2]){1, 0});
-    ds->addInput((const double[2]){1, 1});
+    SimpleInputDataset<DATA_TYPE> *ds = new SimpleInputDataset<DATA_TYPE>(2, 4);
+    ds->addInput((const DATA_TYPE[2]){0, 0});
+    ds->addInput((const DATA_TYPE[2]){0, 1});
+    ds->addInput((const DATA_TYPE[2]){1, 0});
+    ds->addInput((const DATA_TYPE[2]){1, 1});
     
     for (int i = 0; i<2; i++) {
         for (int j = 0; j<2; j++) {
             EXPECT_TRUE(ds->hasNext());
-            double *input = ds->next();
+            DATA_TYPE *input = ds->next();
             EXPECT_EQ(i, input[0]);
             EXPECT_EQ(j, input[1]);
         }

@@ -6,37 +6,44 @@
  */
 
 #include "CpuBackpropagationLearner.h"
+
 #include "../util/cpuDebugHelpers.h"
+#include "../common.h"
 
 #include <iostream>
 
-CpuBackpropagationLearner::CpuBackpropagationLearner(CpuNetwork *network) : BackpropagationLearner(network) {
+template <typename dType>
+CpuBackpropagationLearner<dType>::CpuBackpropagationLearner(CpuNetwork<dType> *network) : BackpropagationLearner<dType>(network) {
     allocateCache();
 }
 
-CpuBackpropagationLearner::CpuBackpropagationLearner(const CpuBackpropagationLearner& orig) : BackpropagationLearner(orig) {
+template <typename dType>
+CpuBackpropagationLearner<dType>::CpuBackpropagationLearner(const CpuBackpropagationLearner& orig) : BackpropagationLearner<dType>(orig) {
 }
 
-CpuBackpropagationLearner::~CpuBackpropagationLearner() {
-    delete[] weightDiffs;
-    delete[] localGradients;
-    if (useBias) delete[] biasDiff;
+template <typename dType>
+CpuBackpropagationLearner<dType>::~CpuBackpropagationLearner() {
+    delete[] this->weightDiffs;
+    delete[] this->localGradients;
+    if (this->useBias) delete[] this->biasDiff;
 }
 
-void CpuBackpropagationLearner::allocateCache() {
-    weightDiffs = new double[network->getWeightsOffset(network->getConfiguration()->getLayers())];
-    localGradients = new double[network->getAllNeurons()];
-    biasDiff = useBias ? new double[network->getAllNeurons()] : NULL;
+template <typename dType>
+void CpuBackpropagationLearner<dType>::allocateCache() {
+    this->weightDiffs = new dType[this->network->getWeightsOffset(this->network->getConfiguration()->getLayers())];
+    this->localGradients = new dType[this->network->getAllNeurons()];
+    this->biasDiff = this->useBias ? new dType[this->network->getAllNeurons()] : NULL;
 }
 
-void CpuBackpropagationLearner::computeOutputGradients(double *expectedOutput) {
-    int oNeurons = network->getOutputNeurons();
-    double *localGradient = localGradients + network->getInputOffset(noLayers-1);
-    double *output = network->getInputs() + network->getInputOffset(noLayers-1);
-    void (*daf) (double*,double*,int) = network->getConfiguration()->dActivationFnc;
+template <typename dType>
+void CpuBackpropagationLearner<dType>::computeOutputGradients(dType *expectedOutput) {
+    int oNeurons = this->network->getOutputNeurons();
+    dType *localGradient = this->localGradients + this->network->getInputOffset(this->noLayers-1);
+    dType *output = this->network->getInputs() + this->network->getInputOffset(this->noLayers-1);
+    void (*daf) (dType*,dType*,int) = this->network->getConfiguration()->dActivationFnc;
     
     // compute local gradients
-    double *dv = new double[oNeurons];
+    dType *dv = new dType[oNeurons];
     daf(output, dv, oNeurons);
     for (int i = 0; i<oNeurons; i++) {
         localGradient[i] = (output[i] - expectedOutput[i]) * dv[i];
@@ -46,36 +53,37 @@ void CpuBackpropagationLearner::computeOutputGradients(double *expectedOutput) {
     delete[] dv;
 }
 
-void CpuBackpropagationLearner::computeWeightDifferentials() {
+template <typename dType>
+void CpuBackpropagationLearner<dType>::computeWeightDifferentials() {
     
-    void (*daf) (double*,double*,int) = network->getConfiguration()->dActivationFnc;
+    void (*daf) (dType*,dType*,int) = this->network->getConfiguration()->dActivationFnc;
     
-    for (int l = noLayers-1; l>0; l--) {
+    for (int l = this->noLayers-1; l>0; l--) {
         
         // INITIALIZE HELPER VARIABLES
-        int thisInputIdx = network->getInputOffset(l-1);
-        double *thisLocalGradient = localGradients + thisInputIdx;
-        int nextInputIdx = network->getInputOffset(l);
-        double *nextLocalGradient = localGradients + nextInputIdx;
-        int thisNeurons = network->getConfiguration()->getNeurons(l-1);
-        int nextNeurons = network->getConfiguration()->getNeurons(l);
-        double *thisInput = network->getInputs() + thisInputIdx;
-        double *weights = network->getWeights() + network->getWeightsOffset(l);
+        int thisInputIdx = this->network->getInputOffset(l-1);
+        dType *thisLocalGradient = this->localGradients + thisInputIdx;
+        int nextInputIdx = this->network->getInputOffset(l);
+        dType *nextLocalGradient = this->localGradients + nextInputIdx;
+        int thisNeurons = this->network->getConfiguration()->getNeurons(l-1);
+        int nextNeurons = this->network->getConfiguration()->getNeurons(l);
+        dType *thisInput = this->network->getInputs() + thisInputIdx;
+        dType *weights = this->network->getWeights() + this->network->getWeightsOffset(l);
         
         
         // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
-        double *wdiff = weightDiffs + network->getWeightsOffset(l);
+        dType *wdiff = this->weightDiffs + this->network->getWeightsOffset(l);
         for (int i = 0; i<thisNeurons; i++) {
             for (int j = 0; j<nextNeurons; j++) {
-                wdiff[i*nextNeurons+j] = -learningRate * nextLocalGradient[j] * thisInput[i];
+                wdiff[i*nextNeurons+j] = -this->learningRate * nextLocalGradient[j] * thisInput[i];
             }
         }
 //        dumpHostArray('w', wdiff, thisNeurons * nextNeurons);
         
         // COMPUTE BIAS DERIVATIVES for layer l+1
-        if (useBias) {
+        if (this->useBias) {
             for (int i = 0; i<nextNeurons; i++) {
-                biasDiff[nextInputIdx + i] = -learningRate * nextLocalGradient[i];
+                this->biasDiff[nextInputIdx + i] = -this->learningRate * nextLocalGradient[i];
             }
 //            dumpHostArray('c', &biasDiff[nextInputIdx], nextNeurons);
         }
@@ -83,12 +91,12 @@ void CpuBackpropagationLearner::computeWeightDifferentials() {
         // COMPUTE LOCAL GRADIENTS for layer l
         
         // compute derivatives of neuron inputs in layer l
-        double *thisInputDerivatives = new double[thisNeurons];
+        dType *thisInputDerivatives = new dType[thisNeurons];
         daf(thisInput, thisInputDerivatives, thisNeurons);
         
         // compute local gradients for layer l
         for (int i = 0; i<thisNeurons; i++) {
-            double sumNextGradient = 0;
+            dType sumNextGradient = 0;
             for (int j = 0; j<nextNeurons; j++) {
                 sumNextGradient += nextLocalGradient[j] * weights[i * nextNeurons + j];
             }
@@ -101,22 +109,26 @@ void CpuBackpropagationLearner::computeWeightDifferentials() {
     }
 }
 
-void CpuBackpropagationLearner::adjustWeights() {
-    int wc = network->getWeightsOffset(noLayers);
-    double *weights = network->getWeights();
+template <typename dType>
+void CpuBackpropagationLearner<dType>::adjustWeights() {
+    int wc = this->network->getWeightsOffset(this->noLayers);
+    dType *weights = this->network->getWeights();
     
     // we should skip the garbage in zero-layer weights
-    for(int i = network->getWeightsOffset(1); i<wc; i++) {
-        weights[i] += weightDiffs[i];
+    for(int i = this->network->getWeightsOffset(1); i<wc; i++) {
+        weights[i] += this->weightDiffs[i];
     }
 //    dumpHostArray('w', weights, network->getWeightsOffset(noLayers));
 }
 
-void CpuBackpropagationLearner::adjustBias() {
-    double *bias = network->getBiasValues();
-    int noNeurons = network->getAllNeurons();
+template <typename dType>
+void CpuBackpropagationLearner<dType>::adjustBias() {
+    dType *bias = this->network->getBiasValues();
+    int noNeurons = this->network->getAllNeurons();
     for (int i = 0; i<noNeurons; i++) {
-        bias[i] += biasDiff[i];
+        bias[i] += this->biasDiff[i];
     }
 //    dumpHostArray('b', bias, network->getWeightsOffset(noLayers));
 }
+
+INSTANTIATE_DATA_CLASS(CpuBackpropagationLearner);

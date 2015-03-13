@@ -12,24 +12,25 @@
 
 // Class used for construction of small datasets
 // with input data to be processed by the network.
-class SimpleInputDataset : InputDataset {
+template <typename dType>
+class SimpleInputDataset : InputDataset<dType> {
 public:
     SimpleInputDataset(int dimension, int size);
     SimpleInputDataset(const SimpleInputDataset& orig);
     virtual ~SimpleInputDataset();
-    double *next();
+    dType *next();
     bool hasNext();
     void reset();
     int getInputDimension();
     // Adds a single input pattern to be processed by the network.
-    void addInput(const double *input);
+    void addInput(const dType *input);
 private:
     void initDataset();
     int dimension;
     int cursor;
     int addedCounter;
     int size;
-    double *data;
+    dType *data;
 };
 
 #endif	/* SIMPLEINPUTDATASET_H */

@@ -8,18 +8,19 @@
 #ifndef LABELEDDATASETPARSER_H
 #define	LABELEDDATASETPARSER_H
 
-#include "../net/NetworkConfiguration.h"
 #include "LabeledDataset.h"
 
+#include "../net/NetworkConfiguration.h"
 
+template <typename dType>
 class LabeledDatasetParser {
 public:
-    LabeledDatasetParser(char *filepath, NetworkConfiguration *netConf);
+    LabeledDatasetParser(char *filepath, NetworkConfiguration<dType> *netConf);
     LabeledDatasetParser(const LabeledDatasetParser& orig);
     virtual ~LabeledDatasetParser();
-    LabeledDataset *parse();
+    LabeledDataset<dType> *parse();
 private:
-    NetworkConfiguration *netConf;
+    NetworkConfiguration<dType> *netConf;
     char *filepath;
 };
 

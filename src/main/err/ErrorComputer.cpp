@@ -7,11 +7,18 @@
 
 #include "ErrorComputer.h"
 
-ErrorComputer::ErrorComputer() {
+#include "../common.h"
+
+template <typename dType>
+ErrorComputer<dType>::ErrorComputer() {
 }
 
-ErrorComputer::ErrorComputer(const ErrorComputer& orig) {
+template <typename dType>
+ErrorComputer<dType>::ErrorComputer(const ErrorComputer& orig) {
 }
 
-ErrorComputer::~ErrorComputer() {
+template <typename dType>
+ErrorComputer<dType>::~ErrorComputer() {
 }
+
+INSTANTIATE_DATA_CLASS(ErrorComputer);

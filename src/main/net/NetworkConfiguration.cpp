@@ -12,30 +12,37 @@
 #include <string.h>
 #include <stdexcept>
 
+#include "../common.h"
+
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 using namespace std;
 
-NetworkConfiguration::NetworkConfiguration() {
+template <typename dType>
+NetworkConfiguration<dType>::NetworkConfiguration() {
     neuronConf = NULL;
     bias = true;
 }
 
-NetworkConfiguration::NetworkConfiguration(const NetworkConfiguration& orig) {
+template <typename dType>
+NetworkConfiguration<dType>::NetworkConfiguration(const NetworkConfiguration& orig) {
 }
 
-NetworkConfiguration::~NetworkConfiguration() {
+template <typename dType>
+NetworkConfiguration<dType>::~NetworkConfiguration() {
     if (neuronConf) {
         delete[] neuronConf;
     }
 }
 
-int NetworkConfiguration::getLayers() {
+template <typename dType>
+int NetworkConfiguration<dType>::getLayers() {
     return layers;
 }
 
-void NetworkConfiguration::setLayers(int layers) {
+template <typename dType>
+void NetworkConfiguration<dType>::setLayers(int layers) {
     if (layers < 1) {
         throw std::invalid_argument("Number of layers must be a natural number.");
     } else {
@@ -43,8 +50,8 @@ void NetworkConfiguration::setLayers(int layers) {
     }
 }
 
-
-void NetworkConfiguration::setNeurons(int layer, int neurons) {
+template <typename dType>
+void NetworkConfiguration<dType>::setNeurons(int layer, int neurons) {
     if (layer > layers || layer < 0) {
         LOG()->error("Provided %d as layer index, which is invalid for network with %d layers.", layer, layers);
         return;
@@ -54,19 +61,23 @@ void NetworkConfiguration::setNeurons(int layer, int neurons) {
     neuronConf[layer] = neurons;
 }
 
-int NetworkConfiguration::getNeurons(int layer) {
+template <typename dType>
+int NetworkConfiguration<dType>::getNeurons(int layer) {
     return neuronConf[layer];
 }
 
-void NetworkConfiguration::setBias(bool enabled) {
+template <typename dType>
+void NetworkConfiguration<dType>::setBias(bool enabled) {
     bias = enabled;
 }
 
-bool NetworkConfiguration::getBias() {
+template <typename dType>
+bool NetworkConfiguration<dType>::getBias() {
     return bias;
 }
 
-void NetworkConfiguration::initConf() {
+template <typename dType>
+void NetworkConfiguration<dType>::initConf() {
     // free memory if it was already assigned to the pointer
     if (neuronConf != NULL) {
         delete neuronConf;
@@ -75,8 +86,9 @@ void NetworkConfiguration::initConf() {
     neuronConf = new int[layers];
 }
 
-void NetworkConfiguration::parseInitInterval(char* intervalConf) {
-    double v = 0;
+template <typename dType>
+void NetworkConfiguration<dType>::parseInitInterval(char* intervalConf) {
+    dType v = 0;
     char *haystack = new char[strlen(intervalConf)+1];
     strcpy(haystack, intervalConf);
     char *token = strtok(haystack, ",");
@@ -88,8 +100,8 @@ void NetworkConfiguration::parseInitInterval(char* intervalConf) {
     delete[] haystack;
 }
 
-
-void NetworkConfiguration::parseLayerConf(char* layerConf) {
+template <typename dType>
+void NetworkConfiguration<dType>::parseLayerConf(char* layerConf) {
     
     this->layerConf = layerConf;
 
@@ -114,22 +126,29 @@ void NetworkConfiguration::parseLayerConf(char* layerConf) {
     delete[] haystack;
 }
 
-void NetworkConfiguration::setInitMin(double min) {
+template <typename dType>
+void NetworkConfiguration<dType>::setInitMin(dType min) {
     initMin = min;
 }
 
-double NetworkConfiguration::getInitMin() {
+template <typename dType>
+dType NetworkConfiguration<dType>::getInitMin() {
     return initMin;
 }
 
-void NetworkConfiguration::setInitMax(double max) {
+template <typename dType>
+void NetworkConfiguration<dType>::setInitMax(dType max) {
     initMax = max;
 }
 
-double NetworkConfiguration::getInitMax() {
+template <typename dType>
+dType NetworkConfiguration<dType>::getInitMax() {
     return initMax;
 }
 
-char* NetworkConfiguration::getLayerConf() {
+template <typename dType>
+char* NetworkConfiguration<dType>::getLayerConf() {
     return layerConf;
 }
+
+INSTANTIATE_DATA_CLASS(NetworkConfiguration);

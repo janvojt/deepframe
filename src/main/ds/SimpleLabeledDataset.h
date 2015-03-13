@@ -13,7 +13,8 @@
 // Class for simple construction of small dataset
 // with labeled data for supervised learning.
 // To be used with small datasets in case we know the dataset size ahead.
-class SimpleLabeledDataset : LabeledDataset {
+template <typename dType>
+class SimpleLabeledDataset : LabeledDataset<dType> {
 public:
     // Constructor correctly initializes the dataset
     // according to input and output label dimensions and dataset size.
@@ -22,12 +23,12 @@ public:
     virtual ~SimpleLabeledDataset();
     int getInputDimension();
     int getOutputDimension();
-    double *next();
+    dType *next();
     bool hasNext();
     void reset();
     int getSize();
     // Adds a single input vector with its label.
-    void addPattern(const double *input, const double *output);
+    void addPattern(const dType *input, const dType *output);
     
     /** Creates a new dataset taking patterns from this dataset.
 
@@ -52,7 +53,7 @@ private:
     int cursor;
     int addedCounter;
     int size;
-    double *data;
+    dType *data;
 
 };
 

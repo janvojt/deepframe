@@ -7,11 +7,18 @@
 
 #include "LabeledDataset.h"
 
-LabeledDataset::LabeledDataset() : InputDataset() {
+#include "../common.h"
+
+template <typename dType>
+LabeledDataset<dType>::LabeledDataset() : InputDataset<dType>() {
 }
 
-LabeledDataset::LabeledDataset(const LabeledDataset& orig) : InputDataset(orig) {
+template <typename dType>
+LabeledDataset<dType>::LabeledDataset(const LabeledDataset& orig) : InputDataset<dType>(orig) {
 }
 
-LabeledDataset::~LabeledDataset() {
+template <typename dType>
+LabeledDataset<dType>::~LabeledDataset() {
 }
+
+INSTANTIATE_DATA_CLASS(LabeledDataset);

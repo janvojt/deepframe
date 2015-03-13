@@ -12,30 +12,40 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include "../common.h"
+
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-Network::Network(NetworkConfiguration *conf) {
+template <typename dType>
+Network<dType>::Network(NetworkConfiguration<dType> *conf) {
     this->conf = conf;
     this->noLayers = conf->getLayers();
     
     LOG()->info("Initializing network with layer configuration of (%s).", conf->getLayerConf());
 }
 
-Network::Network(const Network& orig) {
+template <typename dType>
+Network<dType>::Network(const Network& orig) {
 }
 
-Network::~Network() {
+template <typename dType>
+Network<dType>::~Network() {
 }
 
-NetworkConfiguration* Network::getConfiguration() {
-    return conf;
+template <typename dType>
+NetworkConfiguration<dType>* Network<dType>::getConfiguration() {
+    return this->conf;
 }
 
-int Network::getInputNeurons() {
-    return conf->getNeurons(0);
+template <typename dType>
+int Network<dType>::getInputNeurons() {
+    return this->conf->getNeurons(0);
 }
 
-int Network::getOutputNeurons() {
-    return conf->getNeurons(noLayers-1);
+template <typename dType>
+int Network<dType>::getOutputNeurons() {
+    return this->conf->getNeurons(this->noLayers-1);
 }
+
+INSTANTIATE_DATA_CLASS(Network);

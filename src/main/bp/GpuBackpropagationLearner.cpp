@@ -13,40 +13,45 @@
 #include "log4cpp/Category.hh"
 
 
-GpuBackpropagationLearner::GpuBackpropagationLearner(GpuNetwork * network) : BackpropagationLearner(network) {
+template <typename dType>
+GpuBackpropagationLearner<dType>::GpuBackpropagationLearner(GpuNetwork<dType> * network) : BackpropagationLearner<dType>(network) {
     allocateCache();
 }
 
-GpuBackpropagationLearner::GpuBackpropagationLearner(const GpuBackpropagationLearner& orig) : BackpropagationLearner(orig) {
+template <typename dType>
+GpuBackpropagationLearner<dType>::GpuBackpropagationLearner(const GpuBackpropagationLearner& orig) : BackpropagationLearner<dType>(orig) {
 }
 
-GpuBackpropagationLearner::~GpuBackpropagationLearner() {
-    cudaFree(weightDiffs);
-    cudaFree(localGradients);
-    if (useBias) cudaFree(biasDiff);
+template <typename dType>
+GpuBackpropagationLearner<dType>::~GpuBackpropagationLearner() {
+    cudaFree(this->weightDiffs);
+    cudaFree(this->localGradients);
+    if (this->useBias) cudaFree(this->biasDiff);
 }
 
-void GpuBackpropagationLearner::allocateCache() {
+template <typename dType>
+void GpuBackpropagationLearner<dType>::allocateCache() {
     
-    int dSize = sizeof(double);
-    int noWeights = network->getWeightsOffset(noLayers);
-    int noNeurons = network->getAllNeurons();
+    int dSize = sizeof(dType);
+    int noWeights = this->network->getWeightsOffset(this->noLayers);
+    int noNeurons = this->network->getAllNeurons();
     
-    checkCudaErrors(cudaMalloc(&weightDiffs, noWeights * dSize));
-    checkCudaErrors(cudaMalloc(&localGradients, noNeurons * dSize));
-    if (useBias) checkCudaErrors(cudaMalloc(&biasDiff, noNeurons * dSize));
+    checkCudaErrors(cudaMalloc(&this->weightDiffs, noWeights * dSize));
+    checkCudaErrors(cudaMalloc(&this->localGradients, noNeurons * dSize));
+    if (this->useBias) checkCudaErrors(cudaMalloc(&this->biasDiff, noNeurons * dSize));
 }
 
-void GpuBackpropagationLearner::computeOutputGradients(double *expectedOutput) {
+template <typename dType>
+void GpuBackpropagationLearner<dType>::computeOutputGradients(dType *expectedOutput) {
     
     LOG()->debug("Computing local gradients for output layer.");
 
-    double *localGradient = localGradients + network->getInputOffset(noLayers-1);
-    double *output = network->getInputs() + network->getInputOffset(noLayers-1);
+    dType *localGradient = this->localGradients + this->network->getInputOffset(this->noLayers-1);
+    dType *output = this->network->getInputs() + this->network->getInputOffset(this->noLayers-1);
     
-    int oNeurons = network->getOutputNeurons();
-    int memSize = oNeurons * sizeof(double);
-    double *dExpOutput;
+    int oNeurons = this->network->getOutputNeurons();
+    int memSize = oNeurons * sizeof(dType);
+    dType *dExpOutput;
     checkCudaErrors(cudaMalloc(&dExpOutput, memSize));
     checkCudaErrors(cudaMemcpy(dExpOutput, expectedOutput, memSize, cudaMemcpyHostToDevice));
     k_computeOutputLocalGradient(output, dExpOutput, localGradient, oNeurons);
@@ -55,36 +60,37 @@ void GpuBackpropagationLearner::computeOutputGradients(double *expectedOutput) {
 //    dumpDeviceArray('o', localGradients, network->getInputOffset(noLayers));
 }
 
-void GpuBackpropagationLearner::computeWeightDifferentials() {
+template <typename dType>
+void GpuBackpropagationLearner<dType>::computeWeightDifferentials() {
     
-    for (int l = noLayers-1; l>0; l--) {
+    for (int l = this->noLayers-1; l>0; l--) {
         
         LOG()->debug("Computing weight differentials between layers %d and %d.", l, l+1);
         
         // INITIALIZE HELPER VARIABLES
-        int thisInputIdx = network->getInputOffset(l-1);
-        double *thisLocalGradient = localGradients + thisInputIdx;
-        int nextInputIdx = network->getInputOffset(l);
-        double *nextLocalGradient = localGradients + nextInputIdx;
-        int thisNeurons = network->getConfiguration()->getNeurons(l-1);
-        int nextNeurons = network->getConfiguration()->getNeurons(l);
-        double *thisInput = network->getInputs() + thisInputIdx;
-        double *weights = network->getWeights() + network->getWeightsOffset(l);
+        int thisInputIdx = this->network->getInputOffset(l-1);
+        dType *thisLocalGradient = this->localGradients + thisInputIdx;
+        int nextInputIdx = this->network->getInputOffset(l);
+        dType *nextLocalGradient = this->localGradients + nextInputIdx;
+        int thisNeurons = this->network->getConfiguration()->getNeurons(l-1);
+        int nextNeurons = this->network->getConfiguration()->getNeurons(l);
+        dType *thisInput = this->network->getInputs() + thisInputIdx;
+        dType *weights = this->network->getWeights() + this->network->getWeightsOffset(l);
         
         
         // COMPUTE TOTAL DERIVATIVES for weights between layer l and l+1
-        double *wdiff = weightDiffs + network->getWeightsOffset(l);
+        dType *wdiff = this->weightDiffs + this->network->getWeightsOffset(l);
         k_computeTotalDerivative(thisNeurons, nextNeurons,
-                learningRate, thisInput, nextLocalGradient,
+                this->learningRate, thisInput, nextLocalGradient,
                 wdiff);
     
 //        dumpDeviceArray('w', wdiff, thisNeurons * nextNeurons);
         
         // COMPUTE BIAS DERIVATIVES for layer l+1
-        if (useBias) {
+        if (this->useBias) {
             k_computeBiasDerivative(
-                    learningRate, nextLocalGradient,
-                    &biasDiff[nextInputIdx],
+                    this->learningRate, nextLocalGradient,
+                    &this->biasDiff[nextInputIdx],
                     nextNeurons);
 //            dumpDeviceArray('c', &biasDiff[nextInputIdx], nextNeurons);
         }
@@ -98,30 +104,33 @@ void GpuBackpropagationLearner::computeWeightDifferentials() {
     }
 }
 
-void GpuBackpropagationLearner::adjustWeights() {
+template <typename dType>
+void GpuBackpropagationLearner<dType>::adjustWeights() {
     
     LOG()->debug("Adjusting weights.");
     
     // we should skip the garbage in zero-layer weights
-    int trim = network->getWeightsOffset(1);
+    int trim = this->network->getWeightsOffset(1);
     
-    int wc = network->getWeightsOffset(noLayers) - trim;
-    double *weights = network->getWeights();
+    int wc = this->network->getWeightsOffset(this->noLayers) - trim;
+    dType *weights = this->network->getWeights();
     
-    k_sumVectors(weights + trim, weightDiffs + trim, wc);
+    k_sumVectors(weights + trim, this->weightDiffs + trim, wc);
     
 //    dumpDeviceArray('w', weights, network->getWeightsOffset(noLayers));
 }
 
-void GpuBackpropagationLearner::adjustBias() {
+template <typename dType>
+void GpuBackpropagationLearner<dType>::adjustBias() {
     
     LOG()->debug("Adjusting bias.");
     
-    double *bias = network->getBiasValues();
-    int noNeurons = network->getAllNeurons();
+    dType *bias = this->network->getBiasValues();
+    int noNeurons = this->network->getAllNeurons();
     
-    k_sumVectors(bias, biasDiff, noNeurons);
+    k_sumVectors(bias, this->biasDiff, noNeurons);
     
 //    dumpDeviceArray('b', network->getInputs(), network->getInputOffset(noLayers));
 }
 
+INSTANTIATE_DATA_CLASS(GpuBackpropagationLearner);

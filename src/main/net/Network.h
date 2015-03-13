@@ -10,12 +10,12 @@
 
 #include "NetworkConfiguration.h"
 
-
+template <typename dType>
 class Network {
 public:
     // Builds artificial neural network from network configuration
     // given in the constructor argument.
-    Network(NetworkConfiguration *conf);
+    Network(NetworkConfiguration<dType> *conf);
     Network(const Network& orig);
     virtual ~Network();
     
@@ -35,7 +35,7 @@ public:
     
     /** Returns the network configuration.
      */
-    NetworkConfiguration *getConfiguration();
+    NetworkConfiguration<dType> *getConfiguration();
     
     /** Reinitializes network so it forgets everything it learnt.
 
@@ -47,17 +47,17 @@ public:
     virtual void run() = 0;
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
-    virtual void setInput(double *input) = 0;
+    virtual void setInput(dType *input) = 0;
     // Returns pointer to the beginning of array with neuron inputs
     // (potential after being processed by the activation function).
     // Values at the beginning actually belong to the input layer. Activation
     // function is not applied to these, therefore they can represent original
     // network input.
-    virtual double *getInputs() = 0;
+    virtual dType *getInputs() = 0;
     // Returns pointer to the beginning of the input array.
-    virtual double *getInput() = 0;
+    virtual dType *getInput() = 0;
     // Returns pointer to the beginning of the output array.
-    virtual double *getOutput() = 0;
+    virtual dType *getOutput() = 0;
     // Returns number of neurons in the first layer.
     int getInputNeurons();
     // Returns number of neurons in the last layer.
@@ -74,7 +74,7 @@ public:
     // for neuron connections.
     // This internal network property is usually needed
     // in the process of learning.
-    virtual double *getWeights() = 0;
+    virtual dType *getWeights() = 0;
     // Returns offset where the weight array index starts for weights between
     // given layer and the preceeding layer.
     // Input layer has index zero, while its returned offset is also zero.
@@ -84,10 +84,10 @@ public:
     virtual int getWeightsOffset(int layer) = 0;
     // Provides access to bias values,
     // so the learning algorithm may adjust them.
-    virtual double *getBiasValues() = 0;
+    virtual dType *getBiasValues() = 0;
 protected:
     // Network configuration.
-    NetworkConfiguration *conf;
+    NetworkConfiguration<dType> *conf;
     // Number of layers in the network.
     int noLayers;
     

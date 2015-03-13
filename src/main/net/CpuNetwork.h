@@ -10,9 +10,10 @@
 
 #include "Network.h"
 
-class CpuNetwork : public Network {
+template <typename dType>
+class CpuNetwork : public Network<dType> {
 public:
-    CpuNetwork(NetworkConfiguration *conf);
+    CpuNetwork(NetworkConfiguration<dType> *conf);
     CpuNetwork(const CpuNetwork& orig);
     virtual ~CpuNetwork();
     
@@ -28,7 +29,7 @@ public:
      * @param nets array of networks to be merged into this network
      * @param size number of networks in given array
      */
-    void merge(Network **nets, int size);
+    void merge(Network<dType> **nets, int size);
     
     /** Reinitializes network so it forgets everything it learnt.
 
@@ -40,17 +41,17 @@ public:
     void run();
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
-    void setInput(double *input);
+    void setInput(dType *input);
     // Returns pointer to the beginning of array with neuron inputs
     // (potential after being processed by the activation function).
     // Values at the beginning actually belong to the input layer. Activation
     // function is not applied to these, therefore they can represent original
     // network input.
-    double *getInputs();
+    dType *getInputs();
     // Returns pointer to the beginning of the input array.
-    double *getInput();
+    dType *getInput();
     // Returns pointer to the beginning of the output array.
-    double *getOutput();
+    dType *getOutput();
     // Returns the total number of all neurons in all layers.
     int getAllNeurons();
     // Returns offset where the input array index starts for given layer.
@@ -63,7 +64,7 @@ public:
     // for neuron connections.
     // This internal network property is usually needed
     // in the process of learning.
-    double *getWeights();
+    dType *getWeights();
     // Returns offset where the weight array index starts for weights between
     // given layer and the preceeding layer.
     // Input layer has index zero, while its returned offset is also zero.
@@ -73,7 +74,7 @@ public:
     int getWeightsOffset(int layer);
     // Provides access to bias values,
     // so the learning algorithm may adjust them.
-    double *getBiasValues();
+    dType *getBiasValues();
     
 private:
     // initialize network weights
@@ -84,21 +85,21 @@ private:
     void initBias();
     // Clears neuron potentials in given layer
     // (zero index represents input layer).
-    void clearLayer(double *inputPtr, int layerSize);
+    void clearLayer(dType *inputPtr, int layerSize);
     // Applies bias to layer l (if it is enabled, otherwise does nothing).
     void applyBias(int l);
     // Initializes memory with random doubles from given interval.
-    void randomizeDoubles(double **memPtr, int size);
+    void randomizeDoubles(dType **memPtr, int size);
     // Total number of neurons in the network.
     int noNeurons;
     // Array representing weights for each edge in the neural network.
     // The zero-layer weights are for edges coming into input neurons,
     // therefore always initialized to 1.
-    double *weights;
+    dType *weights;
     // Array representing input coming into each neuron.
-    double *inputs;
+    dType *inputs;
     // Network bias. Each neuron has its own bias.
-    double *bias;
+    dType *bias;
     // Cache of number of neurons up to the layer determined by the array index.
     // Used for optimization of calculating indexes for inputs.
     // Method returns zero neurons in zero-th layer.

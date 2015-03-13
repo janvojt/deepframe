@@ -108,9 +108,9 @@ struct config {
     /* Determines whether training datasets should be shuffled. */
     bool shuffle = false;
     /* activation function */
-    void (*activationFnc)(double *x, double *y, int layerSize);
+    void (*activationFnc)(DATA_TYPE *x, DATA_TYPE *y, int layerSize);
     /* derivative of activation function */
-    void (*dActivationFnc)(double *x, double *y, int layerSize);
+    void (*dActivationFnc)(DATA_TYPE *x, DATA_TYPE *y, int layerSize);
     /* Whether to use precomputed table for activation function value lookup. */
     bool useFunctionCache = false;
     /* Number of samples for function cache lookup table. */
@@ -131,7 +131,8 @@ unsigned getSeed(void)
   return seed;
 }
 
-void printArray(double *arr, int size) {
+template <typename dType>
+void printArray(dType *arr, int size) {
     
     // print input
     cout << "[ ";
@@ -142,17 +143,17 @@ void printArray(double *arr, int size) {
     cout << " ]";
 }
 
-void printInout(Network *net) {
+template <typename dType>
+void printInout(Network<dType> *net) {
     printArray(net->getInput(), net->getInputNeurons());
     cout << " -> ";
     printArray(net->getOutput(), net->getOutputNeurons());
     cout << endl;
 }
 
-const SimpleLabeledDataset *LABELED_DATASET_CLASS = new SimpleLabeledDataset(0,0,0);
-
 /* Runs the given test dataset through given network and prints results. */
-void runTest(Network *net, InputDataset *ds) {
+template <typename dType>
+void runTest(Network<dType> *net, InputDataset<dType> *ds) {
     
     ds->reset();
     if (ds->getInputDimension() <= MAX_PRINT_ARRAY_SIZE) {
@@ -162,17 +163,20 @@ void runTest(Network *net, InputDataset *ds) {
             printInout(net);
         }
     } else {
-        LabeledDataset *lds = (LabeledDataset *) ds;
-        ErrorComputer *ec = new MseErrorComputer();
+
+        const SimpleLabeledDataset<dType> *LABELED_DATASET_CLASS = new SimpleLabeledDataset<dType>(0,0,0);
+        LabeledDataset<dType> *lds = (LabeledDataset<dType> *) ds;
+        ErrorComputer<dType> *ec = new MseErrorComputer<dType>();
         int i = 0;
+
         while (lds->hasNext()) {
-            double *pattern = lds->next();
+            dType *pattern = lds->next();
             i++;
-            double *label = pattern + lds->getInputDimension();
+            dType *label = pattern + lds->getInputDimension();
             net->setInput(pattern);
             net->run();
             if (typeid(*ds)==typeid(*LABELED_DATASET_CLASS)) {
-                double error = ec->compute(net, label);
+                dType error = ec->compute(net, label);
                 cout << "Output for pattern " << i << ": ";
                 printArray(net->getOutput(), net->getOutputNeurons());
                 cout << ", label: ";
@@ -184,18 +188,20 @@ void runTest(Network *net, InputDataset *ds) {
                 cout << "." << endl;
             }
         }
+
     }
 }
 
-LabeledDataset* createXorDataset() {
-    SimpleLabeledDataset *ds = new SimpleLabeledDataset(2, 1, 4);
+template <typename dType>
+LabeledDataset<dType>* createXorDataset() {
+    SimpleLabeledDataset<dType> *ds = new SimpleLabeledDataset<dType>(2, 1, 4);
     
-    ds->addPattern((const double[2]){0, 0}, (const double[1]){0});
-    ds->addPattern((const double[2]){0, 1}, (const double[1]){1});
-    ds->addPattern((const double[2]){1, 0}, (const double[1]){1});
-    ds->addPattern((const double[2]){1, 1}, (const double[1]){0});
+    ds->addPattern((const dType[2]){0, 0}, (const dType[1]){0});
+    ds->addPattern((const dType[2]){0, 1}, (const dType[1]){1});
+    ds->addPattern((const dType[2]){1, 0}, (const dType[1]){1});
+    ds->addPattern((const dType[2]){1, 1}, (const dType[1]){0});
     
-    return (LabeledDataset*)ds;
+    return (LabeledDataset<dType>*) ds;
 }
 
 void printHelp() {
@@ -230,8 +236,8 @@ config* processOptions(int argc, char *argv[]) {
     config* conf = new config;
     
     // set defaults
-    conf->activationFnc = sigmoidFunction;
-    conf->dActivationFnc = dSigmoidFunction;
+    conf->activationFnc = sigmoidFunction<DATA_TYPE>;
+    conf->dActivationFnc = dSigmoidFunction<DATA_TYPE>;
     conf->layerConf = (char*) "2,2,1";
     conf->initInterval = (char*) "-1,1";
     
@@ -337,19 +343,20 @@ config* processOptions(int argc, char *argv[]) {
 }
 
 /* Factory for network configuration. */
-NetworkConfiguration *createNetworkConfiguration(config* conf) {
+template <typename dType>
+NetworkConfiguration<dType> *createNetworkConfiguration(config* conf) {
     
     LOG()->info("Seeding random generator with %d.", conf->seed);
     srand(conf->seed);
     
     // Setup function lookup table if it is to be used.
     if (conf->useFunctionCache) {
-        FunctionCache::init(conf->activationFnc, conf->functionSamples);
+        FunctionCache<DATA_TYPE>::init(conf->activationFnc, conf->functionSamples);
         conf->activationFnc = cachedFunction;
     }
     
     // Setup network configuration.
-    NetworkConfiguration *netConf = new NetworkConfiguration();
+    NetworkConfiguration<dType> *netConf = new NetworkConfiguration<dType>();
     netConf->parseLayerConf(conf->layerConf);
     netConf->activationFnc = conf->activationFnc;
     netConf->dActivationFnc = conf->dActivationFnc;
@@ -391,7 +398,8 @@ void printImage(int x, int y, double *arr) {
     }
 }
 
-void printImageLabels(LabeledDataset *lds) {
+template <typename dType>
+void printImageLabels(LabeledDataset<dType> *lds) {
     int i = 0;
     lds->reset();
     while (lds->hasNext()) {
@@ -422,11 +430,11 @@ int main(int argc, char *argv[]) {
         conf->seed = getSeed();
     }
     
-    NetworkConfiguration *netConf = createNetworkConfiguration(conf);
+    NetworkConfiguration<DATA_TYPE> *netConf = createNetworkConfiguration<DATA_TYPE>(conf);
     
     // construct the network
-    Network *net;
-    BackpropagationLearner *bp;
+    Network<DATA_TYPE> *net;
+    BackpropagationLearner<DATA_TYPE> *bp;
     
     // probe GPU and fetch specs
     GpuConfiguration *gpuConf;
@@ -442,48 +450,48 @@ int main(int argc, char *argv[]) {
     // setup correct implementations for network and BP learner
     if (useGpu) {
         LOG()->info("Using GPU for computing the network runs.");
-        GpuNetwork *gpuNet = new GpuNetwork(netConf, gpuConf);
-        bp = new GpuBackpropagationLearner(gpuNet);
+        GpuNetwork<DATA_TYPE> *gpuNet = new GpuNetwork<DATA_TYPE>(netConf, gpuConf);
+        bp = new GpuBackpropagationLearner<DATA_TYPE>(gpuNet);
         net = gpuNet;
     } else {
         LOG()->info("Using CPU for computing the network runs.");
-        CpuNetwork *cpuNet = new CpuNetwork(netConf);
-        bp = new CpuBackpropagationLearner(cpuNet);
+        CpuNetwork<DATA_TYPE> *cpuNet = new CpuNetwork<DATA_TYPE>(netConf);
+        bp = new CpuBackpropagationLearner<DATA_TYPE>(cpuNet);
         net = cpuNet;
     }
     
     // Prepare test dataset.
-    InputDataset *tds;
+    InputDataset<DATA_TYPE> *tds;
     if (conf->testData == NULL) {
-        SimpleInputDataset *d = new SimpleInputDataset(2, 4);
-        d->addInput((const double[2]){0, 0});
-        d->addInput((const double[2]){0, 1});
-        d->addInput((const double[2]){1, 0});
-        d->addInput((const double[2]){1, 1});
-        tds = (InputDataset *) d;
+        SimpleInputDataset<DATA_TYPE> *d = new SimpleInputDataset<DATA_TYPE>(2, 4);
+        d->addInput((const DATA_TYPE[2]){0, 0});
+        d->addInput((const DATA_TYPE[2]){0, 1});
+        d->addInput((const DATA_TYPE[2]){1, 0});
+        d->addInput((const DATA_TYPE[2]){1, 1});
+        tds = (InputDataset<DATA_TYPE> *) d;
     } else if (conf->useIdx) {
-        LabeledMnistParser *p = new LabeledMnistParser();
+        LabeledMnistParser<DATA_TYPE> *p = new LabeledMnistParser<DATA_TYPE>();
         tds = p->parse(conf->testData);
 //        printImageLabels((LabeledDataset *)tds);
 //        return 0;
         delete p;
     } else {
-        InputDatasetParser *p = new InputDatasetParser(conf->testData, netConf);
+        InputDatasetParser<DATA_TYPE> *p = new InputDatasetParser<DATA_TYPE>(conf->testData, netConf);
         tds = p->parse();
         delete p;
     }
     
     // Prepare training dataset.
     // If none was provided in options use XOR dataset by default.
-    LabeledDataset *lds;
+    LabeledDataset<DATA_TYPE> *lds;
     if (conf->labeledData == NULL) {
-        lds = createXorDataset();
+        lds = createXorDataset<DATA_TYPE>();
     } else if (conf->useIdx) {
-        LabeledMnistParser *p = new LabeledMnistParser();
+        LabeledMnistParser<DATA_TYPE> *p = new LabeledMnistParser<DATA_TYPE>();
         lds = p->parse(conf->labeledData);
         delete p;
     } else {
-        LabeledDatasetParser *p = new LabeledDatasetParser(conf->labeledData, netConf);
+        LabeledDatasetParser<DATA_TYPE> *p = new LabeledDatasetParser<DATA_TYPE>(conf->labeledData, netConf);
         lds = p->parse();
         delete p;
     }
@@ -500,25 +508,25 @@ int main(int argc, char *argv[]) {
     // configure BP learner
     bp->setLearningRate(conf->lr);
     bp->setTargetMse(conf->mse);
-    bp->setErrorComputer(new MseErrorComputer());
+    bp->setErrorComputer(new MseErrorComputer<DATA_TYPE>());
     bp->setEpochLimit(conf->maxEpochs);
     bp->setImproveEpochs(conf->improveEpochs);
     
     // Prepare validation dataset
-    FoldDatasetFactory *df;
-    LabeledDataset *vds;
+    FoldDatasetFactory<DATA_TYPE> *df;
+    LabeledDataset<DATA_TYPE> *vds;
     if (conf->kFold > 1) {
 
         LOG()->info("Training with %d-fold cross validation.", conf->kFold);
-        df = new FoldDatasetFactory(lds, conf->kFold);
+        df = new FoldDatasetFactory<DATA_TYPE>(lds, conf->kFold);
         double bestError = 2.0; // start with impossibly bad error
         double bestValIdx = 0;
-        Network *bestNet = NULL;
+        Network<DATA_TYPE> *bestNet = NULL;
         
         // train each fold
         for (int i = 0; i<conf->kFold; i++) {
-            lds = (LabeledDataset *) df->getTrainingDataset(i);
-            vds = (LabeledDataset *) df->getValidationDataset(i);
+            lds = (LabeledDataset<DATA_TYPE> *) df->getTrainingDataset(i);
+            vds = (LabeledDataset<DATA_TYPE> *) df->getValidationDataset(i);
             
             net->reinit();
             double mse = bp->train(lds, vds, i+1);
@@ -544,12 +552,12 @@ int main(int argc, char *argv[]) {
         
     } else {
         
-        vds = (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
+        vds = (LabeledDataset<DATA_TYPE> *) new SimpleLabeledDataset<DATA_TYPE>(0, 0, 0);
         bp->train(lds, vds, 0);
     }
     
     // Run (hopefully) learnt network.
-    runTest(net, tds);
+    runTest<DATA_TYPE>(net, tds);
     
     // Release dynamically allocated memory
     if (conf->kFold > 1) {

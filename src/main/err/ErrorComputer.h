@@ -10,13 +10,14 @@
 
 #include "../net/Network.h"
 
+template <typename dType>
 class ErrorComputer {
 public:
     ErrorComputer();
     ErrorComputer(const ErrorComputer& orig);
     virtual ~ErrorComputer();
     // Computes the error for given expected output.
-    virtual double compute(Network *net, double *expectedOutput) = 0;
+    virtual dType compute(Network<dType> *net, dType *expectedOutput) = 0;
 private:
 
 };

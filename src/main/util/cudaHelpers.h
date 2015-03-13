@@ -12,6 +12,9 @@
 #include <cstdlib>
 #include <iostream>
 
+#include <curand.h>
+#include <cublas_v2.h>
+
 #define checkCudaErrors(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {
@@ -23,7 +26,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 }
 
 // Computes matrix sum A = A + B.
-void k_sumVectors(double *dA, double *dB, int elements);
+template <typename dType>
+void k_sumVectors(dType *dA, dType *dB, int elements);
 
 /**
  * Divides every array element by given divisor.
@@ -32,29 +36,85 @@ void k_sumVectors(double *dA, double *dB, int elements);
  * @param divisor
  * @param elements size of the array
  */
-void k_divideVector(double *dA, double divisor, int elements);
+template <typename dType>
+void k_divideVector(dType *dA, int divisor, int elements);
 
-void k_computeOutputLocalGradient(double *actualOutput, double *expectedOutput, double *localGradient, int elements);
+template <typename dType>
+void k_computeOutputLocalGradient(dType *actualOutput, dType *expectedOutput, dType *localGradient, int elements);
 
+template <typename dType>
 void k_computeTotalDerivative(int thisNeurons, int nextNeurons, 
-        double learningRate, double *thisInput, double *nextLocalGradient,
-        double *weightDiffs);
+        dType learningRate, dType *thisInput, dType *nextLocalGradient,
+        dType *weightDiffs);
 
+template <typename dType>
 void k_computeBiasDerivative(
-        double learningRate, double *nextLocalGradient,
-        double *biasDiffs, int elements);
+        dType learningRate, dType *nextLocalGradient,
+        dType *biasDiffs, int elements);
 
+template <typename dType>
 void k_computeHiddenLocalGradient(
         int thisNeurons, int nextNeurons,
-        double *thisInput, double *weights,
-        double *thisLocalGradient, double *nextLocalGradient);
+        dType *thisInput, dType *weights,
+        dType *thisLocalGradient, dType *nextLocalGradient);
 
 // Compute the sigmoid function on device array.
-void k_computeSigmoid(double *dArray, int elements);
+template <typename dType>
+void k_computeSigmoid(dType *dArray, int elements);
 
 // Assumes array of double values between 0 and 1 in dArray and 
 // spreads this to given interval.
-void k_spreadInterval(double min, double max, double *dArray, int size);
+template <typename dType>
+void k_spreadInterval(dType min, dType max, dType *dArray, int size);
+
+/**
+ * Delegates GEMM operation to appropriate cuBLAS call of correct data type.
+ * 
+ * @param handle
+ * @param transa
+ * @param transb
+ * @param m
+ * @param n
+ * @param k
+ * @param alpha
+ * @param A
+ * @param lda
+ * @param B
+ * @param ldb
+ * @param beta
+ * @param C
+ * @param ldc
+ * @return 
+ */
+template <typename dType>
+cublasStatus_t k_gemm(cublasContext *handle,
+        cublasOperation_t transa,
+        cublasOperation_t transb,
+        int m,
+        int n,
+        int k,
+        const dType *alpha, /* host or device pointer */
+        const dType *A,
+        int lda,
+        const dType *B,
+        int ldb,
+        const dType *beta, /* host or device pointer */
+        dType *C,
+        int ldc);
+/**
+ * Delegates random number generation to appropriate cuRAND call of correct
+ * data type.
+ * 
+ * @param generator
+ * @param outputPtr
+ * @param num
+ * @return 
+ */
+template <typename dType>
+curandStatus_t k_generateUniform(curandGenerator_t generator,
+        dType *outputPtr,
+        size_t num);
+
 
 #endif	/* CUDAHELPERS_H */
 

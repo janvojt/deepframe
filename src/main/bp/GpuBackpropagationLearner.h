@@ -11,14 +11,14 @@
 #include "BackpropagationLearner.h"
 #include "../net/GpuNetwork.h"
 
-
-class GpuBackpropagationLearner : public BackpropagationLearner {
+template <typename dType>
+class GpuBackpropagationLearner : public BackpropagationLearner<dType> {
 public:
-    GpuBackpropagationLearner(GpuNetwork * network);
+    GpuBackpropagationLearner(GpuNetwork<dType> * network);
     GpuBackpropagationLearner(const GpuBackpropagationLearner& orig);
     virtual ~GpuBackpropagationLearner();
     // Computes local gradients for output neurons.
-    void computeOutputGradients(double *expectedOutput);
+    void computeOutputGradients(dType *expectedOutput);
     // Computes total differential for all weights
     // and local gradients for hidden neurons.
     void computeWeightDifferentials();

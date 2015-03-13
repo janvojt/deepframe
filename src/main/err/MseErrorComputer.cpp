@@ -6,24 +6,33 @@
  */
 
 #include "MseErrorComputer.h"
+
+#include "../common.h"
+
 #include <math.h>
 
-MseErrorComputer::MseErrorComputer() {
+template <typename dType>
+MseErrorComputer<dType>::MseErrorComputer() {
 }
 
-MseErrorComputer::MseErrorComputer(const MseErrorComputer& orig) {
+template <typename dType>
+MseErrorComputer<dType>::MseErrorComputer(const MseErrorComputer& orig) {
 }
 
-MseErrorComputer::~MseErrorComputer() {
+template <typename dType>
+MseErrorComputer<dType>::~MseErrorComputer() {
 }
 
-double MseErrorComputer::compute(Network* net, double* expectedOutput) {
+template <typename dType>
+dType MseErrorComputer<dType>::compute(Network<dType>* net, dType* expectedOutput) {
     int oNeurons = net->getOutputNeurons();
-    double *output = net->getOutput();
-    double mse = 0;
+    dType *output = net->getOutput();
+    dType mse = 0;
     for (int i = 0; i<oNeurons; i++) {
         mse += pow(output[i] - expectedOutput[i], 2);
     }
     mse = mse / oNeurons;
     return mse;
 }
+
+INSTANTIATE_DATA_CLASS(MseErrorComputer);

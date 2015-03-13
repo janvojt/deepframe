@@ -12,7 +12,8 @@
 
 // Represents the dataset with labeled input patterns
 // to be used for supervised learning.
-class LabeledDataset : public InputDataset {
+template <typename dType>
+class LabeledDataset : public InputDataset<dType> {
 public:
     LabeledDataset();
     LabeledDataset(const LabeledDataset& orig);
