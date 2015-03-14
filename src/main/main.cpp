@@ -463,12 +463,7 @@ int main(int argc, char *argv[]) {
     // Prepare test dataset.
     InputDataset<DATA_TYPE> *tds;
     if (conf->testData == NULL) {
-        SimpleInputDataset<DATA_TYPE> *d = new SimpleInputDataset<DATA_TYPE>(2, 4);
-        d->addInput((const DATA_TYPE[2]){0, 0});
-        d->addInput((const DATA_TYPE[2]){0, 1});
-        d->addInput((const DATA_TYPE[2]){1, 0});
-        d->addInput((const DATA_TYPE[2]){1, 1});
-        tds = (InputDataset<DATA_TYPE> *) d;
+        tds = createXorDataset<DATA_TYPE>();
     } else if (conf->useIdx) {
         LabeledMnistParser<DATA_TYPE> *p = new LabeledMnistParser<DATA_TYPE>();
         tds = p->parse(conf->testData);
