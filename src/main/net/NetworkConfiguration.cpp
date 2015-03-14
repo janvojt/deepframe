@@ -86,16 +86,26 @@ void NetworkConfiguration<dType>::initConf() {
     neuronConf = new int[layers];
 }
 
+template <>
+void NetworkConfiguration<float>::parseInitInterval(const char* intervalConf) {
+    parseInitInterval(intervalConf, "%f");
+}
+
+template <>
+void NetworkConfiguration<double>::parseInitInterval(const char* intervalConf) {
+    parseInitInterval(intervalConf, "%lf");
+}
+
 template <typename dType>
-void NetworkConfiguration<dType>::parseInitInterval(char* intervalConf) {
+void NetworkConfiguration<dType>::parseInitInterval(const char* intervalConf, const char *format) {
     dType v = 0;
     char *haystack = new char[strlen(intervalConf)+1];
     strcpy(haystack, intervalConf);
     char *token = strtok(haystack, ",");
-    sscanf(token, "%lf", &v);
+    sscanf(token, format, &v);
     this->initMin = v;
     token = strtok(NULL, ",");
-    sscanf(token, "%lf", &v);
+    sscanf(token, format, &v);
     this->initMax = v;
     delete[] haystack;
 }

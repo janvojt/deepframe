@@ -35,7 +35,7 @@ public:
     dType getInitMax();
     void setInitMax(dType max);
     // Parse and set the interval for weight initialization.
-    void parseInitInterval(char *intervalConf);
+    void parseInitInterval(const char *intervalConf);
     // Parse layer configuration from comma separated list of neuron counts.
     void parseLayerConf(char *layerConf);
     
@@ -58,6 +58,15 @@ public:
     void (*dActivationFnc)(dType *x, dType *y, int layerSize);
 private:
     void initConf();
+    
+    /**
+     * Parse and set the interval for weight and bias initialization.
+     * 
+     * @param intervalConf comma-separated interval
+     * @param format format of parsed number
+     */
+    void parseInitInterval(const char *intervalConf, const char *format);
+    
     // number of layers in a network
     int layers;
     // number of neurons in each network layer
