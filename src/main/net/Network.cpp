@@ -22,7 +22,9 @@ Network<dType>::Network(NetworkConfiguration<dType> *conf) {
     this->conf = conf;
     this->noLayers = conf->getLayers();
     
-    LOG()->info("Initializing network with layer configuration of (%s).", conf->getLayerConf());
+    if (conf->getLayerConf() != NULL) {
+        LOG()->info("Initializing network with layer configuration of (%s).", conf->getLayerConf());
+    }
 }
 
 template <typename dType>

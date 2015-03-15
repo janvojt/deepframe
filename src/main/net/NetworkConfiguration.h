@@ -8,6 +8,8 @@
 #ifndef NETWORKCONFIGURATION_H
 #define	NETWORKCONFIGURATION_H
 
+#include <cstdlib>
+
 template <typename dType>
 class NetworkConfiguration {
 public:
@@ -81,7 +83,7 @@ private:
     dType initMax;
     
     /** Comma-separated list of number of neurons in each respective layers. */
-    char *layerConf;
+    char *layerConf = NULL;
 };
 
 #endif	/* NETWORKCONFIGURATION_H */

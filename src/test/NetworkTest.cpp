@@ -34,8 +34,9 @@ void setAllWeights(Network<dType> *net, dType value) {
 }
 template void setAllWeights<DATA_TYPE>(Network<DATA_TYPE>*, DATA_TYPE);
 
+
 // Test network neurons counters.
-TEST(Network, NeuronCounters) {
+TEST(NetworkTest, NeuronCounters) {
     Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
     
     EXPECT_EQ(5, net->getAllNeurons());
@@ -44,7 +45,7 @@ TEST(Network, NeuronCounters) {
 }
 
 // Test network input setup.
-TEST(Network, InputSetTest) {
+TEST(NetworkTest, InputSetTest) {
     Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
     
     DATA_TYPE input[] = {.1, .1};
@@ -55,7 +56,7 @@ TEST(Network, InputSetTest) {
 }
 
 // Test run of a simple network with no bias and weights of 1.
-TEST(Network, SimpleRun) {
+TEST(NetworkTest, SimpleRun) {
     
     NetworkConfiguration<DATA_TYPE> *conf = createConf<DATA_TYPE>();
     conf->setBias(false);
@@ -91,7 +92,7 @@ TEST(Network, SimpleRun) {
 }
 
 // Test run of a simple network with no bias and weights of 1/2.
-TEST(Network, SimpleWeightTest) {
+TEST(NetworkTest, SimpleWeightTest) {
     
     NetworkConfiguration<DATA_TYPE> *conf = createConf<DATA_TYPE>();
     conf->setBias(false);
@@ -127,7 +128,7 @@ TEST(Network, SimpleWeightTest) {
 }
 
 // Test network weight offsets.
-TEST(Network, WeightsOffsetTest) {
+TEST(NetworkTest, WeightsOffsetTest) {
     Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
     
     EXPECT_EQ(0, net->getWeightsOffset(0));
@@ -137,7 +138,7 @@ TEST(Network, WeightsOffsetTest) {
 }
 
 // Test neuron input offsets.
-TEST(Network, NeuronInputOffsetTest) {
+TEST(NetworkTest, NeuronInputOffsetTest) {
     Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
     
     EXPECT_EQ(0, net->getInputOffset(0));

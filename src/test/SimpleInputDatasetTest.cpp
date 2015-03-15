@@ -12,7 +12,7 @@
 #define DATA_TYPE float
 
 // Test binary data set creation.
-TEST(SimpleInputDataset, BinaryDatasetCreation) {
+TEST(SimpleInputDatasetTest, BinaryDatasetCreation) {
     SimpleInputDataset<DATA_TYPE> *ds = new SimpleInputDataset<DATA_TYPE>(2, 4);
     ds->addInput((const DATA_TYPE[2]){0, 0});
     ds->addInput((const DATA_TYPE[2]){0, 1});
