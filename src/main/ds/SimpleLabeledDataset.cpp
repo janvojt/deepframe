@@ -30,6 +30,17 @@ SimpleLabeledDataset<dType>::SimpleLabeledDataset(int inputDimension, int output
 
 template <typename dType>
 SimpleLabeledDataset<dType>::SimpleLabeledDataset(const SimpleLabeledDataset& orig) {
+    
+    this->inDimension = orig.inDimension;
+    this->outDimension = orig.outDimension;
+    this->size = orig.size;
+    this->addedCounter = orig.addedCounter;
+    this->data = data;
+}
+
+template<typename dType>
+SimpleLabeledDataset<dType>* SimpleLabeledDataset<dType>::clone() {
+    return new SimpleLabeledDataset(*this);
 }
 
 template <typename dType>

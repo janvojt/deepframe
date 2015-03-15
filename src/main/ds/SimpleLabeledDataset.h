@@ -20,6 +20,14 @@ public:
     // according to input and output label dimensions and dataset size.
     SimpleLabeledDataset(int inputDimension, int outputDimension, int size);
     SimpleLabeledDataset(const SimpleLabeledDataset& orig);
+    
+    /**
+     * Clones the dataset by creating a shallow copy (point to the same data).
+     * 
+     * @return shallow copy
+     */
+    SimpleLabeledDataset<dType>* clone();
+    
     virtual ~SimpleLabeledDataset();
     int getInputDimension();
     int getOutputDimension();

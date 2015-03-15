@@ -13,12 +13,18 @@
 
 template <typename dType>
 FoldDatasetFactory<dType>::FoldDatasetFactory(LabeledDataset<dType> *ds, int k) {
+    
     noFolds = k;
+    
+    LabeledDataset<dType> *copy = ds->clone();
+    
     folds = new LabeledDataset<dType>*[k];
-    int foldSize = ds->getSize() / k;
+    int foldSize = copy->getSize() / k;
     for (int i = k-1; i>=0; i--) {
-        folds[i] = ds->takeAway(foldSize);
+        folds[i] = copy->takeAway(foldSize);
     }
+    
+    delete copy;
 }
 
 template <typename dType>

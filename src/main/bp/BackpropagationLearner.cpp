@@ -41,10 +41,8 @@ BackpropagationLearner<dType>::~BackpropagationLearner() {
 }
 
 template <typename dType>
-dType BackpropagationLearner<dType>::train(LabeledDataset<dType> *trainingSet, LabeledDataset<dType> *validationSet, int valIdx) {
+TrainingResult<dType>* BackpropagationLearner<dType>::train(LabeledDataset<dType> *trainingSet, LabeledDataset<dType> *validationSet, int valIdx) {
     
-    long epochCounter = 0;
-    dType mse = 1.0; // maximum possible error
     LOG()->info("Started training with:\n"
             "   - cross-validation fold: %d,\n"
             "   - epoch limit: %d,\n"
@@ -53,13 +51,17 @@ dType BackpropagationLearner<dType>::train(LabeledDataset<dType> *trainingSet, L
             "   - learning rate: %f."
             , valIdx, this->epochLimit, this->targetMse, this->improveEpochs, this->learningRate);
     
+    TrainingResult<dType> *result = new TrainingResult<dType>();
+    long epochCounter = 0;
     do {
+        
         epochCounter++;
         LOG()->debug("Validation fold %d: Starting epoch %d.", valIdx, epochCounter);
         
         trainingSet->reset();
         int datasetSize = 0;
-        mse = 0;
+        dType mse = 0;
+        
         while (trainingSet->hasNext()) {
             datasetSize++;
             dType *pattern = trainingSet->next();
@@ -73,31 +75,35 @@ dType BackpropagationLearner<dType>::train(LabeledDataset<dType> *trainingSet, L
             
             mse += this->errorComputer->compute(this->network, expOutput);
         }
+        
+        // compute MSE on training data
         mse = mse / datasetSize;
-        LOG()->info("Validation fold %d: Finished epoch %d with MSE: %f.", valIdx, epochCounter, mse);
+        result->setTrainingError(mse);
+        LOG()->info("Validation fold %d: Finished epoch %d with MSE: %f.", valIdx, epochCounter, result->getTrainingError());
         
         // calculate error on validation dataset
         validationSet->reset();
         if (validationSet->hasNext()) {
-            mse = computeError(validationSet);
-            LOG()->info("Validation fold %d: Computed MSE of %f on validation dataset.", valIdx, mse);
+            result->setValidationError(computeError(validationSet));
+            LOG()->info("Validation fold %d: Computed MSE of %f on validation dataset.", valIdx, result->getValidationError());
         }
     
         // check criteria for stopping learning
-        if (mse <= this->targetMse) {
-            LOG()->info("Validation fold %d: Training successful after %d epochs with MSE of %f.", valIdx, epochCounter, mse);
+        if (result->getError() <= this->targetMse) {
+            LOG()->info("Validation fold %d: Training successful after %d epochs with MSE of %f.", valIdx, epochCounter, result->getError());
             break;
-        } else if (!isErrorImprovement(mse, epochCounter)) {
-            LOG()->info("Validation fold %d: Training interrupted after %d epochs with MSE of %f, because MSE improvement in last %d epochs was less than %f.", valIdx, epochCounter, mse, improveEpochs, deltaError);
+        } else if (!isErrorImprovement(result->getError(), epochCounter)) {
+            LOG()->info("Validation fold %d: Training interrupted after %d epochs with MSE of %f, because MSE improvement in last %d epochs was less than %f.", valIdx, epochCounter, result->getError(), improveEpochs, deltaError);
             break;
         } else if (epochCounter >= this->epochLimit) {
-            LOG()->info("Validation fold %d: Training interrupted after %d epochs with MSE of %f.", valIdx, epochCounter, mse);
+            LOG()->info("Validation fold %d: Training interrupted after %d epochs with MSE of %f.", valIdx, epochCounter, result->getError());
             break;
         }
         
     } while (true); // stopping checks are at the end of the loop
     
-    return mse;
+    result->setEpochs(epochCounter);
+    return result;
 }
 
 template <typename dType>

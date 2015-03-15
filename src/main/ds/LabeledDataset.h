@@ -18,6 +18,12 @@ public:
     LabeledDataset();
     LabeledDataset(const LabeledDataset& orig);
     virtual ~LabeledDataset();
+    
+    /**
+     * Clones the dataset by creating a shallow copy (point to the same data).
+     */
+    virtual LabeledDataset<dType>* clone() = 0;
+    
     // Returns the dimension of labels for input data.
     virtual int getOutputDimension() = 0;
     

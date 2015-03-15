@@ -27,10 +27,19 @@ FoldTrainingDataset<dType>::FoldTrainingDataset(LabeledDataset<dType> **folds, i
 
 template <typename dType>
 FoldTrainingDataset<dType>::FoldTrainingDataset(const FoldTrainingDataset& orig) {
+    this->noFolds = orig.noFolds;
+    this->folds = orig.folds;
+    this->valIdx = orig.valIdx;
+    this->foldIdx = orig.foldIdx;
 }
 
 template <typename dType>
 FoldTrainingDataset<dType>::~FoldTrainingDataset() {
+}
+
+template<typename dType>
+FoldTrainingDataset<dType>* FoldTrainingDataset<dType>::clone() {
+    return new FoldTrainingDataset<dType>(*this);
 }
 
 template <typename dType>

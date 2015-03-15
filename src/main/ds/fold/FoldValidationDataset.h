@@ -32,6 +32,12 @@ public:
     /** Destructor releasing memory. */
     virtual ~FoldValidationDataset();
     
+    /**
+     * @return shallow copy
+     */
+    virtual LabeledDataset<dType>* clone();
+
+    
     /** Gets the input pattern dimension.
         
         @return input dimensions

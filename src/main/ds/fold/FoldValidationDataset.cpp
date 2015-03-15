@@ -24,10 +24,18 @@ FoldValidationDataset<dType>::FoldValidationDataset(LabeledDataset<dType> **fold
 
 template <typename dType>
 FoldValidationDataset<dType>::FoldValidationDataset(const FoldValidationDataset& orig) {
+    this->noFolds = orig.noFolds;
+    this->folds = orig.folds;
+    this->valIdx = orig.valIdx;
 }
 
 template <typename dType>
 FoldValidationDataset<dType>::~FoldValidationDataset() {
+}
+
+template<typename dType>
+LabeledDataset<dType>* FoldValidationDataset<dType>::clone() {
+    return new FoldValidationDataset<dType>(*this);
 }
 
 template <typename dType>

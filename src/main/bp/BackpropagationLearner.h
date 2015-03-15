@@ -11,6 +11,7 @@
 #include "../net/Network.h"
 #include "../ds/LabeledDataset.h"
 #include "../err/ErrorComputer.h"
+#include "TrainingResult.h"
 
 template <typename dType>
 class BackpropagationLearner {
@@ -29,7 +30,7 @@ public:
      * @return error in the validation dataset
      *  (or training dataset if no validation dataset is given)
      */
-    dType train(LabeledDataset<dType> *trainingSet, LabeledDataset<dType> *validationSet, int valIdx);
+    TrainingResult<dType>* train(LabeledDataset<dType> *trainingSet, LabeledDataset<dType> *validationSet, int valIdx);
     // Sets the learning rate influencing speed and quality of learning.
     void setLearningRate(dType learningRate);
     // Sets the maximum number of epochs.

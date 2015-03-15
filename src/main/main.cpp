@@ -99,6 +99,8 @@ struct config {
     char* testData = NULL;
     /* Validation data set size */
     int validationSize = 0;
+    /* Determines whether to use the best fold in k-fold validation */
+    bool useBestFold = false;
     /* Number of folds to be used in k-fold cross validation. */
     int kFold = 1;
     /* Use IDX data format when parsing input files? */
@@ -222,6 +224,7 @@ void printHelp() {
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
     cout << "-v <value>  --validation <value>  Size of the validation set. Patterns are taken from the training set. Default is zero." << endl;
     cout << "-q <value>  --k-fold <value>      Number of folds to use in k-fold cross validation. Default is one (=disabled)." << endl;
+    cout << "-o          --best-fold           Uses the best network trained with k-fold validation. By default epoch limit is averaged and network is trained on all data." << endl;
     cout << "-i          --idx                 Use IDX data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << "-j          --shuffle             Shuffles training and validation dataset do the patterns are in random order." << endl;
@@ -289,6 +292,9 @@ config* processOptions(int argc, char *argv[]) {
             case 'q' :
                 conf->validationSize = 0;
                 conf->kFold = atoi(optarg);
+                break;
+            case 'o' :
+                conf->useBestFold = true;
                 break;
             case 'i' :
                 conf->useIdx = true;
@@ -511,33 +517,44 @@ int main(int argc, char *argv[]) {
     FoldDatasetFactory<DATA_TYPE> *df;
     LabeledDataset<DATA_TYPE> *vds;
     if (conf->kFold > 1) {
-
+        
         LOG()->info("Training with %d-fold cross validation.", conf->kFold);
         df = new FoldDatasetFactory<DATA_TYPE>(lds, conf->kFold);
-        double bestError = 2.0; // start with impossibly bad error
-        double bestValIdx = 0;
+        DATA_TYPE bestError = 2.0; // start with impossibly bad error
+        DATA_TYPE bestValIdx = 0;
         Network<DATA_TYPE> *bestNet = NULL;
+        long totalEpochs = 0;
         
         // train each fold
         for (int i = 0; i<conf->kFold; i++) {
-            lds = (LabeledDataset<DATA_TYPE> *) df->getTrainingDataset(i);
-            vds = (LabeledDataset<DATA_TYPE> *) df->getValidationDataset(i);
+            LabeledDataset<DATA_TYPE> *t = (LabeledDataset<DATA_TYPE> *) df->getTrainingDataset(i);
+            LabeledDataset<DATA_TYPE> *v = (LabeledDataset<DATA_TYPE> *) df->getValidationDataset(i);
             
             net->reinit();
-            double mse = bp->train(lds, vds, i+1);
+            TrainingResult<DATA_TYPE> *res = bp->train(t, v, 0);
+            totalEpochs += res->getEpochs();
             
-            if (mse < bestError) {
+            if (conf->useBestFold && res->getValidationError() < bestError) {
                 if (bestNet != NULL) delete bestNet;
-                bestError = mse;
+                bestError = res->getValidationError();
                 bestValIdx = i;
                 bestNet = net->clone();
             }
+            
+            delete t;
+            delete v;
+            delete res;
         }
         
         // use the best network
-        delete net;
-        net = bestNet;
-        LOG()->info("Best error of %f achieved using validation fold %d.", bestError, bestValIdx);
+        if (conf->useBestFold) {
+            LOG()->info("Best error of %f achieved using validation fold %d.", bestError, bestValIdx);
+            delete net;
+            net = bestNet;
+        } else {
+            bp->setEpochLimit(totalEpochs / conf->kFold);
+            bp->train(lds, vds, 0);
+        }
 
     } else if (conf->validationSize > 0) {
         

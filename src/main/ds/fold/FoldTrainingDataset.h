@@ -33,6 +33,11 @@ public:
     /** Destructor releasing memory. */
     virtual ~FoldTrainingDataset();
     
+    /**
+     * @return shallow copy
+     */
+    virtual FoldTrainingDataset<dType>* clone();
+    
     /** Gets the input pattern dimension.
         
         @return input dimensions
