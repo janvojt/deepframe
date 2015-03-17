@@ -49,7 +49,7 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbl:a:e:k:m:f:g:ic:s:t:v:q:r:ju:pd";
+const char* optsList = "hbl:a:e:k:m:f:ic:s:t:v:q:r:ju:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
@@ -61,7 +61,6 @@ const struct option optsLong[] = {
     {"max-epochs", required_argument, 0, 'm'},
     {"improve-err", required_argument, 0, 'k'},
     {"func", required_argument, 0, 'f'},
-    {"d-func", required_argument, 0, 'g'},
     {"lconf", required_argument, 0, 'c'},
     {"labels", required_argument, 0, 's'},
     {"test", required_argument, 0, 't'},
@@ -218,7 +217,6 @@ void printHelp() {
     cout << "-k <value>  --improve-err <value> Number of epochs during which improvement of error is required to keep learning. Default is zero (=disabled)." << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met. Default is 100,000" << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
-    cout << "-g <value>  --d-func <value>      Specifies the derivative of activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << "-c <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
     cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
     cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
@@ -308,27 +306,18 @@ config* processOptions(int argc, char *argv[]) {
             case 'f' :
                 switch (optarg[0]) {
                     case 's' :
+                        LOG()->info("Using sigmoid as activation function.");
                         conf->activationFnc = sigmoidFunction;
+                        conf->dActivationFnc = dSigmoidFunction;
                         break;
                     case 'h' :
+                        LOG()->info("Using hyperbolic tangent as activation function.");
                         conf->activationFnc = hyperbolicTangentFunction;
+                        conf->dActivationFnc = dHyperbolicTangentFunction;
                         break;
                     default :
                         LOG()->warn("Unknown activation function %s, falling back to sigmoid.", optarg);
                         conf->activationFnc = sigmoidFunction;
-                        break;
-                }
-                break;
-            case 'g' :
-                switch (optarg[0]) {
-                    case 's' :
-                        conf->dActivationFnc = dSigmoidFunction;
-                        break;
-                    case 'h' :
-                        conf->dActivationFnc = dHyperbolicTangentFunction;
-                        break;
-                    default :
-                        LOG()->warn("Unknown derivative of activation function %s, falling back to sigmoid derivative.", optarg);
                         conf->dActivationFnc = dSigmoidFunction;
                         break;
                 }
