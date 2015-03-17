@@ -108,10 +108,8 @@ struct config {
     int seed = 0;
     /* Determines whether training datasets should be shuffled. */
     bool shuffle = false;
-    /* activation function */
-    void (*activationFnc)(DATA_TYPE *x, DATA_TYPE *y, int layerSize);
-    /* derivative of activation function */
-    void (*dActivationFnc)(DATA_TYPE *x, DATA_TYPE *y, int layerSize);
+    /* activation function to use */
+    char actFunction = 's';
     /* Whether to use precomputed table for activation function value lookup. */
     bool useFunctionCache = false;
     /* Number of samples for function cache lookup table. */
@@ -237,8 +235,6 @@ config* processOptions(int argc, char *argv[]) {
     config* conf = new config;
     
     // set defaults
-    conf->activationFnc = sigmoidFunction<DATA_TYPE>;
-    conf->dActivationFnc = dSigmoidFunction<DATA_TYPE>;
     conf->layerConf = (char*) "2,2,1";
     conf->initInterval = (char*) "-1,1";
     
@@ -306,19 +302,14 @@ config* processOptions(int argc, char *argv[]) {
             case 'f' :
                 switch (optarg[0]) {
                     case 's' :
-                        LOG()->info("Using sigmoid as activation function.");
-                        conf->activationFnc = sigmoidFunction;
-                        conf->dActivationFnc = dSigmoidFunction;
+                        conf->actFunction = 's';
                         break;
                     case 'h' :
-                        LOG()->info("Using hyperbolic tangent as activation function.");
-                        conf->activationFnc = hyperbolicTangentFunction;
-                        conf->dActivationFnc = dHyperbolicTangentFunction;
+                        conf->actFunction = 'h';
                         break;
                     default :
                         LOG()->warn("Unknown activation function %s, falling back to sigmoid.", optarg);
-                        conf->activationFnc = sigmoidFunction;
-                        conf->dActivationFnc = dSigmoidFunction;
+                        conf->actFunction = 's';
                         break;
                 }
                 break;
@@ -344,17 +335,40 @@ NetworkConfiguration<dType> *createNetworkConfiguration(config* conf) {
     LOG()->info("Seeding random generator with %d.", conf->seed);
     srand(conf->seed);
     
+    NetworkConfiguration<dType> *netConf = new NetworkConfiguration<dType>();
+    
     // Setup function lookup table if it is to be used.
-    if (conf->useFunctionCache) {
-        FunctionCache<DATA_TYPE>::init(conf->activationFnc, conf->functionSamples);
-        conf->activationFnc = cachedFunction;
+    if (conf->useGpu && conf->useFunctionCache) {
+        LOG()->warn("Precomputed activation function table is only supported on CPU, disabling.");
+    } else if (conf->useFunctionCache) {
+        switch (conf->actFunction) {
+            case 's' :
+                FunctionCache<DATA_TYPE>::init(sigmoidFunction, conf->functionSamples);
+                netConf->dActivationFnc = dSigmoidFunction;
+                break;
+            case 'h' :
+                FunctionCache<DATA_TYPE>::init(hyperbolicTangentFunction, conf->functionSamples);
+                netConf->dActivationFnc = dHyperbolicTangentFunction;
+                break;
+        }
+        netConf->activationFnc = cachedFunction;
+    } else {
+        switch (conf->actFunction) {
+            case 's' :
+                LOG()->info("Using sigmoid as activation function.");
+                netConf->activationFnc = sigmoidFunction;
+                netConf->dActivationFnc = dSigmoidFunction;
+                break;
+            case 'h' :
+                LOG()->info("Using hyperbolic tangent as activation function.");
+                netConf->activationFnc = hyperbolicTangentFunction;
+                netConf->dActivationFnc = dHyperbolicTangentFunction;
+                break;
+        }
     }
     
     // Setup network configuration.
-    NetworkConfiguration<dType> *netConf = new NetworkConfiguration<dType>();
     netConf->parseLayerConf(conf->layerConf);
-    netConf->activationFnc = conf->activationFnc;
-    netConf->dActivationFnc = conf->dActivationFnc;
     netConf->setBias(conf->bias);
     netConf->parseInitInterval(conf->initInterval);
     
