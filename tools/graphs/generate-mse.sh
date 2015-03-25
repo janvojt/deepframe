@@ -9,6 +9,7 @@ basedir=`dirname $script`
 
 TESTDIR="$1"
 LAYERS=$2
+PROBLEM_TITLE="$3"
 TEST_OUT="$basedir/../../$TESTDIR"
 
 gnuplot << GNUEOS
@@ -19,7 +20,7 @@ set xlabel "trial"
 
 set ylabel "Mean Square Error"
 
-set title "MSE for 4-bit sum with $LAYERS hidden neurons"
+set title "MSE for $PROBLEM_TITLE with $LAYERS hidden neurons"
 set key reverse Left outside
 set grid
 

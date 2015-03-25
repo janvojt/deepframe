@@ -8,15 +8,16 @@ script=`readlink -f $0`
 basedir=`dirname $script`
 
 TESTDIR="$1"
-FILE_SUFFIX="$2"
+PROBLEM_TITLE="$2"
+FILE_SUFFIX="$3"
 TEST_OUT="$basedir/../../$TESTDIR"
 
 if [ -z "$FILE_SUFFIX" ]; then
-	TITLE_MAIN="CPU time performance for 4-bit sum with 1 hidden layer"
+	TITLE_MAIN="Time performance for $PROBLEM_TITLE with 1 hidden layer."
 	TITLE_X="hidden neurons"
 	BOXWIDTH=30
 else
-	TITLE_MAIN="CPU time performance for 4-bit sum"
+	TITLE_MAIN="Time performance for $PROBLEM_TITLE."
 	TITLE_X="hidden layers"
 	BOXWIDTH=.4
 fi

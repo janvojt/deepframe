@@ -4,7 +4,7 @@
 script=`readlink -f $0`
 basedir=`dirname $script`
 
-source "$basedir/vars.sh"
+source "$1"
 
 TEST_OUT="$basedir/../$TESTDIR"
 STATS_OUT="$TEST_OUT/stats"
