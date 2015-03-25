@@ -430,6 +430,8 @@ void printImageLabels(LabeledDataset<dType> *lds) {
 
 /* Entry point of the application. */
 int main(int argc, char *argv[]) {
+    
+    LOG()->info("Compiled with %dbit precision for data types.", 8*sizeof(DATA_TYPE));
         
     // prepare network configuration
     config* conf = processOptions(argc, argv);
