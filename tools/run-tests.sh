@@ -43,7 +43,7 @@ for (( i=1;i<=$ITERATIONS;i++ )); do
 		-e -1 \
 		-s "$DATASET_LABELS" \
 		-t "$DATASET_TESTS" \
-		-c "784,$l,10" \
+		-c "$INPUT_NEURONS,$l,$OUTPUT_NEURONS" \
 		"$GPU_FLAG" \
 		$ADD_OPTS \
 		$@ \

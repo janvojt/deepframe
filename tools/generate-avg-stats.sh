@@ -12,14 +12,19 @@ STATS_OUT="$TEST_OUT/stats"
 mkdir -p "$STATS_OUT"
 rm -f $STATS_OUT/*-avg*.csv
 for t in $MEASURES; do
+
+	echo "Computing stats for $t."
+
 	rm -f "$STATS_OUT/$t-avg.csv"
 	for l in $HIDDEN_NEURONS; do
+
+		echo "Computing layer configuration $l."
+
 		total=0
 		total2=0
 		count=0
 		min=99999999999999
 		max=0
-
 		for i in $(cat "$STATS_OUT/$t-$l.csv"); do
 			total=$(echo $total+$i | bc -l)
 			total2=$(echo $total2+$i^2 | bc -l)

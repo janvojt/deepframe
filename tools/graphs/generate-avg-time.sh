@@ -47,7 +47,7 @@ f(x) = m * x + b
 fit f(x) "$TEST_OUT/time-avg$FILE_SUFFIX.csv" using 1:2 via m,b
 
 plot "$TEST_OUT/time-avg$FILE_SUFFIX.csv" \
-	using 1:4:3:5:6 with candlesticks title "Measured" whiskerbars \
+	using 1:2:3:5:2 with candlesticks title "Measured" whiskerbars \
 	, '' using 1:2:2:2:2 with candlesticks fs solid title "Mean" \
 	,f(x) title "Linear fit"
 
