@@ -15,13 +15,11 @@ for t in $MEASURES; do
 	"$basedir/graphs/generate-avg-$t.sh" $STATS_OUT "$PROBLEM_TITLE" \
 		> "$GRAPHS_OUT/graph-$t-avg.eps"
 
-	for l in $HIDDEN_NEURONS; do
-		# check if we are creating graphs for multiple hidden layers
-		layers=$(echo "$l" | grep -o "," | wc -l)
-		((layers++))
-		if [ $layers -gt 1 -o "$l" = "8" ]; then
-			"$basedir/graphs/generate-avg-$t.sh" $STATS_OUT "$PROBLEM_TITLE" -ml \
-				> "$GRAPHS_OUT/graph-$t-avg-ml.eps"
-		fi
-	done
+	l=$(echo $HIDDEN_NEURONS | tr " " "\n" | grep "," | tail -n1)
+	layers=$(echo "$l" | grep -o "," | wc -l)
+	((layers++))
+	if [ $layers -gt 1 -o "$l" = "8" ]; then
+		"$basedir/graphs/generate-avg-$t.sh" $STATS_OUT "$PROBLEM_TITLE" -ml \
+			> "$GRAPHS_OUT/graph-$t-avg-ml.eps"
+	fi
 done
