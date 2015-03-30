@@ -274,10 +274,14 @@ config* processOptions(int argc, char *argv[]) {
                 strcpy(conf->layerConf, optarg);
                 break;
             case 's' :
-                conf->labeledData = optarg;
+                if (strlen(optarg) > 0 && strcmp("xor", optarg) != 0) {
+                    conf->labeledData = optarg;
+                }
                 break;
             case 't' :
-                conf->testData = optarg;
+                if (strlen(optarg) > 0 && strcmp("xor", optarg) != 0) {
+                    conf->testData = optarg;
+                }
                 break;
             case 'v' :
                 conf->validationSize = atoi(optarg);
