@@ -37,6 +37,8 @@
 #include "log4cpp/Category.hh"
 #include "log4cpp/Priority.hh"
 #include "ds/fold/FoldDatasetFactory.h"
+#include "net/cnn/SubsamplingLayer.h"
+#include "net/mlp/FullyConnectedLayer.h"
 
 // getopts constants
 #define no_argument 0
@@ -470,9 +472,54 @@ int main(int argc, char *argv[]) {
         net = gpuNet;
     } else {
         LOG()->info("Using CPU for computing the network runs.");
+        netConf->setLayers(4); // TODO remove once configuration is setup
         CpuNetwork<DATA_TYPE> *cpuNet = new CpuNetwork<DATA_TYPE>(netConf);
-        bp = new CpuBackpropagationLearner<DATA_TYPE>(cpuNet);
+//        bp = new CpuBackpropagationLearner<DATA_TYPE>(cpuNet);
         net = cpuNet;
+        
+        SubsamplingConfig<DATA_TYPE> inputConfig;
+        inputConfig.inputFeatures = 1;
+        inputConfig.inputWidth = 28;
+        inputConfig.inputHeight = 28;
+        inputConfig.windowWidth = 1;
+        inputConfig.windowHeight = 1;
+        inputConfig.activationFnc = netConf->activationFnc;
+        inputConfig.dActivationFnc = netConf->dActivationFnc;
+        SubsamplingLayer<DATA_TYPE> *inputLayer = new SubsamplingLayer<DATA_TYPE>();
+        inputLayer->setup(NULL, inputConfig);
+        cpuNet->addLayer(inputLayer);
+        
+        ConvolutionalConfig conv1Config;
+        conv1Config.featureMultiplier = 4;
+        conv1Config.inputFeatures = inputConfig.inputFeatures;
+        conv1Config.inputWidth = inputConfig.inputWidth;
+        conv1Config.inputHeight = inputConfig.inputHeight;
+        conv1Config.windowSize = 5;
+        ConvolutionalLayer<DATA_TYPE> *conv1Layer = new ConvolutionalLayer<DATA_TYPE>();
+        conv1Layer->setup(inputLayer, conv1Config);
+        cpuNet->addLayer(conv1Layer);
+        
+        SubsamplingConfig<DATA_TYPE> sub1Config;
+        sub1Config.inputFeatures = conv1Config.inputFeatures * conv1Config.featureMultiplier;
+        sub1Config.inputWidth = conv1Config.inputWidth - conv1Config.windowSize + 1;
+        sub1Config.inputHeight = conv1Config.inputHeight - conv1Config.windowSize + 1;
+        sub1Config.windowWidth = 2;
+        sub1Config.windowHeight = 2;
+        sub1Config.activationFnc = netConf->activationFnc;
+        sub1Config.dActivationFnc = netConf->dActivationFnc;
+        SubsamplingLayer<DATA_TYPE> *sub1Layer = new SubsamplingLayer<DATA_TYPE>();
+        sub1Layer->setup(inputLayer, sub1Config);
+        cpuNet->addLayer(sub1Layer);
+        
+        FullyConnectedConfig<DATA_TYPE> outputConfig;
+        outputConfig.activationFnc = netConf->activationFnc;
+        outputConfig.dActivationFnc = netConf->dActivationFnc;
+        outputConfig.outputSize = 10;
+        outputConfig.useBias = false;
+        FullyConnectedLayer<DATA_TYPE> *outputLayer = new FullyConnectedLayer<DATA_TYPE>();
+        outputLayer->setup(sub1Layer, outputConfig);
+        cpuNet->addLayer(outputLayer);
+        cpuNet->setup();
     }
     
     // Prepare test dataset.
@@ -516,11 +563,11 @@ int main(int argc, char *argv[]) {
 //    return 0;
     
     // configure BP learner
-    bp->setLearningRate(conf->lr);
-    bp->setTargetMse(conf->mse);
-    bp->setErrorComputer(new MseErrorComputer<DATA_TYPE>());
-    bp->setEpochLimit(conf->maxEpochs);
-    bp->setImproveEpochs(conf->improveEpochs);
+//    bp->setLearningRate(conf->lr);
+//    bp->setTargetMse(conf->mse);
+//    bp->setErrorComputer(new MseErrorComputer<DATA_TYPE>());
+//    bp->setEpochLimit(conf->maxEpochs);
+//    bp->setImproveEpochs(conf->improveEpochs);
     
     // Prepare validation dataset
     FoldDatasetFactory<DATA_TYPE> *df;
@@ -573,8 +620,8 @@ int main(int argc, char *argv[]) {
         
     } else {
         
-        vds = (LabeledDataset<DATA_TYPE> *) new SimpleLabeledDataset<DATA_TYPE>(0, 0, 0);
-        bp->train(lds, vds, 0);
+//        vds = (LabeledDataset<DATA_TYPE> *) new SimpleLabeledDataset<DATA_TYPE>(0, 0, 0);
+//        bp->train(lds, vds, 0);
     }
     
     // Run (hopefully) learnt network.

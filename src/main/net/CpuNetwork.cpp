@@ -14,16 +14,17 @@
 
 #include "../util/cpuDebugHelpers.h"
 #include "../common.h"
+#include "Layer.h"
 
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
 template <typename dType>
 CpuNetwork<dType>::CpuNetwork(NetworkConfiguration<dType> *conf) : Network<dType>(conf) {
-    initWeights();
-    initInputs();
-    initBias();
-    reinit();
+//    initWeights();
+//    initInputs();
+//    initBias();
+//    reinit();
 }
 
 template <typename dType>
@@ -124,7 +125,7 @@ void CpuNetwork<dType>::initInputs() {
         this->neuronsUpToLayerCache[i+1] = noNeurons;
     }
     this->noNeurons = noNeurons;
-    inputs = new dType[noNeurons];
+    this->inputs = new dType[noNeurons];
 }
 
 template <typename dType>
@@ -136,39 +137,19 @@ void CpuNetwork<dType>::initBias() {
     }
 }
 
+template<typename dType>
+void CpuNetwork<dType>::allocateMemory() {
+    std::cout << "Allocating memory for inputs: " << this->inputsCount << std::endl;
+    this->inputs = new dType[this->inputsCount];
+    this->weights = new dType[this->weightsCount];
+}
+
 template <typename dType>
 void CpuNetwork<dType>::run() {
-    // number of neurons in so far processed layers
-    int nPrevLayers = 0;
-    dType *weighPtr = this->weights + this->getInputNeurons();
     
-    // for every layer
-    for (int l = 0; l<this->noLayers-1; l++) {
-        int nThisLayer = this->conf->getNeurons(l);
-        int nNextLayer = this->conf->getNeurons(l+1);
-        
-        // clear the following layer just before working with it
-        clearLayer(this->inputs + nPrevLayers + nThisLayer, nNextLayer);
-        
-        // for every neuron in (l)th layer
-        for (int i = 0; i<nThisLayer; i++) {
-            int indexFrom = nPrevLayers + i;
-            // for every neuron in (l+1)th layer
-            for (int j = 0; j<nNextLayer; j++) {
-                int indexTo = nPrevLayers + nThisLayer + j;
-                this->inputs[indexTo] += *weighPtr * this->inputs[indexFrom];
-                weighPtr++;
-            }
-        }
-
-        if (this->conf->getBias()) {
-            applyBias(l+1);
-        }
-        
-        // Run through activation function
-        this->conf->activationFnc(this->inputs+nPrevLayers+nThisLayer, this->inputs+nPrevLayers+nThisLayer, nNextLayer);
-        
-        nPrevLayers += nThisLayer;
+    for (int i = 1; i < this->noLayers; i++) {
+        LOG()->debug("Computing forward run for layer %d.", i);
+        this->layers[i]->forward();
     }
 }
 
@@ -200,7 +181,7 @@ void CpuNetwork<dType>::clearLayer(dType *inputPtr, int layerSize) {
 
 template <typename dType>
 void CpuNetwork<dType>::setInput(dType* input) {
-    std::memcpy(this->inputs, input, sizeof(dType) * this->getInputNeurons());
+    std::memcpy(this->inputs, input, this->layers[0]->getOutputCount());
 }
 
 template <typename dType>
@@ -215,7 +196,7 @@ dType *CpuNetwork<dType>::getInput() {
 
 template <typename dType>
 dType *CpuNetwork<dType>::getOutput() {
-    return this->inputs + this->neuronsUpToLayerCache[this->noLayers-1];
+    return this->layers[this->noLayers-1]->getInputs();
 }
 
 template <typename dType>

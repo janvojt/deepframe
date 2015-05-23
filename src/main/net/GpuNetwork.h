@@ -82,6 +82,10 @@ public:
     // so the learning algorithm may adjust them.
     dType *getBiasValues();
     
+protected:
+
+    void allocateMemory();
+    
 private:
     // initialize network weights
     void initWeights();

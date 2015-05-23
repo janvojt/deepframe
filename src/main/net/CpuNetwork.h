@@ -76,6 +76,10 @@ public:
     // so the learning algorithm may adjust them.
     dType *getBiasValues();
     
+protected:
+
+    void allocateMemory();
+    
 private:
     // initialize network weights
     void initWeights();
@@ -95,9 +99,9 @@ private:
     // Array representing weights for each edge in the neural network.
     // The zero-layer weights are for edges coming into input neurons,
     // therefore always initialized to 1.
-    dType *weights;
+//    dType *weights;
     // Array representing input coming into each neuron.
-    dType *inputs;
+//    dType *inputs;
     // Network bias. Each neuron has its own bias.
     dType *bias;
     // Cache of number of neurons up to the layer determined by the array index.

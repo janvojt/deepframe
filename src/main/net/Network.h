@@ -9,6 +9,7 @@
 #define	NETWORK_H
 
 #include "NetworkConfiguration.h"
+#include "Layer.h"
 
 template <typename dType>
 class Network {
@@ -85,12 +86,36 @@ public:
     // Provides access to bias values,
     // so the learning algorithm may adjust them.
     virtual dType *getBiasValues() = 0;
+    
+    void setup();
+    
+    void addLayer(Layer<dType> *layer);
+    
 protected:
+    
+    virtual void allocateMemory() = 0;
+    
     // Network configuration.
     NetworkConfiguration<dType> *conf;
     // Number of layers in the network.
     int noLayers;
     
+    Layer<dType> **layers;
+    
+    dType *inputs;
+
+    int inputsCount = 0;
+    
+    dType *weights;
+    
+    int weightsCount = 0;
+    
+private:
+    
+    /** Cursor for adding new #layers. */
+    int layerCursor = 0;
+    
+    bool isInitialized = false;
 };
 
 #endif	/* NETWORK_H */

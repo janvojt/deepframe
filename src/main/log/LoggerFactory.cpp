@@ -21,7 +21,7 @@ log4cpp::Category* LoggerFactory::create() {
     layout->setConversionPattern("%d{%Y-%m-%d %H:%M:%S} [%p] %c: %m%n");
     p_appender->setLayout(layout);
 
-    logger->setPriority(log4cpp::Priority::INFO);
+    logger->setPriority(log4cpp::Priority::DEBUG);
     logger->addAppender(p_appender);
     return logger;
 }

@@ -100,6 +100,11 @@ void GpuNetwork<dType>::reinit() {
     }
 }
 
+template<typename dType>
+void GpuNetwork<dType>::allocateMemory() {
+
+}
+
 template <typename dType>
 void GpuNetwork<dType>::randomizeDoublesOnGpu(dType **dMemory, int size) {
     
