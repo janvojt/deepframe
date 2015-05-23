@@ -11,10 +11,10 @@
 #include "../Layer.h"
 #include "SubsamplingLayer.h"
 
+template <typename dType>
+class SubsamplingLayer;
+
 struct ConvolutionalConfig {
-    int inputWidth;
-    int inputHeight;
-    int inputFeatures;
     int windowSize;
     int featureMultiplier;
 };
@@ -26,9 +26,11 @@ public:
     ConvolutionalLayer(const ConvolutionalLayer& orig);
     virtual ~ConvolutionalLayer();
     
-    void setup(Layer<dType> *previousLayer, ConvolutionalConfig conf);
+    void setup(SubsamplingLayer<dType> *previousLayer, ConvolutionalConfig conf);
 
     void forward();
+    
+    ConvolutionalConfig getConfig();
     
     int getOutputFeatures();
     
@@ -38,6 +40,14 @@ public:
     
 private:
     ConvolutionalConfig conf;
+    
+    int featuresCount;
+    
+    int inputFeatures;
+    
+    int featureWidth;
+    
+    int featureHeight;
 };
 
 #endif	/* CONVOLUTIONALLAYER_H */

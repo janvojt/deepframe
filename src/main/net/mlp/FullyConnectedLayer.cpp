@@ -31,9 +31,10 @@ void FullyConnectedLayer<dType>::setup(Layer<dType> *previousLayer, FullyConnect
     if (previousLayer != NULL) {
         // this is not the input layer
         this->previousLayer = previousLayer;
-        this->weightSize = previousLayer->getOutputsCount() * conf.outputSize;
+        this->weightsCount = previousLayer->getOutputsCount() * conf.outputSize;
+        this->inputsCount = conf.outputSize;
         if (conf.useBias) {
-            this->weightSize += conf.outputSize;
+            this->weightsCount += conf.outputSize;
         }
         previousLayer->setNextLayer(this);
     }

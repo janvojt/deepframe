@@ -478,37 +478,28 @@ int main(int argc, char *argv[]) {
         net = cpuNet;
         
         SubsamplingConfig<DATA_TYPE> inputConfig;
-        inputConfig.inputFeatures = 1;
-        inputConfig.inputWidth = 28;
-        inputConfig.inputHeight = 28;
         inputConfig.windowWidth = 1;
         inputConfig.windowHeight = 1;
         inputConfig.activationFnc = netConf->activationFnc;
         inputConfig.dActivationFnc = netConf->dActivationFnc;
         SubsamplingLayer<DATA_TYPE> *inputLayer = new SubsamplingLayer<DATA_TYPE>();
-        inputLayer->setup(NULL, inputConfig);
+        inputLayer->setupAsInput(28, 28);
         cpuNet->addLayer(inputLayer);
         
         ConvolutionalConfig conv1Config;
         conv1Config.featureMultiplier = 4;
-        conv1Config.inputFeatures = inputConfig.inputFeatures;
-        conv1Config.inputWidth = inputConfig.inputWidth;
-        conv1Config.inputHeight = inputConfig.inputHeight;
         conv1Config.windowSize = 5;
         ConvolutionalLayer<DATA_TYPE> *conv1Layer = new ConvolutionalLayer<DATA_TYPE>();
         conv1Layer->setup(inputLayer, conv1Config);
         cpuNet->addLayer(conv1Layer);
         
         SubsamplingConfig<DATA_TYPE> sub1Config;
-        sub1Config.inputFeatures = conv1Config.inputFeatures * conv1Config.featureMultiplier;
-        sub1Config.inputWidth = conv1Config.inputWidth - conv1Config.windowSize + 1;
-        sub1Config.inputHeight = conv1Config.inputHeight - conv1Config.windowSize + 1;
         sub1Config.windowWidth = 2;
         sub1Config.windowHeight = 2;
         sub1Config.activationFnc = netConf->activationFnc;
         sub1Config.dActivationFnc = netConf->dActivationFnc;
         SubsamplingLayer<DATA_TYPE> *sub1Layer = new SubsamplingLayer<DATA_TYPE>();
-        sub1Layer->setup(inputLayer, sub1Config);
+        sub1Layer->setup(conv1Layer, sub1Config);
         cpuNet->addLayer(sub1Layer);
         
         FullyConnectedConfig<DATA_TYPE> outputConfig;

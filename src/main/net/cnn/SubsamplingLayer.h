@@ -11,10 +11,10 @@
 #include "ConvolutionalLayer.h"
 
 template <typename dType>
+class ConvolutionalLayer;
+
+template <typename dType>
 struct SubsamplingConfig {
-    int inputFeatures;
-    int inputWidth;
-    int inputHeight;
     int windowWidth;
     int windowHeight;
     bool useBias;
@@ -39,12 +39,40 @@ public:
     SubsamplingLayer(const SubsamplingLayer& orig);
     virtual ~SubsamplingLayer();
     
-    void setup(Layer<dType>* previousLayer, SubsamplingConfig<dType> conf);
+    void setup(ConvolutionalLayer<dType>* previousLayer, SubsamplingConfig<dType> conf);
+    
+    /**
+     * Set this layer up as an input layer.
+     * Such an input layer is represented by a subsampling map with
+     * one single feature map.
+     * 
+     * @param outputWidth input/output width
+     * @param outputHeight input.output height
+     */
+    void setupAsInput(int outputWidth, int outputHeight);
 
     void forward();
     
+    SubsamplingConfig<dType> getConfig();
+    
+    int getFeatureWidth();
+    
+    int getFeatureHeight();
+    
+    int getFeaturesCount();
+    
 private:
     SubsamplingConfig<dType> conf;
+    
+    int featuresCount;
+    
+    int featureWidth;
+    
+    int featureHeight;
+    
+    int inputWidth;
+    
+    int inputHeight;
 };
 
 #endif	/* SUBSAMPLINGLAYER_H */

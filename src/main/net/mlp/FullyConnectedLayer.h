@@ -43,8 +43,6 @@ public:
     
 private:
     FullyConnectedConfig<dType> conf;
-    
-    int weightSize;
 };
 
 #endif	/* FULLYCONNECTEDLAYER_H */

@@ -26,16 +26,20 @@ ConvolutionalLayer<dType>::~ConvolutionalLayer() {
 }
 
 template<typename dType>
-void ConvolutionalLayer<dType>::setup(Layer<dType> *previousLayer, ConvolutionalConfig conf) {
+void ConvolutionalLayer<dType>::setup(SubsamplingLayer<dType> *previousLayer, ConvolutionalConfig conf) {
     this->conf = conf;
     this->previousLayer = previousLayer;
     this->previousLayer->setNextLayer(this);
     
-    this->inputsCount = conf.inputFeatures * conf.featureMultiplier
-            * (conf.inputWidth - conf.windowSize + 1)
-            * (conf.inputHeight - conf.windowSize + 1);
+    inputFeatures = previousLayer->getFeaturesCount();
+    featuresCount = inputFeatures * conf.featureMultiplier;
+    featureWidth = previousLayer->getFeatureWidth() - conf.windowSize + 1;
+    featureHeight = previousLayer->getFeatureHeight() - conf.windowSize + 1;
     
-    this->weightsCount = conf.inputFeatures * conf.featureMultiplier
+    this->inputsCount = featuresCount
+            * featureWidth * featureHeight;
+    
+    this->weightsCount = featuresCount
             * conf.windowSize * conf.windowSize;
 }
 
@@ -45,16 +49,11 @@ void ConvolutionalLayer<dType>::forward() {
     dType *inputPtr = this->previousLayer->getInputs();
     dType *outputPtr = this->getInputs();
 
-    // TODO precompute at setup
-    int noFeatures = conf.inputFeatures * conf.featureMultiplier;
-    int featureWidth = conf.inputWidth - conf.windowSize + 1;
-    int featureHeight = conf.inputHeight - conf.windowSize + 1;
-    
     // clear output
     std::fill_n(outputPtr, this->inputsCount, 0);
 
     // loop through destination neuron
-    for (int f = 0; f < noFeatures; f++) { // destination feature index
+    for (int f = 0; f < featuresCount; f++) { // destination feature index
         int featureIdx = f * featureHeight * featureWidth;
         
         for (int i = 0; i < featureHeight; i++) { // row index
@@ -64,14 +63,14 @@ void ConvolutionalLayer<dType>::forward() {
                 int dstNeuronIdx = rowIdx + j;
                 
                 // loop through source neurons
-                for (int pf = 0; pf < conf.inputFeatures; pf++) { // source feature index
+                for (int pf = 0; pf < inputFeatures; pf++) { // source feature index
                     for (int k = 0; k < conf.windowSize; k++) { // row index
                         for (int l = 0; l < conf.windowSize; l++) { // column index
                             
                             int srcNeuronIdx = pf * conf.windowSize * conf.windowSize
                                                 + (k + i) * conf.windowSize + (l + j);
                             
-                            int weightIdx = pf * noFeatures * conf.windowSize * conf.windowSize
+                            int weightIdx = pf * featuresCount * conf.windowSize * conf.windowSize
                                             + k * conf.windowSize + l;
                             
                             outputPtr[dstNeuronIdx] += inputPtr[srcNeuronIdx] * this->weights[weightIdx];
@@ -83,6 +82,26 @@ void ConvolutionalLayer<dType>::forward() {
             } // end loop through destination neuron
         }
     }
+}
+
+template<typename dType>
+ConvolutionalConfig ConvolutionalLayer<dType>::getConfig() {
+    return conf;
+}
+
+template<typename dType>
+int ConvolutionalLayer<dType>::getOutputFeatures() {
+    return this->featuresCount;
+}
+
+template<typename dType>
+int ConvolutionalLayer<dType>::getOutputWidth() {
+    return this->featureWidth;
+}
+
+template<typename dType>
+int ConvolutionalLayer<dType>::getOutputHeight() {
+    return this->featureHeight;
 }
 
 

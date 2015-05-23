@@ -27,22 +27,36 @@ SubsamplingLayer<dType>::~SubsamplingLayer() {
 }
 
 template<typename dType>
-void SubsamplingLayer<dType>::setup(Layer<dType>* previousLayer, SubsamplingConfig<dType> conf) {
+void SubsamplingLayer<dType>::setup(ConvolutionalLayer<dType>* previousLayer, SubsamplingConfig<dType> conf) {
+
     this->conf = conf;
-    if (previousLayer != NULL) {
-        // this is not the input layer
-        this->previousLayer = previousLayer;
-        previousLayer->setNextLayer(this);
-    }
+    this->previousLayer = previousLayer;
+    previousLayer->setNextLayer(this);
     
-    int featureWidth = (conf.inputWidth + conf.windowWidth - 1)  / conf.windowWidth; // round up
-    int featureHeight = (conf.inputHeight + conf.windowHeight - 1) / conf.windowHeight; // round up
-    this->inputsCount featureWidth * featureHeight * conf.inputFeatures;
+    ConvolutionalConfig pConf = previousLayer->getConfig();
+    featuresCount = previousLayer->getOutputFeatures();
+    inputWidth = previousLayer->getOutputWidth();
+    inputHeight = previousLayer->getOutputHeight();
+    
+    featureWidth = (inputWidth + conf.windowWidth - 1)  / conf.windowWidth; // round up
+    featureHeight = (inputHeight + conf.windowHeight - 1) / conf.windowHeight; // round up
+    this->inputsCount = featureWidth * featureHeight * featuresCount;
     
     // subsampling layer does not need any weights
     // but uses a trainable parameter for each feature map
     // and optionally bias for each feature map
-    this->weightsCount = conf.useBias ? conf.inputFeatures*2 : conf.inputFeatures;
+    this->weightsCount = conf.useBias ? featuresCount*2 : featuresCount;
+}
+
+template<typename dType>
+void SubsamplingLayer<dType>::setupAsInput(int outputWidth, int outputHeight) {
+    this->inputWidth = outputWidth;
+    this->inputHeight = outputHeight;
+    this->featureWidth = outputWidth;
+    this->featureHeight = outputHeight;
+    this->featuresCount = 1;
+    this->inputsCount = outputWidth * outputHeight;
+    this->weightsCount = 0;
 }
 
 template<typename dType>
@@ -52,35 +66,35 @@ void SubsamplingLayer<dType>::forward() {
     dType *outputPtr = this->getInputs();
     int outputCount = this->inputsCount;
     
-    int featureWidth = conf.inputWidth / conf.windowWidth;
-    int featureHeight = conf.inputHeight / conf.windowHeight;
+    int wfeatureWidth = inputWidth / conf.windowWidth;
+    int wfeatureHeight = inputHeight / conf.windowHeight;
     
     // clear output
     std::fill_n(outputPtr, outputCount, 0);
     
     // loop through destination neuron
-    for (int f = 0; f < conf.inputFeatures; f++) {
-        int dstFeatureIdx = f * featureWidth * featureHeight;
-        int srcFeatureIdx = f * conf.inputWidth * conf.inputHeight;
+    for (int f = 0; f < featuresCount; f++) {
+        int dstFeatureIdx = f * wfeatureWidth * wfeatureHeight;
+        int srcFeatureIdx = f * inputWidth * inputHeight;
         
-        for (int i = 0; i < featureHeight; i++) { // row index
-            int rowIdx = dstFeatureIdx + i * featureWidth;
+        for (int i = 0; i < wfeatureHeight; i++) { // row index
+            int rowIdx = dstFeatureIdx + i * wfeatureWidth;
             
-            for (int j = 0; j < featureWidth; j++) { // column index
+            for (int j = 0; j < wfeatureWidth; j++) { // column index
                 int dstNeuronIdx = rowIdx + j;
                 int max = -1;
                 
                 // loop through source neurons
-                for (int k = 0; k < conf.inputHeight; k++) { // row index
-                    for (int l = 0; l < conf.inputWidth; l++) { // column index
+                for (int k = 0; k < inputHeight; k++) { // row index
+                    for (int l = 0; l < inputWidth; l++) { // column index
 
-                        int srcNeuronIdx =  srcFeatureIdx + (k+i) * conf.inputWidth + (l+j);
+                        int srcNeuronIdx =  srcFeatureIdx + (k+i) * inputWidth + (l+j);
 
                         max = (inputPtr[srcNeuronIdx] > max) ? inputPtr[srcNeuronIdx] : max;
                     }
                 }
                 
-                outputPtr[dstNeuronIdx] += max * this->weights[f] + this->weights[conf.inputFeatures + f];
+                outputPtr[dstNeuronIdx] += max * this->weights[f] + this->weights[featuresCount + f];
                 
             } // end loop through destination neuron
         }
@@ -91,5 +105,26 @@ void SubsamplingLayer<dType>::forward() {
     // TODO if (conf.inputWidth % conf.windowWidth > 0)
     // TODO if (conf.inputHeight % conf.windowHeight > 0)
 }
+
+template<typename dType>
+SubsamplingConfig<dType> SubsamplingLayer<dType>::getConfig() {
+    return this->conf;
+}
+
+template<typename dType>
+int SubsamplingLayer<dType>::getFeatureWidth() {
+    return this->featureWidth;
+}
+
+template<typename dType>
+int SubsamplingLayer<dType>::getFeatureHeight() {
+    return this->featureHeight;
+}
+
+template<typename dType>
+int SubsamplingLayer<dType>::getFeaturesCount() {
+    return this->featuresCount;
+}
+
 
 INSTANTIATE_DATA_CLASS(SubsamplingLayer);
