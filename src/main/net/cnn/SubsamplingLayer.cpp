@@ -34,6 +34,15 @@ void SubsamplingLayer<dType>::setup(Layer<dType>* previousLayer, SubsamplingConf
         this->previousLayer = previousLayer;
         previousLayer->setNextLayer(this);
     }
+    
+    int featureWidth = (conf.inputWidth + conf.windowWidth - 1)  / conf.windowWidth; // round up
+    int featureHeight = (conf.inputHeight + conf.windowHeight - 1) / conf.windowHeight; // round up
+    this->inputsCount featureWidth * featureHeight * conf.inputFeatures;
+    
+    // subsampling layer does not need any weights
+    // but uses a trainable parameter for each feature map
+    // and optionally bias for each feature map
+    this->weightsCount = conf.useBias ? conf.inputFeatures*2 : conf.inputFeatures;
 }
 
 template<typename dType>
@@ -41,7 +50,7 @@ void SubsamplingLayer<dType>::forward() {
     
     dType *inputPtr = this->previousLayer->getInputs();
     dType *outputPtr = this->getInputs();
-    int outputCount = this->getOutputCount();
+    int outputCount = this->inputsCount;
     
     int featureWidth = conf.inputWidth / conf.windowWidth;
     int featureHeight = conf.inputHeight / conf.windowHeight;
@@ -81,22 +90,6 @@ void SubsamplingLayer<dType>::forward() {
     
     // TODO if (conf.inputWidth % conf.windowWidth > 0)
     // TODO if (conf.inputHeight % conf.windowHeight > 0)
-}
-
-
-template<typename dType>
-int SubsamplingLayer<dType>::getWeightCount() {
-    // subsampling layer does not need any weights
-    // but uses a trainable parameter for each feature map
-    // and optionally bias for each feature map
-    return conf.useBias ? conf.inputFeatures*2 : conf.inputFeatures;
-}
-
-template<typename dType>
-int SubsamplingLayer<dType>::getOutputCount() {
-    int featureWidth = (conf.inputWidth + conf.windowWidth - 1)  / conf.windowWidth; // round up
-    int featureHeight = (conf.inputHeight + conf.windowHeight - 1) / conf.windowHeight; // round up
-    return featureWidth * featureHeight * conf.inputFeatures;
 }
 
 INSTANTIATE_DATA_CLASS(SubsamplingLayer);

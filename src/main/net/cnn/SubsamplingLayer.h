@@ -43,10 +43,6 @@ public:
 
     void forward();
     
-    int getWeightCount();
-    
-    int getOutputCount();
-    
 private:
     SubsamplingConfig<dType> conf;
 };

@@ -31,7 +31,7 @@ void FullyConnectedLayer<dType>::setup(Layer<dType> *previousLayer, FullyConnect
     if (previousLayer != NULL) {
         // this is not the input layer
         this->previousLayer = previousLayer;
-        this->weightSize = previousLayer->getOutputCount() * conf.outputSize;
+        this->weightSize = previousLayer->getOutputsCount() * conf.outputSize;
         if (conf.useBias) {
             this->weightSize += conf.outputSize;
         }
@@ -42,7 +42,7 @@ void FullyConnectedLayer<dType>::setup(Layer<dType> *previousLayer, FullyConnect
 template<typename dType>
 void FullyConnectedLayer<dType>::forward() {
     
-    int inputSize = this->previousLayer->getOutputCount();
+    int inputSize = this->previousLayer->getOutputsCount();
     dType *inputPtr = this->previousLayer->getInputs();
     dType *outputPtr = this->getInputs();
     
@@ -67,16 +67,6 @@ void FullyConnectedLayer<dType>::forward() {
     
     // Run through activation function
     conf.activationFnc(outputPtr, outputPtr, conf.outputSize);
-}
-
-template<typename dType>
-int FullyConnectedLayer<dType>::getWeightCount() {
-    return weightSize;
-}
-
-template<typename dType>
-int FullyConnectedLayer<dType>::getOutputCount() {
-    return conf.outputSize;
 }
 
 INSTANTIATE_DATA_CLASS(FullyConnectedLayer);

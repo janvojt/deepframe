@@ -41,10 +41,6 @@ public:
 
     void forward();
     
-    int getWeightCount();
-    
-    int getOutputCount();
-    
 private:
     FullyConnectedConfig<dType> conf;
     

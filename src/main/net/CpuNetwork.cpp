@@ -88,7 +88,7 @@ void CpuNetwork<dType>::run() {
 
 template <typename dType>
 void CpuNetwork<dType>::setInput(dType* input) {
-    std::memcpy(this->inputs, input, this->layers[0]->getOutputCount());
+    std::memcpy(this->inputs, input, this->layers[0]->getOutputsCount());
 }
 
 template <typename dType>

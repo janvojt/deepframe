@@ -20,9 +20,9 @@ public:
     
 //    virtual void backward() = 0;
     
-    virtual int getWeightCount() = 0;
+    int getWeightsCount();
     
-    virtual int getOutputCount() = 0;
+    int getOutputsCount();
     
     dType *getInputs();
     void setInputs(dType *inputs);
@@ -35,7 +35,11 @@ public:
 protected:
     dType *inputs;
     
+    int inputsCount;
+    
     dType *weights;
+    
+    int weightsCount;
 
     Layer<dType> *previousLayer;
     

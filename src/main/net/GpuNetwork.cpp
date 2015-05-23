@@ -147,7 +147,7 @@ template <typename dType>
 dType *GpuNetwork<dType>::getOutput() {
     
     // copy network output to host
-    dType *dOutput = this->inputs + this->layers[this->noLayers-1]->getOutputCount();
+    dType *dOutput = this->inputs + this->layers[this->noLayers-1]->getOutputsCount();
     int oMemSize = this->getOutputNeurons() * sizeof(dType);
     checkCudaErrors(cudaMemcpy(this->output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
     

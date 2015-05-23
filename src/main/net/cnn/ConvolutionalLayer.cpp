@@ -30,6 +30,13 @@ void ConvolutionalLayer<dType>::setup(Layer<dType> *previousLayer, Convolutional
     this->conf = conf;
     this->previousLayer = previousLayer;
     this->previousLayer->setNextLayer(this);
+    
+    this->inputsCount = conf.inputFeatures * conf.featureMultiplier
+            * (conf.inputWidth - conf.windowSize + 1)
+            * (conf.inputHeight - conf.windowSize + 1);
+    
+    this->weightsCount = conf.inputFeatures * conf.featureMultiplier
+            * conf.windowSize * conf.windowSize;
 }
 
 template<typename dType>
@@ -44,7 +51,7 @@ void ConvolutionalLayer<dType>::forward() {
     int featureHeight = conf.inputHeight - conf.windowSize + 1;
     
     // clear output
-    std::fill_n(outputPtr, this->getOutputCount(), 0);
+    std::fill_n(outputPtr, this->inputsCount, 0);
 
     // loop through destination neuron
     for (int f = 0; f < noFeatures; f++) { // destination feature index
@@ -76,19 +83,6 @@ void ConvolutionalLayer<dType>::forward() {
             } // end loop through destination neuron
         }
     }
-}
-
-template<typename dType>
-int ConvolutionalLayer<dType>::getOutputCount() {
-    return conf.inputFeatures * conf.featureMultiplier
-            * (conf.inputWidth - conf.windowSize + 1)
-            * (conf.inputHeight - conf.windowSize + 1);
-}
-
-template<typename dType>
-int ConvolutionalLayer<dType>::getWeightCount() {
-    return conf.inputFeatures * conf.featureMultiplier
-            * conf.windowSize * conf.windowSize;
 }
 
 

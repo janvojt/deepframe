@@ -50,5 +50,14 @@ void Layer<dType>::setNextLayer(Layer* nextLayer) {
     this->isLast = false;
 }
 
+template<typename dType>
+int Layer<dType>::getWeightsCount() {
+    return weightsCount;
+}
+
+template<typename dType>
+int Layer<dType>::getOutputsCount() {
+    return inputsCount;
+}
 
 INSTANTIATE_DATA_CLASS(Layer);

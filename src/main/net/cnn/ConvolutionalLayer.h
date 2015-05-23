@@ -30,10 +30,6 @@ public:
 
     void forward();
     
-    int getWeightCount();
-    
-    int getOutputCount();
-    
     int getOutputFeatures();
     
     int getOutputWidth();

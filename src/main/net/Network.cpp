@@ -55,8 +55,8 @@ void Network<dType>::setup() {
             Layer<dType> *layer = layers[i];
             layer->setInputs(inputs);
             layer->setWeights(weights);
-            inputsPtr += layer->getOutputCount();
-            weightsPtr += layer->getWeightCount();
+            inputsPtr += layer->getOutputsCount();
+            weightsPtr += layer->getWeightsCount();
         }
     }
 }
@@ -64,8 +64,8 @@ void Network<dType>::setup() {
 template<typename dType>
 void Network<dType>::addLayer(Layer<dType>* layer) {
     if (layerCursor < noLayers) {
-        weightsCount += layer->getWeightCount();
-        inputsCount += layer->getOutputCount();
+        weightsCount += layer->getWeightsCount();
+        inputsCount += layer->getOutputsCount();
         layers[layerCursor++] = layer;
     } else {
         LOG()->error("Cannot add more than %d preconfigured layers.", noLayers);
@@ -84,12 +84,12 @@ NetworkConfiguration<dType>* Network<dType>::getConfiguration() {
 
 template <typename dType>
 int Network<dType>::getInputNeurons() {
-    return this->layers[0]->getOutputCount();
+    return this->layers[0]->getOutputsCount();
 }
 
 template <typename dType>
 int Network<dType>::getOutputNeurons() {
-    return this->layers[noLayers-1]->getOutputCount();
+    return this->layers[noLayers-1]->getOutputsCount();
 }
 
 template <typename dType>
