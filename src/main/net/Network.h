@@ -54,7 +54,7 @@ public:
     // Values at the beginning actually belong to the input layer. Activation
     // function is not applied to these, therefore they can represent original
     // network input.
-    virtual dType *getInputs() = 0;
+    dType *getInputs();
     // Returns pointer to the beginning of the input array.
     virtual dType *getInput() = 0;
     // Returns pointer to the beginning of the output array.
@@ -64,32 +64,20 @@ public:
     // Returns number of neurons in the last layer.
     int getOutputNeurons();
     // Returns the total number of all neurons in all layers.
-    virtual int getAllNeurons() = 0;
-    // Returns offset where the input array index starts for given layer.
-    // Input layer has index zero, while its returned offset is also zero.
-    // Therefore offset for the output layer can be obtained by asking
-    // for layer index (number of layers - 1). Furthermore, if number of layers
-    // is provided as layer index, number of all neurons in the net is returned.
-    virtual int getInputOffset(int layer) = 0;
+    int getInputsCount();
     // Returns pointer to the beginning of array with weights
     // for neuron connections.
     // This internal network property is usually needed
     // in the process of learning.
-    virtual dType *getWeights() = 0;
-    // Returns offset where the weight array index starts for weights between
-    // given layer and the preceeding layer.
-    // Input layer has index zero, while its returned offset is also zero.
-    // Therefore offset for the output layer can be obtained by asking
-    // for layer index (number of layers - 1). Furthermore, if number of layers
-    // is provided as layer index, number of all weights in the net is returned.
-    virtual int getWeightsOffset(int layer) = 0;
-    // Provides access to bias values,
-    // so the learning algorithm may adjust them.
-    virtual dType *getBiasValues() = 0;
+    dType *getWeights();
+    
+    int getWeightsCount();
     
     void setup();
     
     void addLayer(Layer<dType> *layer);
+    
+    Layer<dType> *getLayer(int index);
     
 protected:
     
@@ -106,7 +94,7 @@ protected:
 
     int inputsCount = 0;
     
-    dType *weights = NULL;
+    dType *weights;
     
     int weightsCount = 0;
     

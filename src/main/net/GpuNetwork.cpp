@@ -22,10 +22,6 @@ template <typename dType>
 GpuNetwork<dType>::GpuNetwork(NetworkConfiguration<dType> *netConf, GpuConfiguration *gpuConf) : Network<dType>(netConf) {
     cublasCreate(&this->cublasHandle);
     this->gpuConf = gpuConf;
-    initWeights();
-    initInputs();
-    initBias();
-    reinit();
 }
 
 template <typename dType>
@@ -34,26 +30,20 @@ GpuNetwork<dType>::GpuNetwork(const GpuNetwork& orig) : Network<dType>(orig.conf
     // initialize network and allocate memory
     cublasCreate(&this->cublasHandle);
     this->gpuConf = orig.gpuConf;
-    initWeights();
-    initInputs();
-    initBias();
+    
+    this->allocateMemory();
     
     // copy data
-    int wMemSize = sizeof(dType) * getWeightsOffset(this->noLayers);
-    int iMemSize = sizeof(dType) * getInputOffset(this->noLayers);
-    checkCudaErrors(cudaMemcpy(this->dInputs, orig.dInputs, iMemSize, cudaMemcpyDeviceToDevice));
+    int wMemSize = sizeof(dType) * this->weightsCount;
+    int iMemSize = sizeof(dType) * this->inputsCount;
+    checkCudaErrors(cudaMemcpy(this->inputs, orig.inputs, iMemSize, cudaMemcpyDeviceToDevice));
     checkCudaErrors(cudaMemcpy(this->weights, orig.weights, wMemSize, cudaMemcpyDeviceToDevice));
-    if (this->conf->getBias()) checkCudaErrors(cudaMemcpy(this->bias, orig.bias, iMemSize, cudaMemcpyDeviceToDevice));
 }
 
 template <typename dType>
 GpuNetwork<dType>::~GpuNetwork() {
     cublasDestroy(this->cublasHandle);
     cudaFree(this->weights);
-    cudaFree(this->dInputs);
-    cudaFree(this->bias);
-    delete[] this->weightsUpToLayerCache;
-    delete[] this->neuronsUpToLayerCache;
     delete[] this->input;
     delete[] this->output;
 }
@@ -66,109 +56,35 @@ GpuNetwork<dType>* GpuNetwork<dType>::clone() {
 template <typename dType>
 void GpuNetwork<dType>::merge(Network<dType>** nets, int size) {
     
-    int noWeights = this->weightsUpToLayerCache[this->noLayers];
+    int noWeights = this->weightsCount;
     for (int i = 0; i<size; i++) {
         
         // add weights
         k_sumVectors(this->weights, nets[i]->getWeights(), noWeights);
-        
-        // add bias
-        k_sumVectors(this->bias, nets[i]->getBiasValues(), this->noNeurons);
     }
     
     // divide to get the average
     k_divideVector(this->weights, size+1, noWeights);
-    k_divideVector(this->bias, size+1, this->noNeurons);
 }
 
 template <typename dType>
 void GpuNetwork<dType>::reinit() {
-    
-    LOG()->info("Randomly initializing weights and bias within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
-    
-    // overwrite weights with random doubles
-    randomizeDoublesOnGpu(&this->weights, this->weightsUpToLayerCache[this->noLayers]);
-    
-    // overwrite bias with random doubles
-    if (this->conf->getBias()) {
-    
-        LOG()->info("Randomly initializing bias within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
-        if (this->bias == NULL) {
-            initBias();
-        }
-        randomizeDoublesOnGpu(&this->bias, this->noNeurons);
-    }
+    LOG()->info("Randomly initializing weights within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
+    k_generateUniform(*this->gpuConf->getRandGen(), this->weights, this->weightsCount);
+    k_spreadInterval(this->conf->getInitMin(), this->conf->getInitMax(), this->weights, this->weightsCount);
 }
 
 template<typename dType>
 void GpuNetwork<dType>::allocateMemory() {
-
-}
-
-template <typename dType>
-void GpuNetwork<dType>::randomizeDoublesOnGpu(dType **dMemory, int size) {
-    
-    // Initialize random values on GPU device memory.
-    k_generateUniform(*this->gpuConf->getRandGen(), *dMemory, size);
-    k_spreadInterval(this->conf->getInitMin(), this->conf->getInitMax(), *dMemory, size);
-}
-
-template <typename dType>
-void GpuNetwork<dType>::initWeights() {
-    int noWeights = 0;
-    int pLayer = 1; // neurons in previous layer
-    this->weightsUpToLayerCache = new int[this->noLayers+1];
-    this->weightsUpToLayerCache[0] = noWeights;
-    for (int i = 0; i<this->noLayers; i++) {
-        int tLayer = this->conf->getNeurons(i);
-        noWeights += pLayer * tLayer;
-        this->weightsUpToLayerCache[i+1] = noWeights;
-        pLayer = tLayer;
-    }
-    
-    // use GPU random init,
-    int memSize = sizeof(dType) * noWeights;
-    checkCudaErrors(cudaMalloc(&this->weights, memSize));
-}
-
-template <typename dType>
-void GpuNetwork<dType>::initInputs() {
-    int noNeurons = 0;
-    this->neuronsUpToLayerCache = new int[this->noLayers+1];
-    this->neuronsUpToLayerCache[0] = noNeurons;
-    for (int i = 0; i<this->noLayers; i++) {
-        noNeurons += this->conf->getNeurons(i);
-        this->neuronsUpToLayerCache[i+1] = noNeurons;
-    }
-    this->noNeurons = noNeurons;
-    
-    // allocate host memory
-    this->input = new dType[this->getInputNeurons()];
-    this->output = new dType[this->getOutputNeurons()];
-    
-    // allocate device memory
-    int memSize = sizeof(dType) * noNeurons;
-    checkCudaErrors(cudaMalloc(&dInputs, memSize));
-//    // initialize allocated device memory
-//    checkCudaErrors(cudaMemset(dInputs, 0, memSize));
-}
-
-template <typename dType>
-void GpuNetwork<dType>::initBias() {
-    if (this->conf->getBias()) {
-        int memSize = sizeof(dType) * this->noNeurons;
-        checkCudaErrors(cudaMalloc(&this->bias, memSize));
-    } else {
-        this->bias = NULL;
-    }
+    checkCudaErrors(cudaMalloc(&this->weights, sizeof(dType) * this->weightsCount));
+    checkCudaErrors(cudaMalloc(&this->inputs, sizeof(dType) * this->inputsCount));
 }
 
 template <typename dType>
 void GpuNetwork<dType>::run() {
     // number of neurons in so far processed layers
     dType *dWeightsPtr = this->weights + this->getInputNeurons();
-    dType *dInputsPtr = this->dInputs;
-    dType *dBiasPtr = this->bias;
+    dType *dInputsPtr = this->inputs;
     
     // copy weights and bias from host to device
 //    int wMemSize = sizeof(dType) * getWeightsOffset(noLayers);
@@ -196,11 +112,6 @@ void GpuNetwork<dType>::run() {
                 &alpha, dInputsPtr, 1,
                 dWeightsPtr, nNextLayer,
                 &beta, dInputsPtr+nThisLayer, 1);
-
-        if (this->conf->getBias()) {
-            k_sumVectors(dInputsPtr + nThisLayer, dBiasPtr + nThisLayer, nNextLayer);
-            dBiasPtr += nThisLayer;
-        }
         
         k_computeSigmoid(dInputsPtr + nThisLayer, nNextLayer);
 	
@@ -223,13 +134,8 @@ void GpuNetwork<dType>::setInput(dType* input) {
 //    compare('b', dInputs, inputs, getInputOffset(noLayers));
     int memSize = sizeof(dType) * this->getInputNeurons();
     std::memcpy(this->input, input, memSize);
-    checkCudaErrors(cudaMemcpy(this->dInputs, input, memSize, cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(this->inputs, input, memSize, cudaMemcpyHostToDevice));
 //    compare('a', dInputs, inputs, getInputOffset(noLayers));
-}
-
-template <typename dType>
-dType *GpuNetwork<dType>::getInputs() {
-    return this->dInputs;
 }
 
 template <typename dType>
@@ -241,36 +147,11 @@ template <typename dType>
 dType *GpuNetwork<dType>::getOutput() {
     
     // copy network output to host
-    dType *dOutput = this->dInputs + getInputOffset(this->noLayers-1);
+    dType *dOutput = this->inputs + this->layers[this->noLayers-1]->getOutputCount();
     int oMemSize = this->getOutputNeurons() * sizeof(dType);
     checkCudaErrors(cudaMemcpy(this->output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
     
     return this->output;
-}
-
-template <typename dType>
-int GpuNetwork<dType>::getAllNeurons() {
-    return this->noNeurons;
-}
-
-template <typename dType>
-int GpuNetwork<dType>::getInputOffset(int layer) {
-    return this->neuronsUpToLayerCache[layer];
-}
-
-template <typename dType>
-dType* GpuNetwork<dType>::getWeights() {
-    return this->weights;
-}
-
-template <typename dType>
-int GpuNetwork<dType>::getWeightsOffset(int layer) {
-    return this->weightsUpToLayerCache[layer];
-}
-
-template <typename dType>
-dType* GpuNetwork<dType>::getBiasValues() {
-    return this->bias;
 }
 
 INSTANTIATE_DATA_CLASS(GpuNetwork);

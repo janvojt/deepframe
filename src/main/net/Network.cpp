@@ -30,6 +30,8 @@ Network<dType>::Network(NetworkConfiguration<dType> *conf) {
 
 template <typename dType>
 Network<dType>::Network(const Network& orig) {
+    this->inputsCount = orig.inputsCount;
+    this->weightsCount = orig.weightsCount;
 }
 
 template <typename dType>
@@ -70,6 +72,11 @@ void Network<dType>::addLayer(Layer<dType>* layer) {
     }
 }
 
+template<typename dType>
+Layer<dType>* Network<dType>::getLayer(int index) {
+    return this->layers[index];
+}
+
 template <typename dType>
 NetworkConfiguration<dType>* Network<dType>::getConfiguration() {
     return this->conf;
@@ -84,5 +91,26 @@ template <typename dType>
 int Network<dType>::getOutputNeurons() {
     return this->layers[noLayers-1]->getOutputCount();
 }
+
+template <typename dType>
+dType *Network<dType>::getInputs() {
+    return this->inputs;
+}
+
+template <typename dType>
+int Network<dType>::getInputsCount() {
+    return this->inputsCount;
+}
+
+template <typename dType>
+dType* Network<dType>::getWeights() {
+    return this->weights;
+}
+
+template<typename dType>
+int Network<dType>::getWeightsCount() {
+    return weightsCount;
+}
+
 
 INSTANTIATE_DATA_CLASS(Network);

@@ -28,7 +28,7 @@ template NetworkConfiguration<DATA_TYPE>* createConf<DATA_TYPE>();
 template <typename dType>
 void setAllWeights(Network<dType> *net, dType value) {
     dType *weights = net->getWeights();
-    long noWeights = net->getWeightsOffset(net->getConfiguration()->getLayers());
+    long noWeights = net->getWeightsCount();
     
     std::fill_n(weights, noWeights, value);
 }
@@ -39,7 +39,7 @@ template void setAllWeights<DATA_TYPE>(Network<DATA_TYPE>*, DATA_TYPE);
 TEST(NetworkTest, NeuronCounters) {
     Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
     
-    EXPECT_EQ(5, net->getAllNeurons());
+    EXPECT_EQ(5, net->getInputsCount());
     EXPECT_EQ(2, net->getInputNeurons());
     EXPECT_EQ(1, net->getOutputNeurons());
 }
@@ -125,24 +125,4 @@ TEST(NetworkTest, SimpleWeightTest) {
     net->setInput(input);
     net->run();
     EXPECT_EQ(1, net->getOutput()[0]);
-}
-
-// Test network weight offsets.
-TEST(NetworkTest, WeightsOffsetTest) {
-    Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
-    
-    EXPECT_EQ(0, net->getWeightsOffset(0));
-    EXPECT_EQ(2, net->getWeightsOffset(1));
-    EXPECT_EQ(6, net->getWeightsOffset(2));
-    EXPECT_EQ(8, net->getWeightsOffset(3));
-}
-
-// Test neuron input offsets.
-TEST(NetworkTest, NeuronInputOffsetTest) {
-    Network<DATA_TYPE> *net = new CpuNetwork<DATA_TYPE>(createConf<DATA_TYPE>());
-    
-    EXPECT_EQ(0, net->getInputOffset(0));
-    EXPECT_EQ(2, net->getInputOffset(1));
-    EXPECT_EQ(4, net->getInputOffset(2));
-    EXPECT_EQ(5, net->getInputOffset(3));
 }
