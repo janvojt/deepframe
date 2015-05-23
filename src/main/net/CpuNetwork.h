@@ -92,8 +92,6 @@ private:
     void clearLayer(dType *inputPtr, int layerSize);
     // Applies bias to layer l (if it is enabled, otherwise does nothing).
     void applyBias(int l);
-    // Initializes memory with random doubles from given interval.
-    void randomizeDoubles(dType **memPtr, int size);
     // Total number of neurons in the network.
     int noNeurons;
     // Array representing weights for each edge in the neural network.

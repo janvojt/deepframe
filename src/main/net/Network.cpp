@@ -45,6 +45,8 @@ void Network<dType>::setup() {
     } else {
         isInitialized = true;
         allocateMemory();
+        reinit();
+        
         dType *inputsPtr = inputs;
         dType *weightsPtr = weights;
         for (int i = 0; i<noLayers; i++) {

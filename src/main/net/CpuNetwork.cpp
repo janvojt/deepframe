@@ -82,21 +82,16 @@ void CpuNetwork<dType>::merge(Network<dType>** nets, int size) {
 
 template <typename dType>
 void CpuNetwork<dType>::reinit() {
-    
     LOG()->info("Randomly initializing weights within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
-    
-    // overwrite weights with random doubles
-    randomizeDoubles(&this->weights, this->weightsUpToLayerCache[this->noLayers]);
-    
-    if (this->conf->getBias()) {
-    
-        LOG()->info("Randomly initializing bias within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
-        if (this->bias == NULL) {
-            initBias();
-        }
-        
-        // overwrite bias with random doubles
-        randomizeDoubles(&this->bias, this->noNeurons);
+    if (this->weights != NULL) {
+        delete[] this->weights;
+    }
+    this->weights = new dType[this->weightsCount];
+    dType min = this->conf->getInitMin();
+    dType max = this->conf->getInitMax();
+    dType interval = max - min;
+    for (int i = 0; i < this->weightsCount; i++) {
+        this->weights[i] = ((dType) (rand()) / RAND_MAX * interval) + min;
     }
 }
 
@@ -139,29 +134,16 @@ void CpuNetwork<dType>::initBias() {
 
 template<typename dType>
 void CpuNetwork<dType>::allocateMemory() {
-    std::cout << "Allocating memory for inputs: " << this->inputsCount << std::endl;
+    LOG()->debug("Allocating memory for %d inputs.", this->inputsCount);
     this->inputs = new dType[this->inputsCount];
     this->weights = new dType[this->weightsCount];
 }
 
 template <typename dType>
 void CpuNetwork<dType>::run() {
-    
     for (int i = 1; i < this->noLayers; i++) {
         LOG()->debug("Computing forward run for layer %d.", i);
         this->layers[i]->forward();
-    }
-}
-
-template <typename dType>
-void CpuNetwork<dType>::randomizeDoubles(dType** memPtr, int size) {
-    *memPtr = new dType[size];
-    dType *mem = *memPtr;
-    dType min = this->conf->getInitMin();
-    dType max = this->conf->getInitMax();
-    dType interval = max - min;
-    for (int i = 0; i < size; i++) {
-        mem[i] = ((dType) (rand()) / RAND_MAX * interval) + min;
     }
 }
 

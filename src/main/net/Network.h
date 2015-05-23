@@ -106,7 +106,7 @@ protected:
 
     int inputsCount = 0;
     
-    dType *weights;
+    dType *weights = NULL;
     
     int weightsCount = 0;
     
