@@ -32,12 +32,14 @@ void FullyConnectedLayer<dType>::setup(Layer<dType> *previousLayer, FullyConnect
         // this is not the input layer
         this->previousLayer = previousLayer;
         this->weightsCount = previousLayer->getOutputsCount() * conf.outputSize;
-        this->inputsCount = conf.outputSize;
         if (conf.useBias) {
             this->weightsCount += conf.outputSize;
         }
         previousLayer->setNextLayer(this);
+    } else {
+        this->weightsCount = 0;
     }
+    this->inputsCount = conf.outputSize;
 }
 
 template<typename dType>

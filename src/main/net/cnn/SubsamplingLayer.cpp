@@ -31,32 +31,32 @@ void SubsamplingLayer<dType>::setup(ConvolutionalLayer<dType>* previousLayer, Su
 
     this->conf = conf;
     this->previousLayer = previousLayer;
-    previousLayer->setNextLayer(this);
     
-    ConvolutionalConfig pConf = previousLayer->getConfig();
-    featuresCount = previousLayer->getOutputFeatures();
-    inputWidth = previousLayer->getOutputWidth();
-    inputHeight = previousLayer->getOutputHeight();
-    
-    featureWidth = (inputWidth + conf.windowWidth - 1)  / conf.windowWidth; // round up
-    featureHeight = (inputHeight + conf.windowHeight - 1) / conf.windowHeight; // round up
-    this->inputsCount = featureWidth * featureHeight * featuresCount;
-    
-    // subsampling layer does not need any weights
-    // but uses a trainable parameter for each feature map
-    // and optionally bias for each feature map
-    this->weightsCount = conf.useBias ? featuresCount*2 : featuresCount;
-}
+    if (previousLayer == NULL) {
+        // this is an input layer
+        inputWidth = conf.windowWidth;
+        inputHeight = conf.windowHeight;
+        featureWidth = conf.windowWidth;
+        featureHeight = conf.windowHeight;
+        featuresCount = 1;
+        this->inputsCount = conf.windowWidth * conf.windowHeight;
+        this->weightsCount = 0;
+    } else {
+        previousLayer->setNextLayer(this);
 
-template<typename dType>
-void SubsamplingLayer<dType>::setupAsInput(int outputWidth, int outputHeight) {
-    this->inputWidth = outputWidth;
-    this->inputHeight = outputHeight;
-    this->featureWidth = outputWidth;
-    this->featureHeight = outputHeight;
-    this->featuresCount = 1;
-    this->inputsCount = outputWidth * outputHeight;
-    this->weightsCount = 0;
+        featuresCount = previousLayer->getOutputFeatures();
+        inputWidth = previousLayer->getOutputWidth();
+        inputHeight = previousLayer->getOutputHeight();
+
+        featureWidth = (inputWidth + conf.windowWidth - 1)  / conf.windowWidth; // round up
+        featureHeight = (inputHeight + conf.windowHeight - 1) / conf.windowHeight; // round up
+        this->inputsCount = featureWidth * featureHeight * featuresCount;
+
+        // subsampling layer does not need any weights
+        // but uses a trainable parameter for each feature map
+        // and optionally bias for each feature map
+        this->weightsCount = conf.useBias ? featuresCount*2 : featuresCount;
+    }
 }
 
 template<typename dType>

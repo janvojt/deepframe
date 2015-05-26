@@ -40,16 +40,6 @@ public:
     virtual ~SubsamplingLayer();
     
     void setup(ConvolutionalLayer<dType>* previousLayer, SubsamplingConfig<dType> conf);
-    
-    /**
-     * Set this layer up as an input layer.
-     * Such an input layer is represented by a subsampling map with
-     * one single feature map.
-     * 
-     * @param outputWidth input/output width
-     * @param outputHeight input.output height
-     */
-    void setupAsInput(int outputWidth, int outputHeight);
 
     void forward();
     

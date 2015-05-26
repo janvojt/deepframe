@@ -27,6 +27,12 @@ ConvolutionalLayer<dType>::~ConvolutionalLayer() {
 
 template<typename dType>
 void ConvolutionalLayer<dType>::setup(SubsamplingLayer<dType> *previousLayer, ConvolutionalConfig conf) {
+    
+    if (previousLayer == NULL) {
+        LOG()->error("Convolutional layer is not supported as an input layer. Use subsampling layer instead.");
+        return;
+    }
+    
     this->conf = conf;
     this->previousLayer = previousLayer;
     this->previousLayer->setNextLayer(this);

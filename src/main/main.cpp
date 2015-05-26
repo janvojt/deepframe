@@ -478,12 +478,12 @@ int main(int argc, char *argv[]) {
         net = cpuNet;
         
         SubsamplingConfig<DATA_TYPE> inputConfig;
-        inputConfig.windowWidth = 1;
-        inputConfig.windowHeight = 1;
+        inputConfig.windowWidth = 28;
+        inputConfig.windowHeight = 28;
         inputConfig.activationFnc = netConf->activationFnc;
         inputConfig.dActivationFnc = netConf->dActivationFnc;
         SubsamplingLayer<DATA_TYPE> *inputLayer = new SubsamplingLayer<DATA_TYPE>();
-        inputLayer->setupAsInput(28, 28);
+        inputLayer->setup(NULL, inputConfig);
         cpuNet->addLayer(inputLayer);
         
         ConvolutionalConfig conv1Config;
@@ -503,10 +503,10 @@ int main(int argc, char *argv[]) {
         cpuNet->addLayer(sub1Layer);
         
         FullyConnectedConfig<DATA_TYPE> outputConfig;
-        outputConfig.activationFnc = netConf->activationFnc;
-        outputConfig.dActivationFnc = netConf->dActivationFnc;
         outputConfig.outputSize = 10;
         outputConfig.useBias = false;
+        outputConfig.activationFnc = netConf->activationFnc;
+        outputConfig.dActivationFnc = netConf->dActivationFnc;
         FullyConnectedLayer<DATA_TYPE> *outputLayer = new FullyConnectedLayer<DATA_TYPE>();
         outputLayer->setup(sub1Layer, outputConfig);
         cpuNet->addLayer(outputLayer);
