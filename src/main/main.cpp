@@ -37,8 +37,8 @@
 #include "log4cpp/Category.hh"
 #include "log4cpp/Priority.hh"
 #include "ds/fold/FoldDatasetFactory.h"
-#include "net/cnn/SubsamplingLayer.h"
-#include "net/mlp/FullyConnectedLayer.h"
+#include "net/layers/SubsamplingLayer.h"
+#include "net/layers/FullyConnectedLayer.h"
 
 // getopts constants
 #define no_argument 0
