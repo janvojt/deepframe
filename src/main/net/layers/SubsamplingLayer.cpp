@@ -60,7 +60,7 @@ void SubsamplingLayer<dType>::setup(ConvolutionalLayer<dType>* previousLayer, Su
 }
 
 template<typename dType>
-void SubsamplingLayer<dType>::forward() {
+void SubsamplingLayer<dType>::forwardCpu() {
     
     dType *inputPtr = this->previousLayer->getInputs();
     dType *outputPtr = this->getInputs();
@@ -105,6 +105,25 @@ void SubsamplingLayer<dType>::forward() {
     // TODO if (conf.inputWidth % conf.windowWidth > 0)
     // TODO if (conf.inputHeight % conf.windowHeight > 0)
 }
+
+
+template<typename dType>
+void SubsamplingLayer<dType>::forwardGpu() {
+    //TODO
+}
+
+
+template<typename dType>
+void SubsamplingLayer<dType>::backwardCpu() {
+    //TODO
+}
+
+
+template<typename dType>
+void SubsamplingLayer<dType>::backwardGpu() {
+    //TODO
+}
+
 
 template<typename dType>
 SubsamplingConfig<dType> SubsamplingLayer<dType>::getConfig() {

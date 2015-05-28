@@ -16,9 +16,15 @@ public:
     Layer(const Layer& orig);
     virtual ~Layer();
 
-    virtual void forward() = 0;
+    void forward();
+    virtual void forwardCpu() = 0;
+    virtual void forwardGpu() = 0;
     
-//    virtual void backward() = 0;
+    void backward();
+    virtual void backwardCpu() = 0;
+    virtual void backwardGpu() = 0;
+    
+    void setUseGpu(bool useGpu);
     
     int getWeightsCount();
     
@@ -46,6 +52,9 @@ protected:
     Layer<dType> *nextLayer;
     
     bool isLast = true;
+    
+private:
+    bool useGpu = false;
 };
 
 #endif	/* LAYER_H */

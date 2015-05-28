@@ -25,6 +25,21 @@ Layer<dType>::~Layer() {
 }
 
 template<typename dType>
+void Layer<dType>::forward() {
+    return this->useGpu ? this->forwardGpu() : this->forwardCpu();
+}
+
+template<typename dType>
+void Layer<dType>::backward() {
+    return this->useGpu ? this->backwardGpu() : this->backwardCpu();
+}
+
+template<typename dType>
+void Layer<dType>::setUseGpu(bool useGpu) {
+    this->useGpu = useGpu;
+}
+
+template<typename dType>
 dType* Layer<dType>::getInputs() {
     return this->inputs;
 }

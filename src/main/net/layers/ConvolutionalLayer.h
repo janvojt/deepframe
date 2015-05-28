@@ -28,7 +28,11 @@ public:
     
     void setup(SubsamplingLayer<dType> *previousLayer, ConvolutionalConfig conf);
 
-    void forward();
+    void forwardCpu();
+    void forwardGpu();
+    
+    void backwardCpu();
+    void backwardGpu();
     
     ConvolutionalConfig getConfig();
     

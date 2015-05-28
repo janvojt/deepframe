@@ -39,8 +39,12 @@ public:
     
     void setup(Layer<dType> *previousLayer, FullyConnectedConfig<dType> conf);
 
-    void forward();
+    void forwardCpu();
+    void forwardGpu();
     
+    void backwardCpu();
+    void backwardGpu();
+
 private:
     FullyConnectedConfig<dType> conf;
 };

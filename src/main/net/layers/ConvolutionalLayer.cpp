@@ -50,7 +50,7 @@ void ConvolutionalLayer<dType>::setup(SubsamplingLayer<dType> *previousLayer, Co
 }
 
 template<typename dType>
-void ConvolutionalLayer<dType>::forward() {
+void ConvolutionalLayer<dType>::forwardCpu() {
     
     dType *inputPtr = this->previousLayer->getInputs();
     dType *outputPtr = this->getInputs();
@@ -89,6 +89,25 @@ void ConvolutionalLayer<dType>::forward() {
         }
     }
 }
+
+
+template<typename dType>
+void ConvolutionalLayer<dType>::forwardGpu() {
+    //TODO
+}
+
+
+template<typename dType>
+void ConvolutionalLayer<dType>::backwardCpu() {
+    //TODO
+}
+
+
+template<typename dType>
+void ConvolutionalLayer<dType>::backwardGpu() {
+    //TODO
+}
+
 
 template<typename dType>
 ConvolutionalConfig ConvolutionalLayer<dType>::getConfig() {

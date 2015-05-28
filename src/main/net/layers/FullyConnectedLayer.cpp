@@ -43,7 +43,7 @@ void FullyConnectedLayer<dType>::setup(Layer<dType> *previousLayer, FullyConnect
 }
 
 template<typename dType>
-void FullyConnectedLayer<dType>::forward() {
+void FullyConnectedLayer<dType>::forwardCpu() {
     
     int inputSize = this->previousLayer->getOutputsCount();
     dType *inputPtr = this->previousLayer->getInputs();
@@ -71,5 +71,23 @@ void FullyConnectedLayer<dType>::forward() {
     // Run through activation function
     conf.activationFnc(outputPtr, outputPtr, conf.outputSize);
 }
+
+template<typename dType>
+void FullyConnectedLayer<dType>::forwardGpu() {
+    //TODO
+}
+
+
+template<typename dType>
+void FullyConnectedLayer<dType>::backwardCpu() {
+    //TODO
+}
+
+
+template<typename dType>
+void FullyConnectedLayer<dType>::backwardGpu() {
+    //TODO
+}
+
 
 INSTANTIATE_DATA_CLASS(FullyConnectedLayer);
