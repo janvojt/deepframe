@@ -11,7 +11,6 @@
 #include "../Layer.h"
 #include "SubsamplingLayer.h"
 
-template <typename dType>
 class SubsamplingLayer;
 
 struct ConvolutionalConfig {
@@ -19,14 +18,13 @@ struct ConvolutionalConfig {
     int featureMultiplier;
 };
 
-template <typename dType>
-class ConvolutionalLayer : public Layer<dType> {
+class ConvolutionalLayer : public Layer {
 public:
     ConvolutionalLayer();
     ConvolutionalLayer(const ConvolutionalLayer& orig);
     virtual ~ConvolutionalLayer();
     
-    void setup(SubsamplingLayer<dType> *previousLayer, ConvolutionalConfig conf);
+    void setup(SubsamplingLayer *previousLayer, ConvolutionalConfig conf);
 
     void forwardCpu();
     void forwardGpu();

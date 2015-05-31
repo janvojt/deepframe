@@ -8,7 +8,8 @@
 #ifndef LAYER_H
 #define	LAYER_H
 
-template <typename dType>
+#include "../common.h"
+
 class Layer {
     
 public:
@@ -30,26 +31,26 @@ public:
     
     int getOutputsCount();
     
-    dType *getInputs();
-    void setInputs(dType *inputs);
+    data_t *getInputs();
+    void setInputs(data_t *inputs);
     
-    dType *getWeights();
-    void setWeights(dType *weights);
+    data_t *getWeights();
+    void setWeights(data_t *weights);
     
     void setNextLayer(Layer *nextLayer);
     
 protected:
-    dType *inputs;
+    data_t *inputs;
     
     int inputsCount;
     
-    dType *weights;
+    data_t *weights;
     
     int weightsCount;
 
-    Layer<dType> *previousLayer;
-    
-    Layer<dType> *nextLayer;
+    Layer *previousLayer;
+
+    Layer *nextLayer;
     
     bool isLast = true;
     

@@ -9,12 +9,12 @@
 #define	SIMPLELABELEDDATASET_H
 
 #include "LabeledDataset.h"
+#include "../common.h"
 
 // Class for simple construction of small dataset
 // with labeled data for supervised learning.
 // To be used with small datasets in case we know the dataset size ahead.
-template <typename dType>
-class SimpleLabeledDataset : LabeledDataset<dType> {
+class SimpleLabeledDataset : LabeledDataset {
 public:
     // Constructor correctly initializes the dataset
     // according to input and output label dimensions and dataset size.
@@ -26,17 +26,17 @@ public:
      * 
      * @return shallow copy
      */
-    SimpleLabeledDataset<dType>* clone();
+    SimpleLabeledDataset* clone();
     
     virtual ~SimpleLabeledDataset();
     int getInputDimension();
     int getOutputDimension();
-    dType *next();
+    data_t *next();
     bool hasNext();
     void reset();
     int getSize();
     // Adds a single input vector with its label.
-    void addPattern(const dType *input, const dType *output);
+    void addPattern(const data_t *input, const data_t *output);
     
     /** Creates a new dataset taking patterns from this dataset.
 
@@ -61,7 +61,7 @@ private:
     int cursor;
     int addedCounter;
     int size;
-    dType *data;
+    data_t *data;
 
 };
 

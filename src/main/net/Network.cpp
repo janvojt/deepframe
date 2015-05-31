@@ -17,29 +17,25 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-Network<dType>::Network(NetworkConfiguration<dType> *conf) {
+Network::Network(NetworkConfiguration *conf) {
     this->conf = conf;
     this->noLayers = conf->getLayers();
-    this->layers = new Layer<dType>*[this->noLayers];
+    this->layers = new Layer*[this->noLayers];
     
     if (conf->getLayerConf() != NULL) {
         LOG()->info("Initializing network with layer configuration of (%s).", conf->getLayerConf());
     }
 }
 
-template <typename dType>
-Network<dType>::Network(const Network& orig) {
+Network::Network(const Network& orig) {
     this->inputsCount = orig.inputsCount;
     this->weightsCount = orig.weightsCount;
 }
 
-template <typename dType>
-Network<dType>::~Network() {
+Network::~Network() {
 }
 
-template<typename dType>
-void Network<dType>::setup() {
+void Network::setup() {
     if (layerCursor > noLayers) {
         LOG()->error("Network cannot be initialized, because it contains %d out of %d layers.", layerCursor, noLayers);
     } else if (isInitialized) {
@@ -49,10 +45,10 @@ void Network<dType>::setup() {
         allocateMemory();
         reinit();
         
-        dType *inputsPtr = inputs;
-        dType *weightsPtr = weights;
+        data_t *inputsPtr = inputs;
+        data_t *weightsPtr = weights;
         for (int i = 0; i<noLayers; i++) {
-            Layer<dType> *layer = layers[i];
+            Layer *layer = layers[i];
             layer->setInputs(inputs);
             layer->setWeights(weights);
             inputsPtr += layer->getOutputsCount();
@@ -61,8 +57,7 @@ void Network<dType>::setup() {
     }
 }
 
-template<typename dType>
-void Network<dType>::addLayer(Layer<dType>* layer) {
+void Network::addLayer(Layer* layer) {
     if (layerCursor < noLayers) {
         weightsCount += layer->getWeightsCount();
         inputsCount += layer->getOutputsCount();
@@ -72,45 +67,35 @@ void Network<dType>::addLayer(Layer<dType>* layer) {
     }
 }
 
-template<typename dType>
-Layer<dType>* Network<dType>::getLayer(int index) {
+Layer* Network::getLayer(int index) {
     return this->layers[index];
 }
 
-template <typename dType>
-NetworkConfiguration<dType>* Network<dType>::getConfiguration() {
+NetworkConfiguration* Network::getConfiguration() {
     return this->conf;
 }
 
-template <typename dType>
-int Network<dType>::getInputNeurons() {
+int Network::getInputNeurons() {
     return this->layers[0]->getOutputsCount();
 }
 
-template <typename dType>
-int Network<dType>::getOutputNeurons() {
+int Network::getOutputNeurons() {
     return this->layers[noLayers-1]->getOutputsCount();
 }
 
-template <typename dType>
-dType *Network<dType>::getInputs() {
+data_t *Network::getInputs() {
     return this->inputs;
 }
 
-template <typename dType>
-int Network<dType>::getInputsCount() {
+int Network::getInputsCount() {
     return this->inputsCount;
 }
 
-template <typename dType>
-dType* Network<dType>::getWeights() {
+data_t* Network::getWeights() {
     return this->weights;
 }
 
-template<typename dType>
-int Network<dType>::getWeightsCount() {
+int Network::getWeightsCount() {
     return weightsCount;
 }
 
-
-INSTANTIATE_DATA_CLASS(Network);

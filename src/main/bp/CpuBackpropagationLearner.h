@@ -9,17 +9,17 @@
 #define	CPUBACKPROPAGATIONLEARNER_H
 
 #include "BackpropagationLearner.h"
+#include "../common.h"
 #include "../net/CpuNetwork.h"
 
-template <typename dType>
-class CpuBackpropagationLearner : public BackpropagationLearner<dType> {
+class CpuBackpropagationLearner : public BackpropagationLearner {
 public:
-    CpuBackpropagationLearner(CpuNetwork<dType> *network);
+    CpuBackpropagationLearner(CpuNetwork *network);
     CpuBackpropagationLearner(const CpuBackpropagationLearner& orig);
     virtual ~CpuBackpropagationLearner();
 protected:
     // Computes local gradients for output neurons.
-    void computeOutputGradients(dType *expectedOutput);
+    void computeOutputGradients(data_t *expectedOutput);
     // Computes total differential for all weights
     // and local gradients for hidden neurons.
     void computeWeightDifferentials();

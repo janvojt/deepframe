@@ -10,13 +10,12 @@
 
 #include "LabeledDataset.h"
 
-template <typename dType>
 class LabeledMnistParser {
 public:
     LabeledMnistParser();
     LabeledMnistParser(const LabeledMnistParser& orig);
     virtual ~LabeledMnistParser();
-    LabeledDataset<dType> *parse(char *filePath);
+    LabeledDataset *parse(char *filePath);
 private:
 };
 

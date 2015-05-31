@@ -7,72 +7,55 @@
 
 #include "Layer.h"
 
-#include "../common.h"
-
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-Layer<dType>::Layer() {
+Layer::Layer() {
 }
 
-template <typename dType>
-Layer<dType>::Layer(const Layer& orig) {
+Layer::Layer(const Layer& orig) {
 }
 
-template <typename dType>
-Layer<dType>::~Layer() {
+Layer::~Layer() {
 }
 
-template<typename dType>
-void Layer<dType>::forward() {
+void Layer::forward() {
     return this->useGpu ? this->forwardGpu() : this->forwardCpu();
 }
 
-template<typename dType>
-void Layer<dType>::backward() {
+void Layer::backward() {
     return this->useGpu ? this->backwardGpu() : this->backwardCpu();
 }
 
-template<typename dType>
-void Layer<dType>::setUseGpu(bool useGpu) {
+void Layer::setUseGpu(bool useGpu) {
     this->useGpu = useGpu;
 }
 
-template<typename dType>
-dType* Layer<dType>::getInputs() {
+data_t* Layer::getInputs() {
     return this->inputs;
 }
 
-template<typename dType>
-void Layer<dType>::setInputs(dType* inputs) {
+void Layer::setInputs(data_t* inputs) {
     this->inputs = inputs;
 }
 
-template<typename dType>
-dType* Layer<dType>::getWeights() {
+data_t* Layer::getWeights() {
     return this->weights;
 }
 
-template<typename dType>
-void Layer<dType>::setWeights(dType* weights) {
+void Layer::setWeights(data_t* weights) {
     this->weights = weights;
 }
 
-template<typename dType>
-void Layer<dType>::setNextLayer(Layer* nextLayer) {
+void Layer::setNextLayer(Layer* nextLayer) {
     this->nextLayer = nextLayer;
     this->isLast = false;
 }
 
-template<typename dType>
-int Layer<dType>::getWeightsCount() {
+int Layer::getWeightsCount() {
     return weightsCount;
 }
 
-template<typename dType>
-int Layer<dType>::getOutputsCount() {
+int Layer::getOutputsCount() {
     return inputsCount;
 }
-
-INSTANTIATE_DATA_CLASS(Layer);

@@ -9,10 +9,10 @@
 #define	FOLDVALIDATIONDATASET_H
 
 #include "../LabeledDataset.h"
+#include "../../common.h"
 
 /** Validation dataset for k-fold cross validation. */
-template <typename dType>
-class FoldValidationDataset : LabeledDataset<dType> {
+class FoldValidationDataset : LabeledDataset {
 public:
     
     /** Constructor building the validation dataset from given folds.
@@ -21,7 +21,7 @@ public:
         @param k number of folds
         @param valIdx specifies which fold is fixed for validation
      */
-    FoldValidationDataset(LabeledDataset<dType> **folds, int k, int valIdx);
+    FoldValidationDataset(LabeledDataset **folds, int k, int valIdx);
     
     /** Copy constructor.
         
@@ -35,7 +35,7 @@ public:
     /**
      * @return shallow copy
      */
-    virtual LabeledDataset<dType>* clone();
+    virtual LabeledDataset* clone();
 
     
     /** Gets the input pattern dimension.
@@ -55,7 +55,7 @@ public:
         
         @return next pattern with respective label
      */
-    dType *next();
+    data_t *next();
     
     /** Determines whether there are still unprocessed patterns in the
         validation dataset.
@@ -78,7 +78,7 @@ public:
     void shuffle();
     
     /** Unsupported operation. */
-    LabeledDataset<dType> *takeAway(int size);
+    LabeledDataset *takeAway(int size);
     
 private:
     
@@ -86,7 +86,7 @@ private:
     int noFolds;
     
     /** Array with dataset folds. */
-    LabeledDataset<dType> **folds;
+    LabeledDataset **folds;
     
     /** Pointer to the current validation dataset fold. */
     int valIdx;

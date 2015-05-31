@@ -9,8 +9,9 @@
 #define	FULLYCONNECTEDLAYER_H
 
 #include "../Layer.h"
+#include "../LayerFactory.h"
+#include "../../common.h"
 
-template <typename dType>
 struct FullyConnectedConfig {
     
     int outputSize;
@@ -24,20 +25,19 @@ struct FullyConnectedConfig {
      * the same pointer for input and target for in-place computation
      * saving some memory.
      */
-    void (*activationFnc)(dType *x, dType *y, int layerSize);
+    void (*activationFnc)(data_t *x, data_t *y, int layerSize);
     
     /** Derivative of activation function. */
-    void (*dActivationFnc)(dType *x, dType *y, int layerSize);
+    void (*dActivationFnc)(data_t *x, data_t *y, int layerSize);
 };
 
-template <typename dType>
-class FullyConnectedLayer : public Layer<dType> {
+class FullyConnectedLayer : public Layer {
 public:
     FullyConnectedLayer();
     FullyConnectedLayer(const FullyConnectedLayer& orig);
     virtual ~FullyConnectedLayer();
     
-    void setup(Layer<dType> *previousLayer, FullyConnectedConfig<dType> conf);
+    void setup(Layer *previousLayer, FullyConnectedConfig conf);
 
     void forwardCpu();
     void forwardGpu();
@@ -46,7 +46,7 @@ public:
     void backwardGpu();
 
 private:
-    FullyConnectedConfig<dType> conf;
+    FullyConnectedConfig conf;
 };
 
 #endif	/* FULLYCONNECTEDLAYER_H */

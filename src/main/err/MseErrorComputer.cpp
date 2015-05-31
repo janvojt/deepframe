@@ -11,28 +11,22 @@
 
 #include <math.h>
 
-template <typename dType>
-MseErrorComputer<dType>::MseErrorComputer() {
+MseErrorComputer::MseErrorComputer() {
 }
 
-template <typename dType>
-MseErrorComputer<dType>::MseErrorComputer(const MseErrorComputer& orig) {
+MseErrorComputer::MseErrorComputer(const MseErrorComputer& orig) {
 }
 
-template <typename dType>
-MseErrorComputer<dType>::~MseErrorComputer() {
+MseErrorComputer::~MseErrorComputer() {
 }
 
-template <typename dType>
-dType MseErrorComputer<dType>::compute(Network<dType>* net, dType* expectedOutput) {
+data_t MseErrorComputer::compute(Network* net, data_t* expectedOutput) {
     int oNeurons = net->getOutputNeurons();
-    dType *output = net->getOutput();
-    dType mse = 0;
+    data_t *output = net->getOutput();
+    data_t mse = 0;
     for (int i = 0; i<oNeurons; i++) {
         mse += pow(output[i] - expectedOutput[i], 2);
     }
     mse = mse / oNeurons;
     return mse;
 }
-
-INSTANTIATE_DATA_CLASS(MseErrorComputer);

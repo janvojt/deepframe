@@ -9,55 +9,42 @@
 
 #include "../common.h"
 
-template <typename dType>
-TrainingResult<dType>::TrainingResult() {
+TrainingResult::TrainingResult() {
 }
 
-template <typename dType>
-TrainingResult<dType>::TrainingResult(const TrainingResult& orig) {
+TrainingResult::TrainingResult(const TrainingResult& orig) {
     this->epochs = orig.epochs;
     this->trainingError = orig.trainingError;
     this->validationError = orig.validationError;
 }
 
-template <typename dType>
-TrainingResult<dType>::~TrainingResult() {
+TrainingResult::~TrainingResult() {
 }
 
-template<typename dType>
-long TrainingResult<dType>::getEpochs() {
+long TrainingResult::getEpochs() {
     return epochs;
 }
 
-template<typename dType>
-void TrainingResult<dType>::setEpochs(long epochs) {
+void TrainingResult::setEpochs(long epochs) {
     this->epochs = epochs;
 }
 
-template<typename dType>
-dType TrainingResult<dType>::getTrainingError() {
+data_t TrainingResult::getTrainingError() {
     return trainingError;
 }
 
-template<typename dType>
-void TrainingResult<dType>::setTrainingError(dType error) {
+void TrainingResult::setTrainingError(data_t error) {
     this->trainingError = error;
 }
 
-template<typename dType>
-dType TrainingResult<dType>::getValidationError() {
+data_t TrainingResult::getValidationError() {
     return validationError;
 }
 
-template<typename dType>
-void TrainingResult<dType>::setValidationError(dType error) {
+void TrainingResult::setValidationError(data_t error) {
     this->validationError = error;
 }
 
-
-template<typename dType>
-dType TrainingResult<dType>::getError() {
+data_t TrainingResult::getError() {
     return validationError >= 0 ? validationError : trainingError;
 }
-
-INSTANTIATE_DATA_CLASS(TrainingResult);

@@ -9,16 +9,11 @@
 
 #include "../common.h"
 
-template <typename dType>
-ErrorComputer<dType>::ErrorComputer() {
+ErrorComputer::ErrorComputer() {
 }
 
-template <typename dType>
-ErrorComputer<dType>::ErrorComputer(const ErrorComputer& orig) {
+ErrorComputer::ErrorComputer(const ErrorComputer& orig) {
 }
 
-template <typename dType>
-ErrorComputer<dType>::~ErrorComputer() {
+ErrorComputer::~ErrorComputer() {
 }
-
-INSTANTIATE_DATA_CLASS(ErrorComputer);

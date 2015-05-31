@@ -14,20 +14,16 @@
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-SubsamplingLayer<dType>::SubsamplingLayer() {
+SubsamplingLayer::SubsamplingLayer() {
 }
 
-template <typename dType>
-SubsamplingLayer<dType>::SubsamplingLayer(const SubsamplingLayer& orig) {
+SubsamplingLayer::SubsamplingLayer(const SubsamplingLayer& orig) {
 }
 
-template <typename dType>
-SubsamplingLayer<dType>::~SubsamplingLayer() {
+SubsamplingLayer::~SubsamplingLayer() {
 }
 
-template<typename dType>
-void SubsamplingLayer<dType>::setup(ConvolutionalLayer<dType>* previousLayer, SubsamplingConfig<dType> conf) {
+void SubsamplingLayer::setup(ConvolutionalLayer* previousLayer, SubsamplingConfig conf) {
 
     this->conf = conf;
     this->previousLayer = previousLayer;
@@ -59,11 +55,10 @@ void SubsamplingLayer<dType>::setup(ConvolutionalLayer<dType>* previousLayer, Su
     }
 }
 
-template<typename dType>
-void SubsamplingLayer<dType>::forwardCpu() {
+void SubsamplingLayer::forwardCpu() {
     
-    dType *inputPtr = this->previousLayer->getInputs();
-    dType *outputPtr = this->getInputs();
+    data_t *inputPtr = this->previousLayer->getInputs();
+    data_t *outputPtr = this->getInputs();
     int outputCount = this->inputsCount;
     
     int wfeatureWidth = inputWidth / conf.windowWidth;
@@ -107,43 +102,33 @@ void SubsamplingLayer<dType>::forwardCpu() {
 }
 
 
-template<typename dType>
-void SubsamplingLayer<dType>::forwardGpu() {
+void SubsamplingLayer::forwardGpu() {
     //TODO
 }
 
 
-template<typename dType>
-void SubsamplingLayer<dType>::backwardCpu() {
+void SubsamplingLayer::backwardCpu() {
     //TODO
 }
 
 
-template<typename dType>
-void SubsamplingLayer<dType>::backwardGpu() {
+void SubsamplingLayer::backwardGpu() {
     //TODO
 }
 
 
-template<typename dType>
-SubsamplingConfig<dType> SubsamplingLayer<dType>::getConfig() {
+SubsamplingConfig SubsamplingLayer::getConfig() {
     return this->conf;
 }
 
-template<typename dType>
-int SubsamplingLayer<dType>::getFeatureWidth() {
+int SubsamplingLayer::getFeatureWidth() {
     return this->featureWidth;
 }
 
-template<typename dType>
-int SubsamplingLayer<dType>::getFeatureHeight() {
+int SubsamplingLayer::getFeatureHeight() {
     return this->featureHeight;
 }
 
-template<typename dType>
-int SubsamplingLayer<dType>::getFeaturesCount() {
+int SubsamplingLayer::getFeaturesCount() {
     return this->featuresCount;
 }
-
-
-INSTANTIATE_DATA_CLASS(SubsamplingLayer);

@@ -8,9 +8,10 @@
 #ifndef INPUTDATASET_H
 #define	INPUTDATASET_H
 
+#include "../common.h"
+
 // Represents the dataset containing input patterns
 // to be processed by neural network.
-template <typename dType>
 class InputDataset {
 public:
     InputDataset();
@@ -18,7 +19,7 @@ public:
     virtual ~InputDataset();
     // Returns a pointer to an array of next input values in the dataset.
     // Method is virtual so it is implementation agnostic.
-    virtual dType *next() = 0;
+    virtual data_t *next() = 0;
     // Tells whether the dataset contains more input patterns to process.
     virtual bool hasNext() = 0;
     // Resets the cursor to the beginning of dataset.

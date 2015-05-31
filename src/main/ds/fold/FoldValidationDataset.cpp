@@ -14,69 +14,55 @@
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-FoldValidationDataset<dType>::FoldValidationDataset(LabeledDataset<dType> **folds, int k, int valIdx) {
+FoldValidationDataset::FoldValidationDataset(LabeledDataset **folds, int k, int valIdx) {
     assert(valIdx >= 0 && valIdx < k);
     noFolds = k;
     this->folds = folds;
     this->valIdx = valIdx;
 }
 
-template <typename dType>
-FoldValidationDataset<dType>::FoldValidationDataset(const FoldValidationDataset& orig) {
+FoldValidationDataset::FoldValidationDataset(const FoldValidationDataset& orig) {
     this->noFolds = orig.noFolds;
     this->folds = orig.folds;
     this->valIdx = orig.valIdx;
 }
 
-template <typename dType>
-FoldValidationDataset<dType>::~FoldValidationDataset() {
+FoldValidationDataset::~FoldValidationDataset() {
 }
 
-template<typename dType>
-LabeledDataset<dType>* FoldValidationDataset<dType>::clone() {
-    return new FoldValidationDataset<dType>(*this);
+LabeledDataset* FoldValidationDataset::clone() {
+    return new FoldValidationDataset(*this);
 }
 
-template <typename dType>
-int FoldValidationDataset<dType>::getInputDimension() {
+int FoldValidationDataset::getInputDimension() {
     folds[0]->getInputDimension();
 }
 
-template <typename dType>
-int FoldValidationDataset<dType>::getOutputDimension() {
+int FoldValidationDataset::getOutputDimension() {
     folds[0]->getOutputDimension();
 }
 
-template <typename dType>
-int FoldValidationDataset<dType>::getSize() {
+int FoldValidationDataset::getSize() {
     return noFolds * folds[0]->getSize();
 }
 
-template <typename dType>
-bool FoldValidationDataset<dType>::hasNext() {
+bool FoldValidationDataset::hasNext() {
     return folds[valIdx]->hasNext();
 }
 
-template <typename dType>
-dType* FoldValidationDataset<dType>::next() {
+data_t* FoldValidationDataset::next() {
     return folds[valIdx]->next();
 }
 
-template <typename dType>
-void FoldValidationDataset<dType>::reset() {
+void FoldValidationDataset::reset() {
     folds[valIdx]->reset();
 }
 
-template <typename dType>
-void FoldValidationDataset<dType>::shuffle() {
+void FoldValidationDataset::shuffle() {
     LOG()->error("Shuffling folded dataset is not supported. Please shuffle before folding.");
 }
 
-template <typename dType>
-LabeledDataset<dType>* FoldValidationDataset<dType>::takeAway(int size) {
+LabeledDataset* FoldValidationDataset::takeAway(int size) {
     LOG()->error("Taking away from folded dataset is not supported. Please take away before folding.");
     return NULL;
 }
-
-INSTANTIATE_DATA_CLASS(FoldValidationDataset);

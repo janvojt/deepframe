@@ -12,15 +12,14 @@
 
 #include "../net/NetworkConfiguration.h"
 
-template <typename dType>
 class LabeledDatasetParser {
 public:
-    LabeledDatasetParser(char *filepath, NetworkConfiguration<dType> *netConf);
+    LabeledDatasetParser(char *filepath, NetworkConfiguration *netConf);
     LabeledDatasetParser(const LabeledDatasetParser& orig);
     virtual ~LabeledDatasetParser();
-    LabeledDataset<dType> *parse();
+    LabeledDataset *parse();
 private:
-    NetworkConfiguration<dType> *netConf;
+    NetworkConfiguration *netConf;
     char *filepath;
 };
 

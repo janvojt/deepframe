@@ -10,13 +10,13 @@
 
 #include "NetworkConfiguration.h"
 #include "Layer.h"
+#include "../common.h"
 
-template <typename dType>
 class Network {
 public:
     // Builds artificial neural network from network configuration
     // given in the constructor argument.
-    Network(NetworkConfiguration<dType> *conf);
+    Network(NetworkConfiguration *conf);
     Network(const Network& orig);
     virtual ~Network();
     
@@ -36,7 +36,7 @@ public:
     
     /** Returns the network configuration.
      */
-    NetworkConfiguration<dType> *getConfiguration();
+    NetworkConfiguration *getConfiguration();
     
     /** Reinitializes network so it forgets everything it learnt.
 
@@ -48,17 +48,17 @@ public:
     virtual void run() = 0;
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
-    virtual void setInput(dType *input) = 0;
+    virtual void setInput(data_t *input) = 0;
     // Returns pointer to the beginning of array with neuron inputs
     // (potential after being processed by the activation function).
     // Values at the beginning actually belong to the input layer. Activation
     // function is not applied to these, therefore they can represent original
     // network input.
-    dType *getInputs();
+    data_t *getInputs();
     // Returns pointer to the beginning of the input array.
-    virtual dType *getInput() = 0;
+    virtual data_t *getInput() = 0;
     // Returns pointer to the beginning of the output array.
-    virtual dType *getOutput() = 0;
+    virtual data_t *getOutput() = 0;
     // Returns number of neurons in the first layer.
     int getInputNeurons();
     // Returns number of neurons in the last layer.
@@ -69,32 +69,32 @@ public:
     // for neuron connections.
     // This internal network property is usually needed
     // in the process of learning.
-    dType *getWeights();
+    data_t *getWeights();
     
     int getWeightsCount();
     
     void setup();
     
-    void addLayer(Layer<dType> *layer);
+    void addLayer(Layer *layer);
     
-    Layer<dType> *getLayer(int index);
+    Layer *getLayer(int index);
     
 protected:
     
     virtual void allocateMemory() = 0;
     
     // Network configuration.
-    NetworkConfiguration<dType> *conf;
+    NetworkConfiguration *conf;
     // Number of layers in the network.
     int noLayers;
     
-    Layer<dType> **layers;
+    Layer **layers;
     
-    dType *inputs;
+    data_t *inputs;
 
     int inputsCount = 0;
     
-    dType *weights;
+    data_t *weights;
     
     int weightsCount = 0;
     

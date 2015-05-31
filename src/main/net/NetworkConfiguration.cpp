@@ -19,30 +19,25 @@
 
 using namespace std;
 
-template <typename dType>
-NetworkConfiguration<dType>::NetworkConfiguration() {
+NetworkConfiguration::NetworkConfiguration() {
     neuronConf = NULL;
     bias = true;
 }
 
-template <typename dType>
-NetworkConfiguration<dType>::NetworkConfiguration(const NetworkConfiguration& orig) {
+NetworkConfiguration::NetworkConfiguration(const NetworkConfiguration& orig) {
 }
 
-template <typename dType>
-NetworkConfiguration<dType>::~NetworkConfiguration() {
+NetworkConfiguration::~NetworkConfiguration() {
     if (neuronConf) {
         delete[] neuronConf;
     }
 }
 
-template <typename dType>
-int NetworkConfiguration<dType>::getLayers() {
+int NetworkConfiguration::getLayers() {
     return layers;
 }
 
-template <typename dType>
-void NetworkConfiguration<dType>::setLayers(int layers) {
+void NetworkConfiguration::setLayers(int layers) {
     if (layers < 1) {
         throw std::invalid_argument("Number of layers must be a natural number.");
     } else {
@@ -50,8 +45,7 @@ void NetworkConfiguration<dType>::setLayers(int layers) {
     }
 }
 
-template <typename dType>
-void NetworkConfiguration<dType>::setNeurons(int layer, int neurons) {
+void NetworkConfiguration::setNeurons(int layer, int neurons) {
     if (layer > layers || layer < 0) {
         LOG()->error("Provided %d as layer index, which is invalid for network with %d layers.", layer, layers);
         return;
@@ -61,23 +55,19 @@ void NetworkConfiguration<dType>::setNeurons(int layer, int neurons) {
     neuronConf[layer] = neurons;
 }
 
-template <typename dType>
-int NetworkConfiguration<dType>::getNeurons(int layer) {
+int NetworkConfiguration::getNeurons(int layer) {
     return neuronConf[layer];
 }
 
-template <typename dType>
-void NetworkConfiguration<dType>::setBias(bool enabled) {
+void NetworkConfiguration::setBias(bool enabled) {
     bias = enabled;
 }
 
-template <typename dType>
-bool NetworkConfiguration<dType>::getBias() {
+bool NetworkConfiguration::getBias() {
     return bias;
 }
 
-template <typename dType>
-void NetworkConfiguration<dType>::initConf() {
+void NetworkConfiguration::initConf() {
     // free memory if it was already assigned to the pointer
     if (neuronConf != NULL) {
         delete neuronConf;
@@ -86,19 +76,17 @@ void NetworkConfiguration<dType>::initConf() {
     neuronConf = new int[layers];
 }
 
-template <>
-void NetworkConfiguration<float>::parseInitInterval(const char* intervalConf) {
-    parseInitInterval(intervalConf, "%f");
-}
+void NetworkConfiguration::parseInitInterval(const char* intervalConf) {
 
-template <>
-void NetworkConfiguration<double>::parseInitInterval(const char* intervalConf) {
+#ifdef USE_64BIT_PRECISION
     parseInitInterval(intervalConf, "%lf");
+#else
+    parseInitInterval(intervalConf, "%f");
+#endif    
 }
 
-template <typename dType>
-void NetworkConfiguration<dType>::parseInitInterval(const char* intervalConf, const char *format) {
-    dType v = 0;
+void NetworkConfiguration::parseInitInterval(const char* intervalConf, const char *format) {
+    data_t v = 0;
     char *haystack = new char[strlen(intervalConf)+1];
     strcpy(haystack, intervalConf);
     char *token = strtok(haystack, ",");
@@ -110,8 +98,7 @@ void NetworkConfiguration<dType>::parseInitInterval(const char* intervalConf, co
     delete[] haystack;
 }
 
-template <typename dType>
-void NetworkConfiguration<dType>::parseLayerConf(char* layerConf) {
+void NetworkConfiguration::parseLayerConf(char* layerConf) {
     
     this->layerConf = layerConf;
 
@@ -136,29 +123,22 @@ void NetworkConfiguration<dType>::parseLayerConf(char* layerConf) {
     delete[] haystack;
 }
 
-template <typename dType>
-void NetworkConfiguration<dType>::setInitMin(dType min) {
+void NetworkConfiguration::setInitMin(data_t min) {
     initMin = min;
 }
 
-template <typename dType>
-dType NetworkConfiguration<dType>::getInitMin() {
+data_t NetworkConfiguration::getInitMin() {
     return initMin;
 }
 
-template <typename dType>
-void NetworkConfiguration<dType>::setInitMax(dType max) {
+void NetworkConfiguration::setInitMax(data_t max) {
     initMax = max;
 }
 
-template <typename dType>
-dType NetworkConfiguration<dType>::getInitMax() {
+data_t NetworkConfiguration::getInitMax() {
     return initMax;
 }
 
-template <typename dType>
-char* NetworkConfiguration<dType>::getLayerConf() {
+char* NetworkConfiguration::getLayerConf() {
     return layerConf;
 }
-
-INSTANTIATE_DATA_CLASS(NetworkConfiguration);

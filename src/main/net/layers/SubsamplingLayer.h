@@ -9,11 +9,10 @@
 #define	SUBSAMPLINGLAYER_H
 
 #include "ConvolutionalLayer.h"
+#include "../../common.h"
 
-template <typename dType>
 class ConvolutionalLayer;
 
-template <typename dType>
 struct SubsamplingConfig {
     int windowWidth;
     int windowHeight;
@@ -26,20 +25,19 @@ struct SubsamplingConfig {
      * the same pointer for input and target for in-place computation
      * saving some memory.
      */
-    void (*activationFnc)(dType *x, dType *y, int layerSize);
+    void (*activationFnc)(data_t *x, data_t *y, int layerSize);
     
     /** Derivative of activation function. */
-    void (*dActivationFnc)(dType *x, dType *y, int layerSize);
+    void (*dActivationFnc)(data_t *x, data_t *y, int layerSize);
 };
 
-template <typename dType>
-class SubsamplingLayer : public Layer<dType> {
+class SubsamplingLayer : public Layer {
 public:
     SubsamplingLayer();
     SubsamplingLayer(const SubsamplingLayer& orig);
     virtual ~SubsamplingLayer();
     
-    void setup(ConvolutionalLayer<dType>* previousLayer, SubsamplingConfig<dType> conf);
+    void setup(ConvolutionalLayer* previousLayer, SubsamplingConfig conf);
 
     void forwardCpu();
     void forwardGpu();
@@ -47,7 +45,7 @@ public:
     void backwardCpu();
     void backwardGpu();
     
-    SubsamplingConfig<dType> getConfig();
+    SubsamplingConfig getConfig();
     
     int getFeatureWidth();
     
@@ -56,7 +54,7 @@ public:
     int getFeaturesCount();
     
 private:
-    SubsamplingConfig<dType> conf;
+    SubsamplingConfig conf;
     
     int featuresCount;
     

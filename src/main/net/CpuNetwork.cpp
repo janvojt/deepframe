@@ -19,36 +19,31 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-CpuNetwork<dType>::CpuNetwork(NetworkConfiguration<dType> *conf) : Network<dType>(conf) {
+CpuNetwork::CpuNetwork(NetworkConfiguration *conf) : Network(conf) {
 }
 
-template <typename dType>
-CpuNetwork<dType>::CpuNetwork(const CpuNetwork& orig) : Network<dType>(orig.conf) {
+CpuNetwork::CpuNetwork(const CpuNetwork& orig) : Network(orig.conf) {
     this->allocateMemory();
-    std::memcpy(this->inputs, orig.inputs, sizeof(dType) * this->inputsCount);
-    std::memcpy(this->weights, orig.weights, sizeof(dType) * this->weightsCount);
+    std::memcpy(this->inputs, orig.inputs, sizeof(data_t) * this->inputsCount);
+    std::memcpy(this->weights, orig.weights, sizeof(data_t) * this->weightsCount);
 }
 
-template <typename dType>
-CpuNetwork<dType>::~CpuNetwork() {
+CpuNetwork::~CpuNetwork() {
     delete[] this->weights;
     delete[] this->inputs;
 }
 
-template <typename dType>
-CpuNetwork<dType>* CpuNetwork<dType>::clone() {
+CpuNetwork* CpuNetwork::clone() {
     return new CpuNetwork(*this);
 }
 
-template <typename dType>
-void CpuNetwork<dType>::merge(Network<dType>** nets, int size) {
+void CpuNetwork::merge(Network** nets, int size) {
     
     int noWeights = this->weightsCount;
     for (int i = 0; i<size; i++) {
         
         // add weights
-        dType *oWeights = nets[i]->getWeights();
+        data_t *oWeights = nets[i]->getWeights();
         for (int j = 0; j<noWeights; j++) {
             this->weights[j] += oWeights[j];
         }
@@ -60,45 +55,37 @@ void CpuNetwork<dType>::merge(Network<dType>** nets, int size) {
     }
 }
 
-template <typename dType>
-void CpuNetwork<dType>::reinit() {
+void CpuNetwork::reinit() {
     LOG()->info("Randomly initializing weights within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
-    dType min = this->conf->getInitMin();
-    dType max = this->conf->getInitMax();
-    dType interval = max - min;
+    data_t min = this->conf->getInitMin();
+    data_t max = this->conf->getInitMax();
+    data_t interval = max - min;
     for (int i = 0; i < this->weightsCount; i++) {
-        this->weights[i] = ((dType) (rand()) / RAND_MAX * interval) + min;
+        this->weights[i] = ((data_t) (rand()) / RAND_MAX * interval) + min;
     }
 }
 
-template<typename dType>
-void CpuNetwork<dType>::allocateMemory() {
+void CpuNetwork::allocateMemory() {
     LOG()->debug("Allocating memory for %d inputs.", this->inputsCount);
-    this->inputs = new dType[this->inputsCount];
-    this->weights = new dType[this->weightsCount];
+    this->inputs = new data_t[this->inputsCount];
+    this->weights = new data_t[this->weightsCount];
 }
 
-template <typename dType>
-void CpuNetwork<dType>::run() {
+void CpuNetwork::run() {
     for (int i = 1; i < this->noLayers; i++) {
         LOG()->debug("Computing forward run for layer %d.", i);
         this->layers[i]->forward();
     }
 }
 
-template <typename dType>
-void CpuNetwork<dType>::setInput(dType* input) {
+void CpuNetwork::setInput(data_t* input) {
     std::memcpy(this->inputs, input, this->layers[0]->getOutputsCount());
 }
 
-template <typename dType>
-dType *CpuNetwork<dType>::getInput() {
+data_t *CpuNetwork::getInput() {
     return this->inputs;
 }
 
-template <typename dType>
-dType *CpuNetwork<dType>::getOutput() {
+data_t *CpuNetwork::getOutput() {
     return this->layers[this->noLayers-1]->getInputs();
 }
-
-INSTANTIATE_DATA_CLASS(CpuNetwork);

@@ -10,15 +10,15 @@
 
 #include "ErrorComputer.h"
 #include "../net/Network.h"
+#include "../common.h"
 
-template <typename dType>
-class MseErrorComputer : public ErrorComputer<dType> {
+class MseErrorComputer : public ErrorComputer {
 public:
     MseErrorComputer();
     MseErrorComputer(const MseErrorComputer& orig);
     virtual ~MseErrorComputer();
     // Computes the Mean Square Error for given expected output.
-    dType compute(Network<dType>* net, dType* expectedOutput);
+    data_t compute(Network* net, data_t* expectedOutput);
 private:
 
 };

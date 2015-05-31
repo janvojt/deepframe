@@ -9,11 +9,11 @@
 #define	CPUNETWORK_H
 
 #include "Network.h"
+#include "../common.h"
 
-template <typename dType>
-class CpuNetwork : public Network<dType> {
+class CpuNetwork : public Network {
 public:
-    CpuNetwork(NetworkConfiguration<dType> *conf);
+    CpuNetwork(NetworkConfiguration *conf);
     CpuNetwork(const CpuNetwork& orig);
     virtual ~CpuNetwork();
     
@@ -29,7 +29,7 @@ public:
      * @param nets array of networks to be merged into this network
      * @param size number of networks in given array
      */
-    void merge(Network<dType> **nets, int size);
+    void merge(Network **nets, int size);
     
     /** Reinitializes network so it forgets everything it learnt.
 
@@ -42,13 +42,13 @@ public:
     
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
-    void setInput(dType *input);
+    void setInput(data_t *input);
     
     // Returns pointer to the beginning of the input array.
-    dType *getInput();
+    data_t *getInput();
     
     // Returns pointer to the beginning of the output array.
-    dType *getOutput();
+    data_t *getOutput();
     
 protected:
 

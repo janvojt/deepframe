@@ -14,8 +14,7 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-SimpleInputDataset<dType>::SimpleInputDataset(int dimension, int size) {
+SimpleInputDataset::SimpleInputDataset(int dimension, int size) {
     this->dimension = dimension;
     this->size = size;
     this->cursor = 0;
@@ -23,51 +22,41 @@ SimpleInputDataset<dType>::SimpleInputDataset(int dimension, int size) {
     this->initDataset();
 }
 
-template <typename dType>
-SimpleInputDataset<dType>::SimpleInputDataset(const SimpleInputDataset& orig) {
+SimpleInputDataset::SimpleInputDataset(const SimpleInputDataset& orig) {
 }
 
-template <typename dType>
-SimpleInputDataset<dType>::~SimpleInputDataset() {
+SimpleInputDataset::~SimpleInputDataset() {
     delete[] data;
 }
 
-template <typename dType>
-void SimpleInputDataset<dType>::initDataset() {
-    data = new dType[dimension * size];
+void SimpleInputDataset::initDataset() {
+    data = new data_t[dimension * size];
 }
 
-template <typename dType>
-void SimpleInputDataset<dType>::addInput(const dType* input) {
+void SimpleInputDataset::addInput(const data_t* input) {
     
     if (addedCounter >= size) {
         LOG()->error("Trying to add %d input patterns while the dataset size is only %d.", addedCounter+1, size);
     }
     
-    int patternSize = sizeof(dType) * dimension;
-    dType *dataPtr = data + (addedCounter * dimension);
+    int patternSize = sizeof(data_t) * dimension;
+    data_t *dataPtr = data + (addedCounter * dimension);
     std::memcpy(dataPtr, input, patternSize);
     addedCounter++;
 }
 
-template <typename dType>
-dType* SimpleInputDataset<dType>::next() {
+data_t* SimpleInputDataset::next() {
     return data + (dimension * cursor++);
 }
 
-template <typename dType>
-bool SimpleInputDataset<dType>::hasNext() {
+bool SimpleInputDataset::hasNext() {
     return cursor < size;
 }
 
-template <typename dType>
-void SimpleInputDataset<dType>::reset() {
+void SimpleInputDataset::reset() {
     cursor = 0;
 }
 
-template <typename dType>
-int SimpleInputDataset<dType>::getInputDimension() {
+int SimpleInputDataset::getInputDimension() {
     return dimension;
 }
-
-INSTANTIATE_DATA_CLASS(SimpleInputDataset);

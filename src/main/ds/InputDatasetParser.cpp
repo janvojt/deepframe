@@ -17,22 +17,18 @@
 #include <iostream>
 #include <fstream>
 
-template <typename dType>
-InputDatasetParser<dType>::InputDatasetParser(char* filepath, NetworkConfiguration<dType>* netConf) {
+InputDatasetParser::InputDatasetParser(char* filepath, NetworkConfiguration* netConf) {
     this->netConf = netConf;
     this->filepath = filepath;
 }
 
-template <typename dType>
-InputDatasetParser<dType>::InputDatasetParser(const InputDatasetParser& orig) {
+InputDatasetParser::InputDatasetParser(const InputDatasetParser& orig) {
 }
 
-template <typename dType>
-InputDatasetParser<dType>::~InputDatasetParser() {
+InputDatasetParser::~InputDatasetParser() {
 }
 
-template <typename dType>
-InputDataset<dType>* InputDatasetParser<dType>::parse() {
+InputDataset* InputDatasetParser::parse() {
     
     std::ifstream fp(filepath);
     LOG()->info("Parsing file '%s' for test dataset.", filepath);
@@ -48,12 +44,12 @@ InputDataset<dType>* InputDatasetParser<dType>::parse() {
     // read dataset size
     fp >> size;
     
-    SimpleInputDataset<dType> *ds = new SimpleInputDataset<dType>(inNeurons, size);
+    SimpleInputDataset *ds = new SimpleInputDataset(inNeurons, size);
     
     for (int l = 0; l<size; l++) {
         
         // read input
-        dType *input = new dType[inNeurons];
+        data_t *input = new data_t[inNeurons];
         for (int i = 0; i<inNeurons; i++) {
             fp >> input[i]; // read number
         }
@@ -61,13 +57,11 @@ InputDataset<dType>* InputDatasetParser<dType>::parse() {
         // truncate LF or CRLF
         fp.get() == 13 && fp.get();
         
-        ds->addInput((const dType *) input);
+        ds->addInput((const data_t *) input);
         delete[] input;
     }
     
     fp.close();
 
-    return (InputDataset<dType> *) ds;
+    return (InputDataset *) ds;
 }
-
-INSTANTIATE_DATA_CLASS(InputDatasetParser);

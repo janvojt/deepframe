@@ -9,16 +9,11 @@
 
 #include "../common.h"
 
-template <typename dType>
-LabeledDataset<dType>::LabeledDataset() : InputDataset<dType>() {
+LabeledDataset::LabeledDataset() : InputDataset() {
 }
 
-template <typename dType>
-LabeledDataset<dType>::LabeledDataset(const LabeledDataset& orig) : InputDataset<dType>(orig) {
+LabeledDataset::LabeledDataset(const LabeledDataset& orig) : InputDataset(orig) {
 }
 
-template <typename dType>
-LabeledDataset<dType>::~LabeledDataset() {
+LabeledDataset::~LabeledDataset() {
 }
-
-INSTANTIATE_DATA_CLASS(LabeledDataset);

@@ -13,20 +13,16 @@
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template<typename dType>
-ConvolutionalLayer<dType>::ConvolutionalLayer() {
+ConvolutionalLayer::ConvolutionalLayer() {
 }
 
-template<typename dType>
-ConvolutionalLayer<dType>::ConvolutionalLayer(const ConvolutionalLayer& orig) {
+ConvolutionalLayer::ConvolutionalLayer(const ConvolutionalLayer& orig) {
 }
 
-template<typename dType>
-ConvolutionalLayer<dType>::~ConvolutionalLayer() {
+ConvolutionalLayer::~ConvolutionalLayer() {
 }
 
-template<typename dType>
-void ConvolutionalLayer<dType>::setup(SubsamplingLayer<dType> *previousLayer, ConvolutionalConfig conf) {
+void ConvolutionalLayer::setup(SubsamplingLayer *previousLayer, ConvolutionalConfig conf) {
     
     if (previousLayer == NULL) {
         LOG()->error("Convolutional layer is not supported as an input layer. Use subsampling layer instead.");
@@ -49,11 +45,10 @@ void ConvolutionalLayer<dType>::setup(SubsamplingLayer<dType> *previousLayer, Co
             * conf.windowSize * conf.windowSize;
 }
 
-template<typename dType>
-void ConvolutionalLayer<dType>::forwardCpu() {
+void ConvolutionalLayer::forwardCpu() {
     
-    dType *inputPtr = this->previousLayer->getInputs();
-    dType *outputPtr = this->getInputs();
+    data_t *inputPtr = this->previousLayer->getInputs();
+    data_t *outputPtr = this->getInputs();
 
     // clear output
     std::fill_n(outputPtr, this->inputsCount, 0);
@@ -91,43 +86,34 @@ void ConvolutionalLayer<dType>::forwardCpu() {
 }
 
 
-template<typename dType>
-void ConvolutionalLayer<dType>::forwardGpu() {
+void ConvolutionalLayer::forwardGpu() {
     //TODO
 }
 
 
-template<typename dType>
-void ConvolutionalLayer<dType>::backwardCpu() {
+void ConvolutionalLayer::backwardCpu() {
     //TODO
 }
 
 
-template<typename dType>
-void ConvolutionalLayer<dType>::backwardGpu() {
+void ConvolutionalLayer::backwardGpu() {
     //TODO
 }
 
 
-template<typename dType>
-ConvolutionalConfig ConvolutionalLayer<dType>::getConfig() {
+ConvolutionalConfig ConvolutionalLayer::getConfig() {
     return conf;
 }
 
-template<typename dType>
-int ConvolutionalLayer<dType>::getOutputFeatures() {
+int ConvolutionalLayer::getOutputFeatures() {
     return this->featuresCount;
 }
 
-template<typename dType>
-int ConvolutionalLayer<dType>::getOutputWidth() {
+int ConvolutionalLayer::getOutputWidth() {
     return this->featureWidth;
 }
 
-template<typename dType>
-int ConvolutionalLayer<dType>::getOutputHeight() {
+int ConvolutionalLayer::getOutputHeight() {
     return this->featureHeight;
 }
 
-
-INSTANTIATE_DATA_CLASS(ConvolutionalLayer);

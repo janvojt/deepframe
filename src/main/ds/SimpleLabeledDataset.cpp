@@ -14,22 +14,19 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-SimpleLabeledDataset<dType>::SimpleLabeledDataset() {
+SimpleLabeledDataset::SimpleLabeledDataset() {
 
 }
 
-template <typename dType>
-SimpleLabeledDataset<dType>::SimpleLabeledDataset(int inputDimension, int outputDimension, int size) {
+SimpleLabeledDataset::SimpleLabeledDataset(int inputDimension, int outputDimension, int size) {
     addedCounter = 0;
     inDimension = inputDimension;
     outDimension = outputDimension;
     this->size = size;
-    data = new dType[(inputDimension + outputDimension) * size];
+    data = new data_t[(inputDimension + outputDimension) * size];
 }
 
-template <typename dType>
-SimpleLabeledDataset<dType>::SimpleLabeledDataset(const SimpleLabeledDataset& orig) {
+SimpleLabeledDataset::SimpleLabeledDataset(const SimpleLabeledDataset& orig) {
     
     this->inDimension = orig.inDimension;
     this->outDimension = orig.outDimension;
@@ -38,70 +35,59 @@ SimpleLabeledDataset<dType>::SimpleLabeledDataset(const SimpleLabeledDataset& or
     this->data = data;
 }
 
-template<typename dType>
-SimpleLabeledDataset<dType>* SimpleLabeledDataset<dType>::clone() {
+SimpleLabeledDataset* SimpleLabeledDataset::clone() {
     return new SimpleLabeledDataset(*this);
 }
 
-template <typename dType>
-SimpleLabeledDataset<dType>::~SimpleLabeledDataset() {
+SimpleLabeledDataset::~SimpleLabeledDataset() {
     delete[] data;
 }
 
-template <typename dType>
-void SimpleLabeledDataset<dType>::addPattern(const dType *input, const dType *output) {
+void SimpleLabeledDataset::addPattern(const data_t *input, const data_t *output) {
     
     if (addedCounter >= size) {
         LOG()->error("Trying to add %d learning patterns while the dataset size is only %d.", addedCounter+1, size);
     }
     
-    int inputSize = sizeof(dType) * inDimension;
-    int outputSize = sizeof(dType) * outDimension;
+    int inputSize = sizeof(data_t) * inDimension;
+    int outputSize = sizeof(data_t) * outDimension;
     int patternSize = inDimension + outDimension;
-    dType *dataPtr = data + (addedCounter * patternSize);
+    data_t *dataPtr = data + (addedCounter * patternSize);
     std::memcpy(dataPtr, input, inputSize);
     std::memcpy(dataPtr + inDimension, output, outputSize);
     addedCounter++;
 }
 
-template <typename dType>
-int SimpleLabeledDataset<dType>::getInputDimension() {
+int SimpleLabeledDataset::getInputDimension() {
     return inDimension;
 }
 
-template <typename dType>
-int SimpleLabeledDataset<dType>::getOutputDimension() {
+int SimpleLabeledDataset::getOutputDimension() {
     return outDimension;
 }
 
-template <typename dType>
-void SimpleLabeledDataset<dType>::initDataset() {
-    data = new dType[size * (inDimension + outDimension)];
+void SimpleLabeledDataset::initDataset() {
+    data = new data_t[size * (inDimension + outDimension)];
 }
 
-template <typename dType>
-dType* SimpleLabeledDataset<dType>::next() {
+data_t* SimpleLabeledDataset::next() {
     return data + (cursor++ * (inDimension + outDimension));
 }
 
-template <typename dType>
-bool SimpleLabeledDataset<dType>::hasNext() {
+bool SimpleLabeledDataset::hasNext() {
     return cursor < size;
 }
 
-template <typename dType>
-void SimpleLabeledDataset<dType>::reset() {
+void SimpleLabeledDataset::reset() {
     cursor = 0;
 }
 
-template <typename dType>
-int SimpleLabeledDataset<dType>::getSize() {
+int SimpleLabeledDataset::getSize() {
     return size;
 }
 
 
-template <typename dType>
-SimpleLabeledDataset<dType>* SimpleLabeledDataset<dType>::takeAway(int size) {
+SimpleLabeledDataset* SimpleLabeledDataset::takeAway(int size) {
     
     // we cannot take more than we have
     if (size > this->size) {
@@ -115,7 +101,7 @@ SimpleLabeledDataset<dType>* SimpleLabeledDataset<dType>::takeAway(int size) {
     }
     
     // create the new dataset
-    SimpleLabeledDataset<dType> *ds = new SimpleLabeledDataset<dType>();
+    SimpleLabeledDataset *ds = new SimpleLabeledDataset();
     ds->inDimension = this->inDimension;
     ds->outDimension = this->outDimension;
     ds->size = size;
@@ -124,16 +110,15 @@ SimpleLabeledDataset<dType>* SimpleLabeledDataset<dType>::takeAway(int size) {
     return ds;
 }
 
-template <typename dType>
-void SimpleLabeledDataset<dType>::shuffle() {
+void SimpleLabeledDataset::shuffle() {
     
     int entrySize = inDimension + outDimension;
-    int memSize = sizeof(dType) * entrySize;
-    dType *swap = new dType[entrySize];
+    int memSize = sizeof(data_t) * entrySize;
+    data_t *swap = new data_t[entrySize];
     
     int limit = size * entrySize;
     for (int i = 0; i<limit; i+=entrySize) {
-        int rnd = ((dType) (rand()) / (RAND_MAX-1) * size);
+        int rnd = ((data_t) (rand()) / (RAND_MAX-1) * size);
         rnd *= entrySize;
 
         std::memcpy(swap, data+i, memSize);
@@ -141,5 +126,3 @@ void SimpleLabeledDataset<dType>::shuffle() {
         std::memcpy(data+rnd, swap, memSize);
     }
 }
-
-INSTANTIATE_DATA_CLASS(SimpleLabeledDataset);

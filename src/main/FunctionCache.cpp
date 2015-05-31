@@ -12,17 +12,15 @@
 #include "log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-FunctionCache<dType> *FunctionCache<dType>::instance;
+FunctionCache *FunctionCache::instance;
 
-template <typename dType>
-FunctionCache<dType>::FunctionCache(void (*activationFnc)(dType *x, dType *y, int layerSize), int samples) {
+FunctionCache::FunctionCache(void (*activationFnc)(data_t *x, data_t *y, int layerSize), int samples) {
     this->samples = samples;
-    cache = new dType[samples];
+    cache = new data_t[samples];
     slotsPerUnit = samples / 8;
-    dType step = (dType)8 / samples;
+    data_t step = (data_t)8 / samples;
     
-    dType x = -4;
+    data_t x = -4;
     int halfSamples = samples / 2;
     for (int i = 0; i<halfSamples; i++, x+=step) {
         cache[i] = x;
@@ -36,16 +34,13 @@ FunctionCache<dType>::FunctionCache(void (*activationFnc)(dType *x, dType *y, in
     activationFnc(cache, cache, samples);
 }
 
-template <typename dType>
-FunctionCache<dType>::FunctionCache(const FunctionCache& orig) {
+FunctionCache::FunctionCache(const FunctionCache& orig) {
 }
 
-template <typename dType>
-FunctionCache<dType>::~FunctionCache() {
+FunctionCache::~FunctionCache() {
 }
 
-template <typename dType>
-void FunctionCache<dType>::compute(dType* x, dType* y, int layerSize) {
+void FunctionCache::compute(data_t* x, data_t* y, int layerSize) {
     for (int i = 0; i < layerSize; i++) {
         int j = (*x+4) * slotsPerUnit;
         
@@ -62,15 +57,11 @@ void FunctionCache<dType>::compute(dType* x, dType* y, int layerSize) {
     }
 }
 
-template <typename dType>
-void FunctionCache<dType>::init(void (*activationFnc)(dType *x, dType *y, int layerSize), int samples) {
+void FunctionCache::init(void (*activationFnc)(data_t *x, data_t *y, int layerSize), int samples) {
     LOG()->info("Creating lookup table for activation function with %d samples.", samples);
     instance = new FunctionCache(activationFnc, samples);
 }
 
-template <typename dType>
-FunctionCache<dType>* FunctionCache<dType>::getInstance() {
+FunctionCache* FunctionCache::getInstance() {
     return instance;
 }
-
-INSTANTIATE_DATA_CLASS(FunctionCache);

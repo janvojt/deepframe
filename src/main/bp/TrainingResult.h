@@ -9,8 +9,8 @@
 #define	TRAINIGRESULT_H
 
 #include <cstdlib>
+#include "../common.h"
 
-template <typename dType>
 class TrainingResult {
     
 public:
@@ -27,26 +27,26 @@ public:
     /**
      * @return mean square error on training data
      */
-    dType getTrainingError();
-    void setTrainingError(dType error);
+    data_t getTrainingError();
+    void setTrainingError(data_t error);
     
     /**
      * @return mean square error on validation data
      */
-    dType getValidationError();
-    void setValidationError(dType error);
+    data_t getValidationError();
+    void setValidationError(data_t error);
     
     /**
      * Helper method used in cases we need any available error.
      * 
      * @return validation error or training error if no validation was done
      */
-    dType getError();
+    data_t getError();
     
 private:
     long epochs = 0;
-    dType trainingError = -1;
-    dType validationError = -1;
+    data_t trainingError = -1;
+    data_t validationError = -1;
 };
 
 #endif	/* TRAINIGRESULT_H */

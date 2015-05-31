@@ -9,15 +9,15 @@
 #define	ERRORCOMPUTER_H
 
 #include "../net/Network.h"
+#include "../common.h"
 
-template <typename dType>
 class ErrorComputer {
 public:
     ErrorComputer();
     ErrorComputer(const ErrorComputer& orig);
     virtual ~ErrorComputer();
     // Computes the error for given expected output.
-    virtual dType compute(Network<dType> *net, dType *expectedOutput) = 0;
+    virtual data_t compute(Network *net, data_t *expectedOutput) = 0;
 private:
 
 };

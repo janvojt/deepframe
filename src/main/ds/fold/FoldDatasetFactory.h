@@ -19,7 +19,6 @@
     The correct functionality depends on calling the reset() only when
     it is needed!
  */
-template <typename dType>
 class FoldDatasetFactory {
 public:
     
@@ -28,7 +27,7 @@ public:
         @param ds original labeled dataset (without folds)
         @param k number of folds
      */
-    FoldDatasetFactory(LabeledDataset<dType> *ds, int k);
+    FoldDatasetFactory(LabeledDataset *ds, int k);
     
     /** Copy contructor.
      
@@ -44,20 +43,20 @@ public:
         @param valIdx specifies the fold index to use as validation dataset
         @return k-fold training dataset
      */
-    FoldTrainingDataset<dType> *getTrainingDataset(int valIdx);
+    FoldTrainingDataset *getTrainingDataset(int valIdx);
     
     /** Factory for the k-fold validation dataset.
         
         @param valIdx specifies the fold index to use as validation dataset
         @return k-fold validation dataset
      */
-    FoldValidationDataset<dType> *getValidationDataset(int valIdx);
+    FoldValidationDataset *getValidationDataset(int valIdx);
     
 private:
     /** Number of folds in the dataset. */
     int noFolds;
     /** Array of dataset folds, over which validation is rotated. */
-    LabeledDataset<dType> **folds;
+    LabeledDataset **folds;
 };
 
 #endif	/* FOLDDATASETFACTORY_H */

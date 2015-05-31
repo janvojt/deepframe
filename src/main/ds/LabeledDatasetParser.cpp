@@ -15,22 +15,18 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-LabeledDatasetParser<dType>::LabeledDatasetParser(char* filepath, NetworkConfiguration<dType>* netConf) {
+LabeledDatasetParser::LabeledDatasetParser(char* filepath, NetworkConfiguration* netConf) {
     this->netConf = netConf;
     this->filepath = filepath;
 }
 
-template <typename dType>
-LabeledDatasetParser<dType>::LabeledDatasetParser(const LabeledDatasetParser& orig) {
+LabeledDatasetParser::LabeledDatasetParser(const LabeledDatasetParser& orig) {
 }
 
-template <typename dType>
-LabeledDatasetParser<dType>::~LabeledDatasetParser() {
+LabeledDatasetParser::~LabeledDatasetParser() {
 }
 
-template <typename dType>
-LabeledDataset<dType>* LabeledDatasetParser<dType>::parse() {
+LabeledDataset* LabeledDatasetParser::parse() {
     
     std::ifstream fp(filepath);
     LOG()->info("Parsing file '%s' for labeled dataset.", filepath);
@@ -47,12 +43,12 @@ LabeledDataset<dType>* LabeledDatasetParser<dType>::parse() {
     // read dataset size
     fp >> size;
     
-    SimpleLabeledDataset<dType> *ds = new SimpleLabeledDataset<dType>(inNeurons, outNeurons, size);
+    SimpleLabeledDataset *ds = new SimpleLabeledDataset(inNeurons, outNeurons, size);
     
     for (int l = 0; l<size; l++) {
         
         // read input
-        dType *input = new dType[inNeurons];
+        data_t *input = new data_t[inNeurons];
         for (int i = 0; i<inNeurons; i++) {
             fp >> input[i]; // read number
         }
@@ -63,7 +59,7 @@ LabeledDataset<dType>* LabeledDatasetParser<dType>::parse() {
         fp.get(); // space
 
         // read output
-        dType *output = new dType[outNeurons];
+        data_t *output = new data_t[outNeurons];
         for (int i = 0; i<outNeurons; i++) {
             fp >> output[i];
         }
@@ -76,7 +72,5 @@ LabeledDataset<dType>* LabeledDatasetParser<dType>::parse() {
     
     fp.close();
 
-    return (LabeledDataset<dType> *) ds;
+    return (LabeledDataset *) ds;
 }
-
-INSTANTIATE_DATA_CLASS(LabeledDatasetParser);

@@ -18,8 +18,7 @@
 
 const int MAX_IMPROVEMENT_EPOCHS = 1000;
 
-template <typename dType>
-BackpropagationLearner<dType>::BackpropagationLearner(Network<dType> *network) {
+BackpropagationLearner::BackpropagationLearner(Network *network) {
     this->network = network;
     this->learningRate = 1;
     this->epochLimit = 1000000;
@@ -30,18 +29,15 @@ BackpropagationLearner<dType>::BackpropagationLearner(Network<dType> *network) {
     this->improveEpochs = 0;
 }
 
-template <typename dType>
-BackpropagationLearner<dType>::BackpropagationLearner(const BackpropagationLearner &orig) {
+BackpropagationLearner::BackpropagationLearner(const BackpropagationLearner &orig) {
 }
 
-template <typename dType>
-BackpropagationLearner<dType>::~BackpropagationLearner() {
+BackpropagationLearner::~BackpropagationLearner() {
     if (this->errorComputer != NULL) delete this->errorComputer;
     if (this->improveEpochs > 0) delete[] this->errorCache;
 }
 
-template <typename dType>
-TrainingResult<dType>* BackpropagationLearner<dType>::train(LabeledDataset<dType> *trainingSet, LabeledDataset<dType> *validationSet, int valIdx) {
+TrainingResult* BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset *validationSet, int valIdx) {
     
     LOG()->info("Started training with:\n"
             "   - cross-validation fold: %d,\n"
@@ -51,7 +47,7 @@ TrainingResult<dType>* BackpropagationLearner<dType>::train(LabeledDataset<dType
             "   - learning rate: %f."
             , valIdx, this->epochLimit, this->targetMse, this->improveEpochs, this->learningRate);
     
-    TrainingResult<dType> *result = new TrainingResult<dType>();
+    TrainingResult *result = new TrainingResult();
     long epochCounter = 0;
     do {
         
@@ -60,12 +56,12 @@ TrainingResult<dType>* BackpropagationLearner<dType>::train(LabeledDataset<dType
         
         trainingSet->reset();
         int datasetSize = 0;
-        dType mse = 0;
+        data_t mse = 0;
         
         while (trainingSet->hasNext()) {
             datasetSize++;
-            dType *pattern = trainingSet->next();
-            dType *expOutput = pattern + trainingSet->getInputDimension();
+            data_t *pattern = trainingSet->next();
+            data_t *expOutput = pattern + trainingSet->getInputDimension();
             
             LOG()->debug("Validation fold %d: Starting forward phase for dataset %d in epoch %d.", valIdx, datasetSize, epochCounter);
             doForwardPhase(pattern);
@@ -106,14 +102,12 @@ TrainingResult<dType>* BackpropagationLearner<dType>::train(LabeledDataset<dType
     return result;
 }
 
-template <typename dType>
-void BackpropagationLearner<dType>::doForwardPhase(dType *input) {
+void BackpropagationLearner::doForwardPhase(data_t *input) {
     this->network->setInput(input);
     this->network->run();
 }
 
-template <typename dType>
-void BackpropagationLearner<dType>::doBackwardPhase(dType *expectedOutput) {
+void BackpropagationLearner::doBackwardPhase(data_t *expectedOutput) {
     computeOutputGradients(expectedOutput);
     computeWeightDifferentials();
     adjustWeights();
@@ -122,8 +116,7 @@ void BackpropagationLearner<dType>::doBackwardPhase(dType *expectedOutput) {
     }
 }
 
-template <typename dType>
-void BackpropagationLearner<dType>::validate(LabeledDataset<dType> *dataset) {
+void BackpropagationLearner::validate(LabeledDataset *dataset) {
     if (dataset->getInputDimension() != this->network->getInputNeurons()) {
         throw new std::invalid_argument("Provided dataset must have the same input dimension as the number of input neurons!");
     }
@@ -132,8 +125,7 @@ void BackpropagationLearner<dType>::validate(LabeledDataset<dType> *dataset) {
     }
 }
 
-template <typename dType>
-bool BackpropagationLearner<dType>::isErrorImprovement(dType error, int epoch) {
+bool BackpropagationLearner::isErrorImprovement(data_t error, int epoch) {
     if (this->improveEpochs <= 0) {
         return true;
     }
@@ -150,22 +142,20 @@ bool BackpropagationLearner<dType>::isErrorImprovement(dType error, int epoch) {
     return true;
 }
 
-template <typename dType>
-dType BackpropagationLearner<dType>::computeError(LabeledDataset<dType>* ds) {
+data_t BackpropagationLearner::computeError(LabeledDataset* ds) {
     int datasetSize = 0;
-    dType vMse = 0;
+    data_t vMse = 0;
     while (ds->hasNext()) {
         datasetSize++;
-        dType *pattern = ds->next();
-        dType *expOutput = pattern + ds->getInputDimension();
+        data_t *pattern = ds->next();
+        data_t *expOutput = pattern + ds->getInputDimension();
         vMse += this->errorComputer->compute(this->network, expOutput);
     }
     
     return vMse / datasetSize;
 }
 
-template <typename dType>
-void BackpropagationLearner<dType>::setImproveEpochs(int improveEpochs) {
+void BackpropagationLearner::setImproveEpochs(int improveEpochs) {
     if (improveEpochs > MAX_IMPROVEMENT_EPOCHS) {
         LOG()->warn("Allowed maximum for error improvement epochs is %d, however %d was  requested. Going with %d.", MAX_IMPROVEMENT_EPOCHS, improveEpochs, MAX_IMPROVEMENT_EPOCHS);
         improveEpochs = MAX_IMPROVEMENT_EPOCHS;
@@ -176,36 +166,29 @@ void BackpropagationLearner<dType>::setImproveEpochs(int improveEpochs) {
     }
     
     if (improveEpochs > 0) {
-        this->errorCache = new dType[improveEpochs];
+        this->errorCache = new data_t[improveEpochs];
         this->errorCachePtr = 0;
     }
     
     this->improveEpochs = improveEpochs;
 }
 
-template <typename dType>
-void BackpropagationLearner<dType>::setEpochLimit(long limit) {
+void BackpropagationLearner::setEpochLimit(long limit) {
     this->epochLimit = limit;
 }
 
-template <typename dType>
-void BackpropagationLearner<dType>::setErrorComputer(ErrorComputer<dType>* errorComputer) {
+void BackpropagationLearner::setErrorComputer(ErrorComputer* errorComputer) {
     this->errorComputer = errorComputer;
 }
 
-template <typename dType>
-void BackpropagationLearner<dType>::setTargetMse(dType mse) {
+void BackpropagationLearner::setTargetMse(data_t mse) {
     this->targetMse = mse;
 }
 
-template <typename dType>
-void BackpropagationLearner<dType>::setLearningRate(dType learningRate) {
+void BackpropagationLearner::setLearningRate(data_t learningRate) {
     this->learningRate = learningRate;
 }
 
-template <typename dType>
-void BackpropagationLearner<dType>::setDeltaError(dType deltaError) {
+void BackpropagationLearner::setDeltaError(data_t deltaError) {
     this->deltaError = deltaError;
 }
-
-INSTANTIATE_DATA_CLASS(BackpropagationLearner);

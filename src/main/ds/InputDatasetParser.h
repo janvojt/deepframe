@@ -11,15 +11,14 @@
 #include "InputDataset.h"
 #include "../net/NetworkConfiguration.h"
 
-template <typename dType>
 class InputDatasetParser {
 public:
-    InputDatasetParser(char* filepath, NetworkConfiguration<dType>* netConf);
+    InputDatasetParser(char* filepath, NetworkConfiguration* netConf);
     InputDatasetParser(const InputDatasetParser& orig);
     virtual ~InputDatasetParser();
-    InputDataset<dType> *parse();
+    InputDataset *parse();
 private:
-    NetworkConfiguration<dType> *netConf;
+    NetworkConfiguration *netConf;
     char *filepath;
 };
 

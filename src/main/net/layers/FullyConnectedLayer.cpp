@@ -13,20 +13,16 @@
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template<typename dType>
-FullyConnectedLayer<dType>::FullyConnectedLayer() {
+FullyConnectedLayer::FullyConnectedLayer() {
 }
 
-template<typename dType>
-FullyConnectedLayer<dType>::FullyConnectedLayer(const FullyConnectedLayer& orig) {
+FullyConnectedLayer::FullyConnectedLayer(const FullyConnectedLayer& orig) {
 }
 
-template<typename dType>
-FullyConnectedLayer<dType>::~FullyConnectedLayer() {
+FullyConnectedLayer::~FullyConnectedLayer() {
 }
 
-template<typename dType>
-void FullyConnectedLayer<dType>::setup(Layer<dType> *previousLayer, FullyConnectedConfig<dType> conf) {
+void FullyConnectedLayer::setup(Layer *previousLayer, FullyConnectedConfig conf) {
     this->conf = conf;
     if (previousLayer != NULL) {
         // this is not the input layer
@@ -42,17 +38,16 @@ void FullyConnectedLayer<dType>::setup(Layer<dType> *previousLayer, FullyConnect
     this->inputsCount = conf.outputSize;
 }
 
-template<typename dType>
-void FullyConnectedLayer<dType>::forwardCpu() {
+void FullyConnectedLayer::forwardCpu() {
     
     int inputSize = this->previousLayer->getOutputsCount();
-    dType *inputPtr = this->previousLayer->getInputs();
-    dType *outputPtr = this->getInputs();
+    data_t *inputPtr = this->previousLayer->getInputs();
+    data_t *outputPtr = this->getInputs();
     
     // Clear output neurons
     std::fill_n(outputPtr, conf.outputSize, 0);
     
-    dType *weightPtr = this->weights;
+    data_t *weightPtr = this->weights;
     for (int i = 0; i<inputSize; i++) {
         for (int j = 0; j<conf.outputSize; j++) {
             outputPtr[j] += inputPtr[i] * *weightPtr;
@@ -72,22 +67,16 @@ void FullyConnectedLayer<dType>::forwardCpu() {
     conf.activationFnc(outputPtr, outputPtr, conf.outputSize);
 }
 
-template<typename dType>
-void FullyConnectedLayer<dType>::forwardGpu() {
+void FullyConnectedLayer::forwardGpu() {
     //TODO
 }
 
 
-template<typename dType>
-void FullyConnectedLayer<dType>::backwardCpu() {
+void FullyConnectedLayer::backwardCpu() {
     //TODO
 }
 
 
-template<typename dType>
-void FullyConnectedLayer<dType>::backwardGpu() {
+void FullyConnectedLayer::backwardGpu() {
     //TODO
 }
-
-
-INSTANTIATE_DATA_CLASS(FullyConnectedLayer);

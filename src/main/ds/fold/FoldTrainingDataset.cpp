@@ -16,8 +16,7 @@
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-FoldTrainingDataset<dType>::FoldTrainingDataset(LabeledDataset<dType> **folds, int k, int valIdx) {
+FoldTrainingDataset::FoldTrainingDataset(LabeledDataset **folds, int k, int valIdx) {
     assert(valIdx >= 0 && valIdx < k);
     noFolds = k;
     this->folds = folds;
@@ -25,40 +24,33 @@ FoldTrainingDataset<dType>::FoldTrainingDataset(LabeledDataset<dType> **folds, i
     foldIdx = 0;
 }
 
-template <typename dType>
-FoldTrainingDataset<dType>::FoldTrainingDataset(const FoldTrainingDataset& orig) {
+FoldTrainingDataset::FoldTrainingDataset(const FoldTrainingDataset& orig) {
     this->noFolds = orig.noFolds;
     this->folds = orig.folds;
     this->valIdx = orig.valIdx;
     this->foldIdx = orig.foldIdx;
 }
 
-template <typename dType>
-FoldTrainingDataset<dType>::~FoldTrainingDataset() {
+FoldTrainingDataset::~FoldTrainingDataset() {
 }
 
-template<typename dType>
-FoldTrainingDataset<dType>* FoldTrainingDataset<dType>::clone() {
-    return new FoldTrainingDataset<dType>(*this);
+FoldTrainingDataset* FoldTrainingDataset::clone() {
+    return new FoldTrainingDataset(*this);
 }
 
-template <typename dType>
-int FoldTrainingDataset<dType>::getInputDimension() {
+int FoldTrainingDataset::getInputDimension() {
     return folds[0]->getInputDimension();
 }
 
-template <typename dType>
-int FoldTrainingDataset<dType>::getOutputDimension() {
+int FoldTrainingDataset::getOutputDimension() {
     return folds[0]->getOutputDimension();
 }
 
-template <typename dType>
-int FoldTrainingDataset<dType>::getSize() {
+int FoldTrainingDataset::getSize() {
     return noFolds * folds[0]->getSize();
 }
 
-template <typename dType>
-bool FoldTrainingDataset<dType>::hasNext() {
+bool FoldTrainingDataset::hasNext() {
     if (folds[foldIdx]->hasNext()) {
         return true;
     }
@@ -71,8 +63,7 @@ bool FoldTrainingDataset<dType>::hasNext() {
     return folds[foldIdx]->hasNext();
 }
 
-template <typename dType>
-dType* FoldTrainingDataset<dType>::next() {
+data_t* FoldTrainingDataset::next() {
     if (hasNext()) {
         return folds[foldIdx]->next();
     } else {
@@ -80,8 +71,7 @@ dType* FoldTrainingDataset<dType>::next() {
     }
 }
 
-template <typename dType>
-void FoldTrainingDataset<dType>::reset() {
+void FoldTrainingDataset::reset() {
     foldIdx = nextFold(valIdx);
     while (foldIdx != valIdx) {
         folds[foldIdx]->reset();
@@ -90,13 +80,11 @@ void FoldTrainingDataset<dType>::reset() {
     foldIdx = nextFold(valIdx);
 }
 
-template <typename dType>
-void FoldTrainingDataset<dType>::shuffle() {
+void FoldTrainingDataset::shuffle() {
     LOG()->error("Shuffling folded dataset is not supported. Please shuffle before folding.");
 }
 
-template <typename dType>
-LabeledDataset<dType>* FoldTrainingDataset<dType>::takeAway(int size) {
+LabeledDataset* FoldTrainingDataset::takeAway(int size) {
     LOG()->error("Taking away from folded dataset is not supported. Please take away before folding.");
     return NULL;
 }
@@ -106,13 +94,10 @@ LabeledDataset<dType>* FoldTrainingDataset<dType>::takeAway(int size) {
     @param refFold referential fold to move by 1 from
     @return next fold in line from refFold
  */
-template <typename dType>
-int FoldTrainingDataset<dType>::nextFold(int refFold) {
+int FoldTrainingDataset::nextFold(int refFold) {
     int nFoldIdx = refFold + 1;
     if (nFoldIdx >= noFolds) {
         nFoldIdx = 0;
     }
     return nFoldIdx;
 }
-
-INSTANTIATE_DATA_CLASS(FoldTrainingDataset);

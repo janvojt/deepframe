@@ -12,8 +12,7 @@
 
 // Represents the dataset with labeled input patterns
 // to be used for supervised learning.
-template <typename dType>
-class LabeledDataset : public InputDataset<dType> {
+class LabeledDataset : public InputDataset {
 public:
     LabeledDataset();
     LabeledDataset(const LabeledDataset& orig);
@@ -22,7 +21,7 @@ public:
     /**
      * Clones the dataset by creating a shallow copy (point to the same data).
      */
-    virtual LabeledDataset<dType>* clone() = 0;
+    virtual LabeledDataset* clone() = 0;
     
     // Returns the dimension of labels for input data.
     virtual int getOutputDimension() = 0;

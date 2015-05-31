@@ -9,28 +9,28 @@
 #define	SIMPLEINPUTDATASET_H
 
 #include "InputDataset.h"
+#include "../common.h"
 
 // Class used for construction of small datasets
 // with input data to be processed by the network.
-template <typename dType>
-class SimpleInputDataset : InputDataset<dType> {
+class SimpleInputDataset : InputDataset {
 public:
     SimpleInputDataset(int dimension, int size);
     SimpleInputDataset(const SimpleInputDataset& orig);
     virtual ~SimpleInputDataset();
-    dType *next();
+    data_t *next();
     bool hasNext();
     void reset();
     int getInputDimension();
     // Adds a single input pattern to be processed by the network.
-    void addInput(const dType *input);
+    void addInput(const data_t *input);
 private:
     void initDataset();
     int dimension;
     int cursor;
     int addedCounter;
     int size;
-    dType *data;
+    data_t *data;
 };
 
 #endif	/* SIMPLEINPUTDATASET_H */

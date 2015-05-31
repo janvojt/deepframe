@@ -16,10 +16,9 @@
 #include "../common.h"
 #include "../util/cudaHelpers.h"
 
-template <typename dType>
-class GpuNetwork : public Network<dType> {
+class GpuNetwork : public Network {
 public:
-    GpuNetwork(NetworkConfiguration<dType> *netConf, GpuConfiguration *gpuConf);
+    GpuNetwork(NetworkConfiguration *netConf, GpuConfiguration *gpuConf);
     GpuNetwork(const GpuNetwork& orig);
     virtual ~GpuNetwork();
     
@@ -35,7 +34,7 @@ public:
      * @param nets array of networks to be merged into this network
      * @param size number of networks in given array
      */
-    void merge(Network<dType> **nets, int size);
+    void merge(Network **nets, int size);
     
     /** Reinitializes network so it forgets everything it learnt.
 
@@ -47,11 +46,11 @@ public:
     void run();
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
-    void setInput(dType *input);
+    void setInput(data_t *input);
     // Returns pointer to the beginning of the input array.
-    dType *getInput();
+    data_t *getInput();
     // Returns pointer to the beginning of the output array.
-    dType *getOutput();
+    data_t *getOutput();
     
 protected:
 
@@ -60,10 +59,10 @@ protected:
 private:
     // Array representing input coming into the network.
     // Allocated on host memory.
-    dType *input;
+    data_t *input;
     // Array representing network output.
     // Allocated on host memory.
-    dType *output;
+    data_t *output;
     // Holds GPU configuration and device properties.
     GpuConfiguration *gpuConf;
     // CUDA Basic Linear Algebra Subprograms handle.

@@ -18,14 +18,12 @@
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-template <typename dType>
-GpuNetwork<dType>::GpuNetwork(NetworkConfiguration<dType> *netConf, GpuConfiguration *gpuConf) : Network<dType>(netConf) {
+GpuNetwork::GpuNetwork(NetworkConfiguration *netConf, GpuConfiguration *gpuConf) : Network(netConf) {
     cublasCreate(&this->cublasHandle);
     this->gpuConf = gpuConf;
 }
 
-template <typename dType>
-GpuNetwork<dType>::GpuNetwork(const GpuNetwork& orig) : Network<dType>(orig.conf) {
+GpuNetwork::GpuNetwork(const GpuNetwork& orig) : Network(orig.conf) {
     
     // initialize network and allocate memory
     cublasCreate(&this->cublasHandle);
@@ -34,27 +32,24 @@ GpuNetwork<dType>::GpuNetwork(const GpuNetwork& orig) : Network<dType>(orig.conf
     this->allocateMemory();
     
     // copy data
-    int wMemSize = sizeof(dType) * this->weightsCount;
-    int iMemSize = sizeof(dType) * this->inputsCount;
+    int wMemSize = sizeof(data_t) * this->weightsCount;
+    int iMemSize = sizeof(data_t) * this->inputsCount;
     checkCudaErrors(cudaMemcpy(this->inputs, orig.inputs, iMemSize, cudaMemcpyDeviceToDevice));
     checkCudaErrors(cudaMemcpy(this->weights, orig.weights, wMemSize, cudaMemcpyDeviceToDevice));
 }
 
-template <typename dType>
-GpuNetwork<dType>::~GpuNetwork() {
+GpuNetwork::~GpuNetwork() {
     cublasDestroy(this->cublasHandle);
     cudaFree(this->weights);
     delete[] this->input;
     delete[] this->output;
 }
 
-template <typename dType>
-GpuNetwork<dType>* GpuNetwork<dType>::clone() {
-    return new GpuNetwork<dType>(*this);
+GpuNetwork* GpuNetwork::clone() {
+    return new GpuNetwork(*this);
 }
 
-template <typename dType>
-void GpuNetwork<dType>::merge(Network<dType>** nets, int size) {
+void GpuNetwork::merge(Network** nets, int size) {
     
     int noWeights = this->weightsCount;
     for (int i = 0; i<size; i++) {
@@ -67,28 +62,25 @@ void GpuNetwork<dType>::merge(Network<dType>** nets, int size) {
     k_divideVector(this->weights, size+1, noWeights);
 }
 
-template <typename dType>
-void GpuNetwork<dType>::reinit() {
+void GpuNetwork::reinit() {
     LOG()->info("Randomly initializing weights within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
     k_generateUniform(*this->gpuConf->getRandGen(), this->weights, this->weightsCount);
     k_spreadInterval(this->conf->getInitMin(), this->conf->getInitMax(), this->weights, this->weightsCount);
 }
 
-template<typename dType>
-void GpuNetwork<dType>::allocateMemory() {
-    checkCudaErrors(cudaMalloc(&this->weights, sizeof(dType) * this->weightsCount));
-    checkCudaErrors(cudaMalloc(&this->inputs, sizeof(dType) * this->inputsCount));
+void GpuNetwork::allocateMemory() {
+    checkCudaErrors(cudaMalloc(&this->weights, sizeof(data_t) * this->weightsCount));
+    checkCudaErrors(cudaMalloc(&this->inputs, sizeof(data_t) * this->inputsCount));
 }
 
-template <typename dType>
-void GpuNetwork<dType>::run() {
+void GpuNetwork::run() {
     // number of neurons in so far processed layers
-    dType *dWeightsPtr = this->weights + this->getInputNeurons();
-    dType *dInputsPtr = this->inputs;
+    data_t *dWeightsPtr = this->weights + this->getInputNeurons();
+    data_t *dInputsPtr = this->inputs;
     
     // copy weights and bias from host to device
-//    int wMemSize = sizeof(dType) * getWeightsOffset(noLayers);
-//    int iMemSize = sizeof(dType) * getInputOffset(noLayers);
+//    int wMemSize = sizeof(data_t) * getWeightsOffset(noLayers);
+//    int iMemSize = sizeof(data_t) * getInputOffset(noLayers);
 //    checkCudaErrors(cudaMemcpy(dInputs, inputs, iMemSize, cudaMemcpyHostToDevice));
 //    checkCudaErrors(cudaMemcpy(dWeights, weights, wMemSize, cudaMemcpyHostToDevice));
 //    if (conf->getBias()) checkCudaErrors(cudaMemcpy(dBias, bias, iMemSize, cudaMemcpyHostToDevice));
@@ -99,13 +91,13 @@ void GpuNetwork<dType>::run() {
         int nNextLayer = this->conf->getNeurons(l+1);
         
         // clear the following layer just before working with it
-        int nextLayerSize = nNextLayer * sizeof(dType);
+        int nextLayerSize = nNextLayer * sizeof(data_t);
         cudaMemset(dInputsPtr + nThisLayer, 0.0, nextLayerSize);
         
         //note cuBLAS is column primary!
         //need to transpose the order
-        const dType alpha = 1.0;
-        const dType beta = 0.0;
+        const data_t alpha = 1.0;
+        const data_t beta = 0.0;
         k_gemm(this->cublasHandle,
                 CUBLAS_OP_N, CUBLAS_OP_T,
                 1, nNextLayer, nThisLayer,
@@ -129,29 +121,25 @@ void GpuNetwork<dType>::run() {
 //    compare('i', dInputs, inputs, getInputOffset(noLayers));
 }
 
-template <typename dType>
-void GpuNetwork<dType>::setInput(dType* input) {
+void GpuNetwork::setInput(data_t* input) {
 //    compare('b', dInputs, inputs, getInputOffset(noLayers));
-    int memSize = sizeof(dType) * this->getInputNeurons();
+    int memSize = sizeof(data_t) * this->getInputNeurons();
     std::memcpy(this->input, input, memSize);
     checkCudaErrors(cudaMemcpy(this->inputs, input, memSize, cudaMemcpyHostToDevice));
 //    compare('a', dInputs, inputs, getInputOffset(noLayers));
 }
 
-template <typename dType>
-dType *GpuNetwork<dType>::getInput() {
+data_t *GpuNetwork::getInput() {
     return this->input;
 }
 
-template <typename dType>
-dType *GpuNetwork<dType>::getOutput() {
+data_t *GpuNetwork::getOutput() {
     
     // copy network output to host
-    dType *dOutput = this->inputs + this->layers[this->noLayers-1]->getOutputsCount();
-    int oMemSize = this->getOutputNeurons() * sizeof(dType);
+    data_t *dOutput = this->inputs + this->layers[this->noLayers-1]->getOutputsCount();
+    int oMemSize = this->getOutputNeurons() * sizeof(data_t);
     checkCudaErrors(cudaMemcpy(this->output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
     
     return this->output;
 }
 
-INSTANTIATE_DATA_CLASS(GpuNetwork);
