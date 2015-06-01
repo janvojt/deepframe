@@ -21,6 +21,7 @@
 #include "net/GpuNetwork.h"
 #include "net/CpuNetwork.h"
 #include "net/GpuConfiguration.h"
+#include "net/LayerFactory.h"
 #include "ds/SimpleLabeledDataset.h"
 #include "ds/LabeledDatasetParser.h"
 #include "ds/SimpleInputDataset.h"
@@ -501,8 +502,9 @@ int main(int argc, char *argv[]) {
         outputConfig.useBias = false;
         outputConfig.activationFnc = netConf->activationFnc;
         outputConfig.dActivationFnc = netConf->dActivationFnc;
-        FullyConnectedLayer *outputLayer = new FullyConnectedLayer();
-        outputLayer->setup(sub1Layer, outputConfig);
+//        FullyConnectedLayer *outputLayer = new FullyConnectedLayer();
+        Layer *outputLayer = LayerFactory::createInstance("FullyConnected");
+//        outputLayer->setup(sub1Layer, outputConfig);
         cpuNet->addLayer(outputLayer);
         cpuNet->setup();
     }

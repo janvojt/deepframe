@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include "../../common.h"
+#include "../LayerFactory.h"
 
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -117,3 +118,4 @@ int ConvolutionalLayer::getOutputHeight() {
     return this->featureHeight;
 }
 
+static LayerRegister<ConvolutionalLayer> reg("Convolution");

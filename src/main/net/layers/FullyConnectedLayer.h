@@ -9,7 +9,6 @@
 #define	FULLYCONNECTEDLAYER_H
 
 #include "../Layer.h"
-#include "../LayerFactory.h"
 #include "../../common.h"
 
 struct FullyConnectedConfig {

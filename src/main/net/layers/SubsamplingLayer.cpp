@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include "../../common.h"
+#include "../LayerFactory.h"
 
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -132,3 +133,5 @@ int SubsamplingLayer::getFeatureHeight() {
 int SubsamplingLayer::getFeaturesCount() {
     return this->featuresCount;
 }
+
+static LayerRegister<SubsamplingLayer> reg("Subsampling");

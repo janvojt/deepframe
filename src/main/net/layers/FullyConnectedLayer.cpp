@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include "../../common.h"
+#include "../LayerFactory.h"
 
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -80,3 +81,6 @@ void FullyConnectedLayer::backwardCpu() {
 void FullyConnectedLayer::backwardGpu() {
     //TODO
 }
+
+static LayerRegister<FullyConnectedLayer> reg("FullyConnected");
+//LayerRegister<FullyConnectedLayer> FullyConnectedLayer::reg("FullyConnected");
