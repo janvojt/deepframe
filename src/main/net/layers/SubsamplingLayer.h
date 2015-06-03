@@ -10,6 +10,9 @@
 
 #include "ConvolutionalLayer.h"
 #include "../../common.h"
+#include <string>
+
+using namespace std;
 
 class ConvolutionalLayer;
 
@@ -37,7 +40,7 @@ public:
     SubsamplingLayer(const SubsamplingLayer& orig);
     virtual ~SubsamplingLayer();
     
-    void setup(ConvolutionalLayer* previousLayer, SubsamplingConfig conf);
+    void setup(Layer* previousLayer, string confString);
 
     void forwardCpu();
     void forwardGpu();
@@ -54,6 +57,9 @@ public:
     int getFeaturesCount();
     
 private:
+    
+    void processConfString(string confString);
+    
     SubsamplingConfig conf;
     
     int featuresCount;

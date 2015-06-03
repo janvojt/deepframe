@@ -9,6 +9,9 @@
 #define	LAYER_H
 
 #include "../common.h"
+#include <string>
+
+using namespace std;
 
 class Layer {
     
@@ -16,6 +19,8 @@ public:
     Layer();
     Layer(const Layer& orig);
     virtual ~Layer();
+    
+    virtual void setup(Layer *previousLayer, string confString) = 0;
 
     void forward();
     virtual void forwardCpu() = 0;

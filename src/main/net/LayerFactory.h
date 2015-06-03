@@ -30,8 +30,6 @@ public:
     
 protected:
     static map_type *getMap();
-    
-    static map_type *map;
 };
 
 template<typename T>
@@ -39,12 +37,6 @@ class LayerRegister : LayerFactory {
 
 public:
     LayerRegister(std::string const& s) {
-        if (!map) {
-            // TODO initialize private/protected static member "map" once.
-            // But how??
-            map = new map_type;
-        }
-        assert(map);
         getMap()->insert(std::make_pair(s, &createT<T>));
     }
 };

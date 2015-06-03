@@ -8,6 +8,7 @@
 #include "FullyConnectedLayer.h"
 
 #include <algorithm>
+#include <sstream>
 #include "../../common.h"
 #include "../LayerFactory.h"
 
@@ -23,8 +24,10 @@ FullyConnectedLayer::FullyConnectedLayer(const FullyConnectedLayer& orig) {
 FullyConnectedLayer::~FullyConnectedLayer() {
 }
 
-void FullyConnectedLayer::setup(Layer *previousLayer, FullyConnectedConfig conf) {
-    this->conf = conf;
+void FullyConnectedLayer::setup(Layer *previousLayer, string confString) {
+    
+    processConfString(confString);
+    
     if (previousLayer != NULL) {
         // this is not the input layer
         this->previousLayer = previousLayer;
@@ -82,5 +85,11 @@ void FullyConnectedLayer::backwardGpu() {
     //TODO
 }
 
+void FullyConnectedLayer::processConfString(string confString) {
+    // dummy variable for delimiters
+    char sep;
+    istringstream iss (confString);
+    iss >> conf.outputSize >> sep >> conf.useBias;
+}
+
 static LayerRegister<FullyConnectedLayer> reg("FullyConnected");
-//LayerRegister<FullyConnectedLayer> FullyConnectedLayer::reg("FullyConnected");

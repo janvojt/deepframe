@@ -9,6 +9,7 @@
 
 #include <cstdlib>
 #include <algorithm>
+#include <sstream>
 #include "../../common.h"
 #include "../LayerFactory.h"
 
@@ -24,10 +25,10 @@ SubsamplingLayer::SubsamplingLayer(const SubsamplingLayer& orig) {
 SubsamplingLayer::~SubsamplingLayer() {
 }
 
-void SubsamplingLayer::setup(ConvolutionalLayer* previousLayer, SubsamplingConfig conf) {
+void SubsamplingLayer::setup(Layer* previousLayer, string confString) {
 
-    this->conf = conf;
     this->previousLayer = previousLayer;
+    processConfString(confString);
     
     if (previousLayer == NULL) {
         // this is an input layer
@@ -41,9 +42,10 @@ void SubsamplingLayer::setup(ConvolutionalLayer* previousLayer, SubsamplingConfi
     } else {
         previousLayer->setNextLayer(this);
 
-        featuresCount = previousLayer->getOutputFeatures();
-        inputWidth = previousLayer->getOutputWidth();
-        inputHeight = previousLayer->getOutputHeight();
+        ConvolutionalLayer *convLayer = (ConvolutionalLayer*) previousLayer;
+        featuresCount = convLayer->getOutputFeatures();
+        inputWidth = convLayer->getOutputWidth();
+        inputHeight = convLayer->getOutputHeight();
 
         featureWidth = (inputWidth + conf.windowWidth - 1)  / conf.windowWidth; // round up
         featureHeight = (inputHeight + conf.windowHeight - 1) / conf.windowHeight; // round up
@@ -120,6 +122,16 @@ void SubsamplingLayer::backwardGpu() {
 
 SubsamplingConfig SubsamplingLayer::getConfig() {
     return this->conf;
+}
+
+void SubsamplingLayer::processConfString(string confString) {
+    // dummy variable for reading delimiters
+    char sep;
+    
+    istringstream iss (confString);
+    iss >> conf.windowWidth
+            >> sep >> conf.windowHeight
+            >> sep >> conf.useBias;
 }
 
 int SubsamplingLayer::getFeatureWidth() {

@@ -8,6 +8,7 @@
 #include "ConvolutionalLayer.h"
 
 #include <algorithm>
+#include <sstream>
 #include "../../common.h"
 #include "../LayerFactory.h"
 
@@ -23,21 +24,22 @@ ConvolutionalLayer::ConvolutionalLayer(const ConvolutionalLayer& orig) {
 ConvolutionalLayer::~ConvolutionalLayer() {
 }
 
-void ConvolutionalLayer::setup(SubsamplingLayer *previousLayer, ConvolutionalConfig conf) {
+void ConvolutionalLayer::setup(Layer *previousLayer, string confString) {
     
     if (previousLayer == NULL) {
         LOG()->error("Convolutional layer is not supported as an input layer. Use subsampling layer instead.");
         return;
     }
     
-    this->conf = conf;
+    processConfString(confString);
     this->previousLayer = previousLayer;
     this->previousLayer->setNextLayer(this);
     
-    inputFeatures = previousLayer->getFeaturesCount();
+    SubsamplingLayer *subsamplingLayer = (SubsamplingLayer*) previousLayer;
+    inputFeatures = subsamplingLayer->getFeaturesCount();
     featuresCount = inputFeatures * conf.featureMultiplier;
-    featureWidth = previousLayer->getFeatureWidth() - conf.windowSize + 1;
-    featureHeight = previousLayer->getFeatureHeight() - conf.windowSize + 1;
+    featureWidth = subsamplingLayer->getFeatureWidth() - conf.windowSize + 1;
+    featureHeight = subsamplingLayer->getFeatureHeight() - conf.windowSize + 1;
     
     this->inputsCount = featuresCount
             * featureWidth * featureHeight;
@@ -101,6 +103,14 @@ void ConvolutionalLayer::backwardGpu() {
     //TODO
 }
 
+void ConvolutionalLayer::processConfString(string confString) {
+    // dummy variable for delimiters
+    char sep;
+    
+    istringstream iss (confString);
+    iss >> conf.windowSize
+            >> sep >> conf.featureMultiplier;
+}
 
 ConvolutionalConfig ConvolutionalLayer::getConfig() {
     return conf;

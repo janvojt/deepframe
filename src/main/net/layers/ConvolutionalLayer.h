@@ -8,10 +8,11 @@
 #ifndef CONVOLUTIONALLAYER_H
 #define	CONVOLUTIONALLAYER_H
 
+#include <string>
 #include "../Layer.h"
 #include "SubsamplingLayer.h"
 
-class SubsamplingLayer;
+using namespace std;
 
 struct ConvolutionalConfig {
     int windowSize;
@@ -24,7 +25,7 @@ public:
     ConvolutionalLayer(const ConvolutionalLayer& orig);
     virtual ~ConvolutionalLayer();
     
-    void setup(SubsamplingLayer *previousLayer, ConvolutionalConfig conf);
+    void setup(Layer *previousLayer, string confString);
 
     void forwardCpu();
     void forwardGpu();
@@ -41,6 +42,9 @@ public:
     int getOutputHeight();
     
 private:
+    
+    void processConfString(string confString);
+    
     ConvolutionalConfig conf;
     
     int featuresCount;

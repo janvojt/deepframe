@@ -9,7 +9,10 @@
 #define	NETWORKCONFIGURATION_H
 
 #include <cstdlib>
+#include <string>
 #include "../common.h"
+
+using namespace std;
 
 class NetworkConfiguration {
 public:
@@ -41,14 +44,19 @@ public:
     // Parse layer configuration from comma separated list of neuron counts.
     void parseLayerConf(char *layerConf);
     
+    string getLayerType(int layerIndex);
+    
+    string getLayersConf(int layerIndex);
+    
     /**
-     * Gets the comma-separated list of number of neurons in each respective
-     * layers. The purpose is to simplify logging, so that the string does not
+     * Gets the path to a configuration file used, or a comma-separated list of
+     * number of neurons in each respective layer of fully-connected network.
+     * The purpose is to simplify logging, so that the string does not
      * need to be rebuilt.
      * 
-     * @return comma-separated string of the neuron configuration inside layers
+     * @return source of network layer configuration
      */
-    char *getLayerConf();
+    char *getConfSource();
     
     // Pointer to activation function normalizing the neurons potential.
     // Input potential is preserved and the normalized value
@@ -69,8 +77,16 @@ private:
      */
     void parseInitInterval(const char *intervalConf, const char *format);
     
-    // number of layers in a network
+    void parseFromString(char *layerConf);
+    
+    void parseFromFile(char *layerConf);
+    
+    /** Number of layers in a network. */
     int layers;
+    
+    /** Layers in network. */
+    std::string **layersConf = NULL;
+    
     // number of neurons in each network layer
     int *neuronConf;
     // flag determining whether the network uses bias, true by default
@@ -82,8 +98,12 @@ private:
     // when initializing network weights.
     data_t initMax;
     
-    /** Comma-separated list of number of neurons in each respective layers. */
-    char *layerConf = NULL;
+    /**
+     * Source of the network layer configuration.
+     * May be a comma-separated list of neurons per layer for fully-connected
+     * network, or a path to configuration file.
+     */
+    char *confSource = NULL;
 };
 
 #endif	/* NETWORKCONFIGURATION_H */

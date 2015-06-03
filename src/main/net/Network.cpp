@@ -22,8 +22,8 @@ Network::Network(NetworkConfiguration *conf) {
     this->noLayers = conf->getLayers();
     this->layers = new Layer*[this->noLayers];
     
-    if (conf->getLayerConf() != NULL) {
-        LOG()->info("Initializing network with layer configuration of (%s).", conf->getLayerConf());
+    if (conf->getConfSource() != NULL) {
+        LOG()->info("Initializing network with layer configuration of (%s).", conf->getConfSource());
     }
 }
 

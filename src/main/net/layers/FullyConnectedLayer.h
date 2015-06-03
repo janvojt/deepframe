@@ -10,6 +10,9 @@
 
 #include "../Layer.h"
 #include "../../common.h"
+#include <string>
+
+using namespace std;
 
 struct FullyConnectedConfig {
     
@@ -36,7 +39,7 @@ public:
     FullyConnectedLayer(const FullyConnectedLayer& orig);
     virtual ~FullyConnectedLayer();
     
-    void setup(Layer *previousLayer, FullyConnectedConfig conf);
+    void setup(Layer *previousLayer, string confString);
 
     void forwardCpu();
     void forwardGpu();
@@ -45,6 +48,9 @@ public:
     void backwardGpu();
 
 private:
+    
+    void processConfString(string confString);
+    
     FullyConnectedConfig conf;
 };
 

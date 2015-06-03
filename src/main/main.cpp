@@ -467,46 +467,19 @@ int main(int argc, char *argv[]) {
         net = gpuNet;
     } else {
         LOG()->info("Using CPU for computing the network runs.");
-        netConf->setLayers(4); // TODO remove once configuration is setup
         CpuNetwork *cpuNet = new CpuNetwork(netConf);
 //        bp = new CpuBackpropagationLearner(cpuNet);
         net = cpuNet;
-        
-        SubsamplingConfig inputConfig;
-        inputConfig.windowWidth = 28;
-        inputConfig.windowHeight = 28;
-        inputConfig.activationFnc = netConf->activationFnc;
-        inputConfig.dActivationFnc = netConf->dActivationFnc;
-        SubsamplingLayer *inputLayer = new SubsamplingLayer();
-        inputLayer->setup(NULL, inputConfig);
-        cpuNet->addLayer(inputLayer);
-        
-        ConvolutionalConfig conv1Config;
-        conv1Config.featureMultiplier = 4;
-        conv1Config.windowSize = 5;
-        ConvolutionalLayer *conv1Layer = new ConvolutionalLayer();
-        conv1Layer->setup(inputLayer, conv1Config);
-        cpuNet->addLayer(conv1Layer);
-        
-        SubsamplingConfig sub1Config;
-        sub1Config.windowWidth = 2;
-        sub1Config.windowHeight = 2;
-        sub1Config.activationFnc = netConf->activationFnc;
-        sub1Config.dActivationFnc = netConf->dActivationFnc;
-        SubsamplingLayer *sub1Layer = new SubsamplingLayer();
-        sub1Layer->setup(conv1Layer, sub1Config);
-        cpuNet->addLayer(sub1Layer);
-        
-        FullyConnectedConfig outputConfig;
-        outputConfig.outputSize = 10;
-        outputConfig.useBias = false;
-        outputConfig.activationFnc = netConf->activationFnc;
-        outputConfig.dActivationFnc = netConf->dActivationFnc;
-//        FullyConnectedLayer *outputLayer = new FullyConnectedLayer();
-        Layer *outputLayer = LayerFactory::createInstance("FullyConnected");
-//        outputLayer->setup(sub1Layer, outputConfig);
-        cpuNet->addLayer(outputLayer);
-        cpuNet->setup();
+    }
+    
+    // Configure network layers
+    Layer *prevLayer = NULL;
+    for (int i = 0; i<netConf->getLayers(); i++) {
+        string layerType = netConf->getLayerType(i);
+        LOG()->info("Configuring layer %d (%s).", i+1, layerType.c_str());
+        Layer *layer = LayerFactory::createInstance(layerType);
+        layer->setup(prevLayer, netConf->getLayersConf(i));
+        prevLayer = layer;
     }
     
     // Prepare test dataset.

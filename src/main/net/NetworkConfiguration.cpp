@@ -9,15 +9,15 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <string.h>
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
+#include <cstring>
 
 #include "../common.h"
 
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
-
-using namespace std;
 
 NetworkConfiguration::NetworkConfiguration() {
     neuronConf = NULL;
@@ -28,6 +28,14 @@ NetworkConfiguration::NetworkConfiguration(const NetworkConfiguration& orig) {
 }
 
 NetworkConfiguration::~NetworkConfiguration() {
+    
+    if (layersConf) {
+        for (int i = 0; i<layers; i++) {
+            delete[] layersConf[i];
+        }
+        delete[] layersConf;
+    }
+    
     if (neuronConf) {
         delete[] neuronConf;
     }
@@ -43,6 +51,14 @@ void NetworkConfiguration::setLayers(int layers) {
     } else {
         this->layers = layers;
     }
+}
+
+string NetworkConfiguration::getLayerType(int layerIndex) {
+    return layersConf[layerIndex][0];
+}
+
+string NetworkConfiguration::getLayersConf(int layerIndex) {
+    return layersConf[layerIndex][1];
 }
 
 void NetworkConfiguration::setNeurons(int layer, int neurons) {
@@ -68,12 +84,10 @@ bool NetworkConfiguration::getBias() {
 }
 
 void NetworkConfiguration::initConf() {
-    // free memory if it was already assigned to the pointer
-    if (neuronConf != NULL) {
-        delete neuronConf;
+    layersConf = new string*[layers];
+    for (int i = 0; i<layers; i++) {
+        layersConf[i] = new string[2];
     }
-    // initialize configuration
-    neuronConf = new int[layers];
 }
 
 void NetworkConfiguration::parseInitInterval(const char* intervalConf) {
@@ -100,27 +114,72 @@ void NetworkConfiguration::parseInitInterval(const char* intervalConf, const cha
 
 void NetworkConfiguration::parseLayerConf(char* layerConf) {
     
-    this->layerConf = layerConf;
+    this->confSource = layerConf;
+    if (strstr(layerConf, ",") == NULL) {
+        parseFromFile(layerConf);
+    } else {
+        parseFromString(layerConf);
+    }
+}
+
+void NetworkConfiguration::parseFromString(char *confString) {
 
     // Configure layers.
     // Count and set number of layers.
-    int i;
-    char *lconf = layerConf;
-    for (i=0; lconf[i]; lconf[i]==',' ? i++ : *lconf++);
-    setLayers(i+1);
+    char *lconf = confString;
+    layers = 0;
+    for (int i=0; lconf[i]; i++) {
+        if (lconf[i] == ',') layers++;
+    }
+    layers++;
+    initConf();
     
     // set number of neurons for each layer
-    i = 0;
+    int i = 0;
     int l = 0;
-    char *haystack = new char[strlen(layerConf)+1];
-    strcpy(haystack, layerConf);
+    char *haystack = new char[strlen(confString)+1];
+    strcpy(haystack, confString);
     char *token = strtok(haystack, ",");
     while (token != NULL) {
         sscanf(token, "%d", &l);
-        setNeurons(i++, l);
+        layersConf[i][0] = "FullyConnected";
+        layersConf[i][1] = l;
+        i++;
         token = strtok(NULL, ",");
     }
     delete[] haystack;
+}
+
+void NetworkConfiguration::parseFromFile(char* confFile) {
+    
+    ifstream infile(confFile);
+    string line;
+    
+    // find out number of layers first
+    layers = 0;
+    while (getline(infile, line)) {
+        if (line.length() == 0 || line[0] == '#') {
+            // line is empty or is a comment
+            continue;
+        }
+        layers++;
+    }
+    initConf();
+    
+    // parse layer configuration on second pass
+    infile.clear();
+    infile.seekg(0, ios::beg);
+    int i = 0;
+    while (getline(infile, line)) {
+        if (line.length() == 0 || line[0] == '#') {
+            // line is empty or is a comment
+            continue;
+        }
+        int delPos = line.find(':');
+        layersConf[i][0] = line.substr(0, delPos);
+        layersConf[i][1] = line.substr(delPos + 1);
+        i++;
+    }
 }
 
 void NetworkConfiguration::setInitMin(data_t min) {
@@ -139,6 +198,6 @@ data_t NetworkConfiguration::getInitMax() {
     return initMax;
 }
 
-char* NetworkConfiguration::getLayerConf() {
-    return layerConf;
+char* NetworkConfiguration::getConfSource() {
+    return confSource;
 }
