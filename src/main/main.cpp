@@ -479,7 +479,7 @@ int main(int argc, char *argv[]) {
         string layerConf = netConf->getLayersConf(i);
         LOG()->info("Setting up layer %d (%s) with configuration '%s'.", i+1, layerType.c_str(), layerConf.c_str());
         Layer *layer = LayerFactory::createInstance(layerType);
-        layer->setup(prevLayer, layerConf);
+        layer->setup(prevLayer, netConf, layerConf);
         net->addLayer(layer);
         prevLayer = layer;
     }
@@ -595,7 +595,7 @@ int main(int argc, char *argv[]) {
         delete df;
     }
     
-    delete bp;
+//    delete bp;
     delete lds;
     delete tds;
     delete netConf;

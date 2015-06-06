@@ -24,8 +24,6 @@ public:
     ConvolutionalLayer();
     ConvolutionalLayer(const ConvolutionalLayer& orig);
     virtual ~ConvolutionalLayer();
-    
-    void setup(Layer *previousLayer, string confString);
 
     void forwardCpu();
     void forwardGpu();
@@ -40,6 +38,10 @@ public:
     int getOutputWidth();
     
     int getOutputHeight();
+    
+protected:
+    
+    void setup(string confString);
     
 private:
     

@@ -10,6 +10,7 @@
 
 #include "../common.h"
 #include <string>
+#include "NetworkConfiguration.h"
 
 using namespace std;
 
@@ -20,7 +21,7 @@ public:
     Layer(const Layer& orig);
     virtual ~Layer();
     
-    virtual void setup(Layer *previousLayer, string confString) = 0;
+    void setup(Layer *previousLayer, NetworkConfiguration *netConf, string confString);
 
     void forward();
     virtual void forwardCpu() = 0;
@@ -45,6 +46,9 @@ public:
     void setNextLayer(Layer *nextLayer);
     
 protected:
+    
+    virtual void setup(string confString) = 0;
+    
     data_t *inputs = NULL;
     
     int inputsCount;
@@ -58,6 +62,8 @@ protected:
     Layer *nextLayer = NULL;
     
     bool isLast = true;
+    
+    NetworkConfiguration *netConf;
     
 private:
     bool useGpu = false;

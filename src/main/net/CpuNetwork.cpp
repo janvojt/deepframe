@@ -68,6 +68,8 @@ void CpuNetwork::reinit() {
 void CpuNetwork::allocateMemory() {
     LOG()->debug("Allocating memory for %d inputs.", this->inputsCount);
     this->inputs = new data_t[this->inputsCount];
+    
+    LOG()->debug("Allocating memory for %d weights.", this->weightsCount);
     this->weights = new data_t[this->weightsCount];
 }
 

@@ -24,18 +24,16 @@ FullyConnectedLayer::FullyConnectedLayer(const FullyConnectedLayer& orig) {
 FullyConnectedLayer::~FullyConnectedLayer() {
 }
 
-void FullyConnectedLayer::setup(Layer *previousLayer, string confString) {
+void FullyConnectedLayer::setup(string confString) {
     
     processConfString(confString);
     
     if (previousLayer != NULL) {
         // this is not the input layer
-        this->previousLayer = previousLayer;
         this->weightsCount = previousLayer->getOutputsCount() * conf.outputSize;
         if (conf.useBias) {
             this->weightsCount += conf.outputSize;
         }
-        previousLayer->setNextLayer(this);
     } else {
         this->weightsCount = 0;
     }
@@ -68,7 +66,7 @@ void FullyConnectedLayer::forwardCpu() {
     }
     
     // Run through activation function
-    conf.activationFnc(outputPtr, outputPtr, conf.outputSize);
+    netConf->activationFnc(outputPtr, outputPtr, conf.outputSize);
 }
 
 void FullyConnectedLayer::forwardGpu() {
@@ -100,7 +98,6 @@ void FullyConnectedLayer::processConfString(string confString) {
         LOG()->warn("Could not read bias for FullyConnected layer from configuration. Not using bias...");
         conf.useBias = false;
     }
-    cout << conf.useBias;
 }
 
 static LayerRegister<FullyConnectedLayer> reg("FullyConnected");

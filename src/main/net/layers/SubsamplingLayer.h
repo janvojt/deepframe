@@ -20,18 +20,6 @@ struct SubsamplingConfig {
     int windowWidth;
     int windowHeight;
     bool useBias;
-    
-    /**
-     * Pointer to activation function normalizing the neurons potential.
-     * Input potential is preserved and the normalized value
-     * is put into the target array. It is also possible to provide
-     * the same pointer for input and target for in-place computation
-     * saving some memory.
-     */
-    void (*activationFnc)(data_t *x, data_t *y, int layerSize);
-    
-    /** Derivative of activation function. */
-    void (*dActivationFnc)(data_t *x, data_t *y, int layerSize);
 };
 
 class SubsamplingLayer : public Layer {
@@ -39,8 +27,6 @@ public:
     SubsamplingLayer();
     SubsamplingLayer(const SubsamplingLayer& orig);
     virtual ~SubsamplingLayer();
-    
-    void setup(Layer* previousLayer, string confString);
 
     void forwardCpu();
     void forwardGpu();
@@ -55,6 +41,10 @@ public:
     int getFeatureHeight();
     
     int getFeaturesCount();
+    
+protected:
+    
+    void setup(string confString);
     
 private:
     

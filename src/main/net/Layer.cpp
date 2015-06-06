@@ -19,6 +19,15 @@ Layer::Layer(const Layer& orig) {
 Layer::~Layer() {
 }
 
+void Layer::setup(Layer* previousLayer, NetworkConfiguration* netConf, string confString) {
+    this->previousLayer = previousLayer;
+    if (previousLayer != NULL) {
+        previousLayer->setNextLayer(this);
+    }
+    this->netConf = netConf;
+    this->setup(confString);
+}
+
 void Layer::forward() {
     return this->useGpu ? this->forwardGpu() : this->forwardCpu();
 }

@@ -25,9 +25,8 @@ SubsamplingLayer::SubsamplingLayer(const SubsamplingLayer& orig) {
 SubsamplingLayer::~SubsamplingLayer() {
 }
 
-void SubsamplingLayer::setup(Layer* previousLayer, string confString) {
+void SubsamplingLayer::setup(string confString) {
 
-    this->previousLayer = previousLayer;
     processConfString(confString);
     
     if (previousLayer == NULL) {
@@ -40,8 +39,6 @@ void SubsamplingLayer::setup(Layer* previousLayer, string confString) {
         this->inputsCount = conf.windowWidth * conf.windowHeight;
         this->weightsCount = 0;
     } else {
-        previousLayer->setNextLayer(this);
-
         ConvolutionalLayer *convLayer = (ConvolutionalLayer*) previousLayer;
         featuresCount = convLayer->getOutputFeatures();
         inputWidth = convLayer->getOutputWidth();
@@ -98,7 +95,7 @@ void SubsamplingLayer::forwardCpu() {
         }
     }
 
-    conf.activationFnc(outputPtr, outputPtr, outputCount);
+    netConf->activationFnc(outputPtr, outputPtr, outputCount);
     
     // TODO if (conf.inputWidth % conf.windowWidth > 0)
     // TODO if (conf.inputHeight % conf.windowHeight > 0)

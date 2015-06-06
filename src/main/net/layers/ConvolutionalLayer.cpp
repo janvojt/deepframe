@@ -24,7 +24,7 @@ ConvolutionalLayer::ConvolutionalLayer(const ConvolutionalLayer& orig) {
 ConvolutionalLayer::~ConvolutionalLayer() {
 }
 
-void ConvolutionalLayer::setup(Layer *previousLayer, string confString) {
+void ConvolutionalLayer::setup(string confString) {
     
     if (previousLayer == NULL) {
         LOG()->error("Convolutional layer is not supported as an input layer. Use subsampling layer instead.");
@@ -32,8 +32,6 @@ void ConvolutionalLayer::setup(Layer *previousLayer, string confString) {
     }
     
     processConfString(confString);
-    this->previousLayer = previousLayer;
-    this->previousLayer->setNextLayer(this);
     
     SubsamplingLayer *subsamplingLayer = (SubsamplingLayer*) previousLayer;
     inputFeatures = subsamplingLayer->getFeaturesCount();
