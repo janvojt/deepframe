@@ -89,7 +89,18 @@ void FullyConnectedLayer::processConfString(string confString) {
     // dummy variable for delimiters
     char sep;
     istringstream iss (confString);
-    iss >> conf.outputSize >> sep >> conf.useBias;
+    
+    if (!(iss >> conf.outputSize)) {
+        LOG()->error("Could not read output size for FullyConnected layer.");
+    }
+    
+    iss >> sep;
+    
+    if (!(iss >> boolalpha >> conf.useBias)) {
+        LOG()->warn("Could not read bias for FullyConnected layer from configuration. Not using bias...");
+        conf.useBias = false;
+    }
+    cout << conf.useBias;
 }
 
 static LayerRegister<FullyConnectedLayer> reg("FullyConnected");

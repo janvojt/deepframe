@@ -45,17 +45,17 @@ public:
     void setNextLayer(Layer *nextLayer);
     
 protected:
-    data_t *inputs;
+    data_t *inputs = NULL;
     
     int inputsCount;
     
-    data_t *weights;
+    data_t *weights = NULL;
     
     int weightsCount;
 
-    Layer *previousLayer;
+    Layer *previousLayer = NULL;
 
-    Layer *nextLayer;
+    Layer *nextLayer = NULL;
     
     bool isLast = true;
     

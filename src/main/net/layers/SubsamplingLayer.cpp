@@ -129,9 +129,18 @@ void SubsamplingLayer::processConfString(string confString) {
     char sep;
     
     istringstream iss (confString);
-    iss >> conf.windowWidth
-            >> sep >> conf.windowHeight
-            >> sep >> conf.useBias;
+    if (!(iss >> conf.windowWidth)) {
+        LOG()->error("Could not read window width for Subsampling layer from configuration.");
+    }
+    iss >> sep;
+    if (!(iss >> conf.windowHeight)) {
+        LOG()->error("Could not read window height for Subsampling layer from configuration.");
+    }
+    iss >> sep;
+    if (!(iss >> boolalpha >> conf.useBias)) {
+        LOG()->warn("Could not read bias configuration for Subsampling layer. Not using bias...");
+        conf.useBias = false;
+    }
 }
 
 int SubsamplingLayer::getFeatureWidth() {

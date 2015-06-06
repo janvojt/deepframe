@@ -108,8 +108,13 @@ void ConvolutionalLayer::processConfString(string confString) {
     char sep;
     
     istringstream iss (confString);
-    iss >> conf.windowSize
-            >> sep >> conf.featureMultiplier;
+    if (!(iss >> conf.windowSize)) {
+        LOG()->error("Could not read window size for Convolutional layer from configuration.");
+    }
+    iss >> sep;
+    if (!(iss >> conf.featureMultiplier)) {
+        LOG()->error("Could not read feature multiplier for Convolutional layer from configuration.");
+    }
 }
 
 ConvolutionalConfig ConvolutionalLayer::getConfig() {

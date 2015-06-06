@@ -136,14 +136,13 @@ void NetworkConfiguration::parseFromString(char *confString) {
     
     // set number of neurons for each layer
     int i = 0;
-    int l = 0;
     char *haystack = new char[strlen(confString)+1];
     strcpy(haystack, confString);
     char *token = strtok(haystack, ",");
+    string biasStr = this->bias ? ":true" : ":false";
     while (token != NULL) {
-        sscanf(token, "%d", &l);
         layersConf[i][0] = "FullyConnected";
-        layersConf[i][1] = l;
+        layersConf[i][1] = token + biasStr;
         i++;
         token = strtok(NULL, ",");
     }

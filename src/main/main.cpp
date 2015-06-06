@@ -476,11 +476,14 @@ int main(int argc, char *argv[]) {
     Layer *prevLayer = NULL;
     for (int i = 0; i<netConf->getLayers(); i++) {
         string layerType = netConf->getLayerType(i);
-        LOG()->info("Configuring layer %d (%s).", i+1, layerType.c_str());
+        string layerConf = netConf->getLayersConf(i);
+        LOG()->info("Setting up layer %d (%s) with configuration '%s'.", i+1, layerType.c_str(), layerConf.c_str());
         Layer *layer = LayerFactory::createInstance(layerType);
-        layer->setup(prevLayer, netConf->getLayersConf(i));
+        layer->setup(prevLayer, layerConf);
+        net->addLayer(layer);
         prevLayer = layer;
     }
+    net->setup();
     
     // Prepare test dataset.
     InputDataset *tds;
