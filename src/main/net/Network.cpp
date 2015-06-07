@@ -59,34 +59,6 @@ void Network::setup() {
     }
 }
 
-void Network::forward() {
-    if (this->useGpu()) {
-        for (int i = 1; i < this->noLayers; i++) {
-            LOG()->debug("Computing forward run on GPU for layer %d.", i);
-            this->layers[i]->forwardGpu();
-        }
-    } else {
-        for (int i = 1; i < this->noLayers; i++) {
-            LOG()->debug("Computing forward run on CPU for layer %d.", i);
-            this->layers[i]->forwardCpu();
-        }
-    }
-}
-
-void Network::backward() {
-    if (this->useGpu()) {
-        for (int i = 1; i < this->noLayers; i++) {
-            LOG()->debug("Computing backward run on GPU for layer %d.", i);
-            this->layers[i]->backwardGpu();
-        }
-    } else {
-        for (int i = 1; i < this->noLayers; i++) {
-            LOG()->debug("Computing backward run on CPU for layer %d.", i);
-            this->layers[i]->backwardCpu();
-        }
-    }
-}
-
 void Network::addLayer(Layer* layer) {
     if (layerCursor < noLayers) {
         weightsCount += layer->getWeightsCount();

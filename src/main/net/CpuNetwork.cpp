@@ -74,6 +74,21 @@ void CpuNetwork::allocateMemory() {
     this->weightDiffs = new data_t[this->weightsCount];
 }
 
+
+void CpuNetwork::forward() {
+    for (int i = 1; i < this->noLayers; i++) {
+        LOG()->debug("Computing forward run on CPU for layer %d.", i);
+        this->layers[i]->forwardCpu();
+    }
+}
+
+void CpuNetwork::backward() {
+    for (int i = 1; i < this->noLayers; i++) {
+        LOG()->debug("Computing backward run on CPU for layer %d.", i);
+        this->layers[i]->backwardCpu();
+    }
+}
+
 void CpuNetwork::setInput(data_t* input) {
     std::memcpy(this->inputs, input, this->layers[0]->getOutputsCount());
 }
@@ -84,8 +99,4 @@ data_t *CpuNetwork::getInput() {
 
 data_t *CpuNetwork::getOutput() {
     return this->layers[this->noLayers-1]->getInputs();
-}
-
-bool CpuNetwork::useGpu() {
-    return false;
 }

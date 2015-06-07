@@ -143,6 +143,16 @@ data_t *GpuNetwork::getOutput() {
     return this->output;
 }
 
-bool GpuNetwork::useGpu() {
-    return true;
+void GpuNetwork::forward() {
+    for (int i = 1; i < this->noLayers; i++) {
+        LOG()->debug("Computing forward run on GPU for layer %d.", i);
+        this->layers[i]->forwardGpu();
+    }
+}
+
+void GpuNetwork::backward() {
+    for (int i = 1; i < this->noLayers; i++) {
+        LOG()->debug("Computing backward run on GPU for layer %d.", i);
+        this->layers[i]->backwardGpu();
+    }
 }

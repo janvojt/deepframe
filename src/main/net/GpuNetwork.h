@@ -50,7 +50,9 @@ public:
     // Returns pointer to the beginning of the output array.
     data_t *getOutput();
     
-    virtual bool useGpu();
+    virtual void forward();
+
+    virtual void backward();
     
 protected:
 
