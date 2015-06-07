@@ -23,15 +23,11 @@ public:
     
     void setup(Layer *previousLayer, NetworkConfiguration *netConf, string confString);
 
-    void forward();
     virtual void forwardCpu() = 0;
     virtual void forwardGpu() = 0;
     
-    void backward();
     virtual void backwardCpu() = 0;
     virtual void backwardGpu() = 0;
-    
-    void setUseGpu(bool useGpu);
     
     int getWeightsCount();
     
@@ -41,7 +37,7 @@ public:
     void setInputs(data_t *inputs);
     
     data_t *getWeights();
-    void setWeights(data_t *weights);
+    void setWeights(data_t *weights, data_t *weightDiffs);
     
     void setNextLayer(Layer *nextLayer);
     
@@ -55,6 +51,8 @@ protected:
     
     data_t *weights = NULL;
     
+    data_t *weightDiffs = NULL;
+    
     int weightsCount;
 
     Layer *previousLayer = NULL;
@@ -64,9 +62,6 @@ protected:
     bool isLast = true;
     
     NetworkConfiguration *netConf;
-    
-private:
-    bool useGpu = false;
 };
 
 #endif	/* LAYER_H */

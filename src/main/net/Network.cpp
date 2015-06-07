@@ -47,12 +47,42 @@ void Network::setup() {
         
         data_t *inputsPtr = inputs;
         data_t *weightsPtr = weights;
+        data_t *weightDiffsPtr = weightDiffs;
         for (int i = 0; i<noLayers; i++) {
             Layer *layer = layers[i];
-            layer->setInputs(inputs);
-            layer->setWeights(weights);
+            layer->setInputs(inputsPtr);
+            layer->setWeights(weightsPtr, weightDiffsPtr);
             inputsPtr += layer->getOutputsCount();
             weightsPtr += layer->getWeightsCount();
+            weightDiffsPtr += layer->getWeightsCount();
+        }
+    }
+}
+
+void Network::forward() {
+    if (this->useGpu()) {
+        for (int i = 1; i < this->noLayers; i++) {
+            LOG()->debug("Computing forward run on GPU for layer %d.", i);
+            this->layers[i]->forwardGpu();
+        }
+    } else {
+        for (int i = 1; i < this->noLayers; i++) {
+            LOG()->debug("Computing forward run on CPU for layer %d.", i);
+            this->layers[i]->forwardCpu();
+        }
+    }
+}
+
+void Network::backward() {
+    if (this->useGpu()) {
+        for (int i = 1; i < this->noLayers; i++) {
+            LOG()->debug("Computing backward run on GPU for layer %d.", i);
+            this->layers[i]->backwardGpu();
+        }
+    } else {
+        for (int i = 1; i < this->noLayers; i++) {
+            LOG()->debug("Computing backward run on CPU for layer %d.", i);
+            this->layers[i]->backwardCpu();
         }
     }
 }

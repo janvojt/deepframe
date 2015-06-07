@@ -158,7 +158,7 @@ void runTest(Network *net, InputDataset *ds) {
     if (ds->getInputDimension() <= MAX_PRINT_ARRAY_SIZE) {
         while (ds->hasNext()) {
             net->setInput(ds->next());
-            net->run();
+            net->forward();
             printInout(net);
         }
     } else {
@@ -173,7 +173,7 @@ void runTest(Network *net, InputDataset *ds) {
             i++;
             data_t *label = pattern + lds->getInputDimension();
             net->setInput(pattern);
-            net->run();
+            net->forward();
             if (typeid(*ds)==typeid(*LABELED_DATASET_CLASS)) {
                 data_t error = ec->compute(net, label);
                 cout << "Output for pattern " << i << ": ";

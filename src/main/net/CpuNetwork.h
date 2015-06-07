@@ -37,9 +37,6 @@ public:
      */
     void reinit();
     
-    // run the network
-    void run();
-    
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
     void setInput(data_t *input);
@@ -49,6 +46,8 @@ public:
     
     // Returns pointer to the beginning of the output array.
     data_t *getOutput();
+    
+    virtual bool useGpu();
     
 protected:
 

@@ -64,25 +64,25 @@ TEST(NetworkTest, SimpleRun) {
     data_t input[] = {0, 0};
     
     net->setInput(input);
-    net->run();
+    net->forward();
     EXPECT_EQ(0, net->getOutput()[0]);
     
     input[0] = 0;
     input[1] = 1;
     net->setInput(input);
-    net->run();
+    net->forward();
     EXPECT_EQ(2, net->getOutput()[0]);
     
     input[0] = 1;
     input[1] = 0;
     net->setInput(input);
-    net->run();
+    net->forward();
     EXPECT_EQ(2, net->getOutput()[0]);
     
     input[0] = 1;
     input[1] = 1;
     net->setInput(input);
-    net->run();
+    net->forward();
     EXPECT_EQ(4, net->getOutput()[0]);
 }
 
@@ -100,24 +100,24 @@ TEST(NetworkTest, SimpleWeightTest) {
     data_t input[] = {0, 0};
     
     net->setInput(input);
-    net->run();
+    net->forward();
     EXPECT_EQ(0, net->getOutput()[0]);
     
     input[0] = 0;
     input[1] = 1;
     net->setInput(input);
-    net->run();
+    net->forward();
     EXPECT_EQ(.5, net->getOutput()[0]);
     
     input[0] = 1;
     input[1] = 0;
     net->setInput(input);
-    net->run();
+    net->forward();
     EXPECT_EQ(.5, net->getOutput()[0]);
     
     input[0] = 1;
     input[1] = 1;
     net->setInput(input);
-    net->run();
+    net->forward();
     EXPECT_EQ(1, net->getOutput()[0]);
 }

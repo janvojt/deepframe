@@ -28,18 +28,6 @@ void Layer::setup(Layer* previousLayer, NetworkConfiguration* netConf, string co
     this->setup(confString);
 }
 
-void Layer::forward() {
-    return this->useGpu ? this->forwardGpu() : this->forwardCpu();
-}
-
-void Layer::backward() {
-    return this->useGpu ? this->backwardGpu() : this->backwardCpu();
-}
-
-void Layer::setUseGpu(bool useGpu) {
-    this->useGpu = useGpu;
-}
-
 data_t* Layer::getInputs() {
     return this->inputs;
 }
@@ -52,8 +40,9 @@ data_t* Layer::getWeights() {
     return this->weights;
 }
 
-void Layer::setWeights(data_t* weights) {
+void Layer::setWeights(data_t* weights, data_t *weightDiffs) {
     this->weights = weights;
+    this->weightDiffs = weightDiffs;
 }
 
 void Layer::setNextLayer(Layer* nextLayer) {

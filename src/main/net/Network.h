@@ -44,8 +44,12 @@ public:
      */
     virtual void reinit() = 0;
     
-    // run the network
-    virtual void run() = 0;
+    /** Run the network. */
+    void forward();
+    
+    /** Backpropagate errors. */
+    void backward();
+       
     // Sets the input values for the network.
     // Size of given input array should be equal to the number of input neurons.
     virtual void setInput(data_t *input) = 0;
@@ -75,6 +79,8 @@ public:
     
     void setup();
     
+    virtual bool useGpu() = 0;
+    
     void addLayer(Layer *layer);
     
     Layer *getLayer(int index);
@@ -95,6 +101,7 @@ protected:
     int inputsCount = 0;
     
     data_t *weights;
+    data_t *weightDiffs;
     
     int weightsCount = 0;
     

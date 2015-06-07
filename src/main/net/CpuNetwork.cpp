@@ -71,13 +71,7 @@ void CpuNetwork::allocateMemory() {
     
     LOG()->debug("Allocating memory for %d weights.", this->weightsCount);
     this->weights = new data_t[this->weightsCount];
-}
-
-void CpuNetwork::run() {
-    for (int i = 1; i < this->noLayers; i++) {
-        LOG()->debug("Computing forward run for layer %d.", i);
-        this->layers[i]->forward();
-    }
+    this->weightDiffs = new data_t[this->weightsCount];
 }
 
 void CpuNetwork::setInput(data_t* input) {
@@ -90,4 +84,8 @@ data_t *CpuNetwork::getInput() {
 
 data_t *CpuNetwork::getOutput() {
     return this->layers[this->noLayers-1]->getInputs();
+}
+
+bool CpuNetwork::useGpu() {
+    return false;
 }

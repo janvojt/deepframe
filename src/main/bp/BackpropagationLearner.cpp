@@ -104,7 +104,7 @@ TrainingResult* BackpropagationLearner::train(LabeledDataset *trainingSet, Label
 
 void BackpropagationLearner::doForwardPhase(data_t *input) {
     this->network->setInput(input);
-    this->network->run();
+    this->network->forward();
 }
 
 void BackpropagationLearner::doBackwardPhase(data_t *expectedOutput) {
