@@ -25,12 +25,16 @@ CpuNetwork::CpuNetwork(NetworkConfiguration *conf) : Network(conf) {
 CpuNetwork::CpuNetwork(const CpuNetwork& orig) : Network(orig.conf) {
     this->allocateMemory();
     std::memcpy(this->inputs, orig.inputs, sizeof(data_t) * this->inputsCount);
+    std::memcpy(this->outputDiffs, orig.outputDiffs, sizeof(data_t) * this->inputsCount);
     std::memcpy(this->weights, orig.weights, sizeof(data_t) * this->weightsCount);
+    std::memcpy(this->weightDiffs, orig.weightDiffs, sizeof(data_t) * this->weightsCount);
 }
 
 CpuNetwork::~CpuNetwork() {
     delete[] this->weights;
+    delete[] this->weightDiffs;
     delete[] this->inputs;
+    delete[] this->outputDiffs;
 }
 
 CpuNetwork* CpuNetwork::clone() {
@@ -39,6 +43,7 @@ CpuNetwork* CpuNetwork::clone() {
 
 void CpuNetwork::merge(Network** nets, int size) {
     
+    LOG()->warn("Method for merging CPU networks is not maintained and likely not working correctly.");
     int noWeights = this->weightsCount;
     for (int i = 0; i<size; i++) {
         

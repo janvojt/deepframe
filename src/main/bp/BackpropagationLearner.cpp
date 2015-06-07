@@ -108,12 +108,8 @@ void BackpropagationLearner::doForwardPhase(data_t *input) {
 }
 
 void BackpropagationLearner::doBackwardPhase(data_t *expectedOutput) {
-    computeOutputGradients(expectedOutput);
-    computeWeightDifferentials();
-    adjustWeights();
-    if (this->network->getConfiguration()->getBias()) {
-        adjustBias();
-    }
+    this->network->setExpectedOutput(expectedOutput);
+    this->network->backward();
 }
 
 void BackpropagationLearner::validate(LabeledDataset *dataset) {

@@ -51,17 +51,6 @@ protected:
     void doForwardPhase(data_t *input);
     // Backward phase optimizing network parameters in the learning process.
     void doBackwardPhase(data_t *expectedOutput);
-    // Computes local gradients for output neurons.
-    virtual void computeOutputGradients(data_t *expectedOutput) = 0;
-    // Computes total differential for all weights
-    // and local gradients for hidden neurons.
-    virtual void computeWeightDifferentials() = 0;
-    // Adjust network weights according to computed total differentials.
-    virtual void adjustWeights() = 0;
-    // Adjust network bias according to computed total differentials.
-    virtual void adjustBias() = 0;
-    // Allocates memory for caching variables.
-    virtual void allocateCache() = 0;
     // ANN itself. Used for accessing configuration and tuning weights.
     Network *network;
     // Learning parameter. Intended to be decreasing during learning process.

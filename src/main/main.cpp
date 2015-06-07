@@ -28,8 +28,6 @@
 #include "ds/InputDatasetParser.h"
 #include "ds/LabeledMnistParser.h"
 #include "bp/BackpropagationLearner.h"
-#include "bp/CpuBackpropagationLearner.h"
-#include "bp/GpuBackpropagationLearner.h"
 #include "err/MseErrorComputer.h"
 #include "activationFunctions.h"
 #include "FunctionCache.h"
@@ -463,12 +461,12 @@ int main(int argc, char *argv[]) {
     if (useGpu) {
         LOG()->info("Using GPU for computing the network runs.");
         GpuNetwork *gpuNet = new GpuNetwork(netConf, gpuConf);
-        bp = new GpuBackpropagationLearner(gpuNet);
+        bp = new BackpropagationLearner(gpuNet);
         net = gpuNet;
     } else {
         LOG()->info("Using CPU for computing the network runs.");
         CpuNetwork *cpuNet = new CpuNetwork(netConf);
-//        bp = new CpuBackpropagationLearner(cpuNet);
+        bp = new BackpropagationLearner(cpuNet);
         net = cpuNet;
     }
     
@@ -526,11 +524,11 @@ int main(int argc, char *argv[]) {
 //    return 0;
     
     // configure BP learner
-//    bp->setLearningRate(conf->lr);
-//    bp->setTargetMse(conf->mse);
-//    bp->setErrorComputer(new MseErrorComputer());
-//    bp->setEpochLimit(conf->maxEpochs);
-//    bp->setImproveEpochs(conf->improveEpochs);
+    bp->setLearningRate(conf->lr);
+    bp->setTargetMse(conf->mse);
+    bp->setErrorComputer(new MseErrorComputer());
+    bp->setEpochLimit(conf->maxEpochs);
+    bp->setImproveEpochs(conf->improveEpochs);
     
     // Prepare validation dataset
     FoldDatasetFactory *df;
@@ -583,8 +581,8 @@ int main(int argc, char *argv[]) {
         
     } else {
         
-//        vds = (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
-//        bp->train(lds, vds, 0);
+        vds = (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
+        bp->train(lds, vds, 0);
     }
     
     // Run (hopefully) learnt network.
@@ -595,7 +593,7 @@ int main(int argc, char *argv[]) {
         delete df;
     }
     
-//    delete bp;
+    delete bp;
     delete lds;
     delete tds;
     delete netConf;

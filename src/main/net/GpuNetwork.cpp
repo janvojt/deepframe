@@ -35,12 +35,17 @@ GpuNetwork::GpuNetwork(const GpuNetwork& orig) : Network(orig.conf) {
     int wMemSize = sizeof(data_t) * this->weightsCount;
     int iMemSize = sizeof(data_t) * this->inputsCount;
     checkCudaErrors(cudaMemcpy(this->inputs, orig.inputs, iMemSize, cudaMemcpyDeviceToDevice));
+    checkCudaErrors(cudaMemcpy(this->outputDiffs, orig.outputDiffs, iMemSize, cudaMemcpyDeviceToDevice));
     checkCudaErrors(cudaMemcpy(this->weights, orig.weights, wMemSize, cudaMemcpyDeviceToDevice));
+    checkCudaErrors(cudaMemcpy(this->weightDiffs, orig.weightDiffs, wMemSize, cudaMemcpyDeviceToDevice));
 }
 
 GpuNetwork::~GpuNetwork() {
     cublasDestroy(this->cublasHandle);
+    cudaFree(this->inputs);
+    cudaFree(this->outputDiffs);
     cudaFree(this->weights);
+    cudaFree(this->weightDiffs);
     delete[] this->input;
     delete[] this->output;
 }
@@ -50,6 +55,8 @@ GpuNetwork* GpuNetwork::clone() {
 }
 
 void GpuNetwork::merge(Network** nets, int size) {
+    
+    LOG()->warn("Method for merging CPU networks is not maintained and likely not working correctly.");
     
     int noWeights = this->weightsCount;
     for (int i = 0; i<size; i++) {
