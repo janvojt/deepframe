@@ -25,6 +25,7 @@ void Layer::setup(Layer* previousLayer, NetworkConfiguration* netConf, string co
         previousLayer->setNextLayer(this);
     }
     this->netConf = netConf;
+    this->lr = netConf->getLearningRate();
     this->setup(confString);
 }
 
@@ -32,12 +33,21 @@ data_t* Layer::getInputs() {
     return this->inputs;
 }
 
-void Layer::setInputs(data_t* inputs) {
+data_t* Layer::getOutputDiffs() {
+    return this->outputDiffs;
+}
+
+void Layer::setInputs(data_t* inputs, data_t *outputDiffs) {
     this->inputs = inputs;
+    this->outputDiffs = outputDiffs;
 }
 
 data_t* Layer::getWeights() {
     return this->weights;
+}
+
+data_t* Layer::getWeightDiffs() {
+    return this->weightDiffs;
 }
 
 void Layer::setWeights(data_t* weights, data_t *weightDiffs) {

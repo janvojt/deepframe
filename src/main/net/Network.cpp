@@ -46,13 +46,15 @@ void Network::setup() {
         reinit();
         
         data_t *inputsPtr = inputs;
+        data_t *outputDiffsPtr = outputDiffs;
         data_t *weightsPtr = weights;
         data_t *weightDiffsPtr = weightDiffs;
         for (int i = 0; i<noLayers; i++) {
             Layer *layer = layers[i];
-            layer->setInputs(inputsPtr);
+            layer->setInputs(inputsPtr, outputDiffsPtr);
             layer->setWeights(weightsPtr, weightDiffsPtr);
             inputsPtr += layer->getOutputsCount();
+            outputDiffsPtr += layer->getOutputsCount();
             weightsPtr += layer->getWeightsCount();
             weightDiffsPtr += layer->getWeightsCount();
         }

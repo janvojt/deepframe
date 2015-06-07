@@ -200,3 +200,12 @@ data_t NetworkConfiguration::getInitMax() {
 char* NetworkConfiguration::getConfSource() {
     return confSource;
 }
+
+data_t NetworkConfiguration::getLearningRate() {
+    return this->learningRate;
+}
+
+void NetworkConfiguration::setLearningRate(data_t learningRate) {
+    this->learningRate = learningRate;
+}
+

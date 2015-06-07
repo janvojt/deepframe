@@ -75,11 +75,93 @@ void FullyConnectedLayer::forwardGpu() {
 
 
 void FullyConnectedLayer::backwardCpu() {
+        
+    // INITIALIZE HELPER VARIABLES
+    int prevNeurons = previousLayer->getOutputsCount();
+    int nextNeurons = nextLayer->getOutputsCount();
+    data_t *nextOutputDiffs = nextLayer->getOutputDiffs();
+    void (*daf) (data_t*,data_t*,int) = this->netConf->dActivationFnc;
+
+
+    // COMPUTE LOCAL GRADIENTS for this layer
+
+    // compute derivatives of neuron inputs for this layer
+    data_t *thisInputDerivatives = new data_t[inputsCount];
+    daf(inputs, thisInputDerivatives, inputsCount);
+
+    // compute local gradients for this layer
+    for (int i = 0; i<inputsCount; i++) {
+        data_t sumNextGradient = 0;
+        for (int j = 0; j<nextNeurons; j++) {
+            sumNextGradient += nextOutputDiffs[j] * weights[i * nextNeurons + j];
+        }
+        outputDiffs[i] = sumNextGradient * thisInputDerivatives[i];
+//            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
+    }
+    delete[] thisInputDerivatives;
+//        dumpHostArray('l', thisLocalGradient, thisNeurons + nextNeurons);
+
+
+    // COMPUTE TOTAL DERIVATIVES for weights in this layer
+    for (int i = 0; i<prevNeurons; i++) {
+        for (int j = 0; j<inputsCount; j++) {
+            weightDiffs[i*inputsCount+j] = -lr * outputDiffs[j] * inputs[i];
+        }
+    }
+//        dumpHostArray('w', wdiff, thisNeurons * nextNeurons);
+
+    // COMPUTE BIAS DERIVATIVES for layer l+1
+    if (netConf->getBias()) {
+        data_t *biasDiff = weightDiffs + weightsCount - inputsCount;
+        for (int i = 0; i<inputsCount; i++) {
+            biasDiff[i] = -lr * outputDiffs[i];
+        }
+//            dumpHostArray('c', &biasDiff[nextInputIdx], nextNeurons);
+    }
+    
+    // ADJUST WEIGHTS AND BIAS
+    for (int i = 0; i<getWeightsCount(); i++) {
+        weights[i] += weightDiffs[i];
+    }
+}
+
+void FullyConnectedLayer::backwardLastCpu(data_t* expectedOutput) {
+    
+    void (*daf) (data_t*,data_t*,int) = this->netConf->dActivationFnc;
+    
+    // compute local gradients
+    data_t *dv = new data_t[inputsCount]; //TODO allocate only once
+    daf(inputs, dv, inputsCount);
+    for (int i = 0; i<inputsCount; i++) {
+        outputDiffs[i] = (inputs[i] - expectedOutput[i]) * dv[i];
+    }
+    
+    // COMPUTE TOTAL DERIVATIVES for weights between this and previous layer
+    for (int i = 0; i<previousLayer->getOutputsCount(); i++) {
+        for (int j = 0; j<inputsCount; j++) {
+            weightDiffs[i*inputsCount+j] = -lr * outputDiffs[j] * inputs[i];
+        }
+    }
+
+    // COMPUTE BIAS DERIVATIVES for this layer
+    if (netConf->getBias()) {
+        data_t *biasDiff = weightDiffs + weightsCount - inputsCount;
+        for (int i = 0; i<inputsCount; i++) {
+            biasDiff[i] = -lr * outputDiffs[i];
+        }
+    }
+    
+    // ADJUST WEIGHTS AND BIAS
+    for (int i = 0; i<getWeightsCount(); i++) {
+        weights[i] += weightDiffs[i];
+    }
+}
+
+void FullyConnectedLayer::backwardGpu() {
     //TODO
 }
 
-
-void FullyConnectedLayer::backwardGpu() {
+void FullyConnectedLayer::backwardLastGpu(data_t* expectedOutput) {
     //TODO
 }
 

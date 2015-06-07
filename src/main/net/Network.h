@@ -63,6 +63,9 @@ public:
     virtual data_t *getInput() = 0;
     // Returns pointer to the beginning of the output array.
     virtual data_t *getOutput() = 0;
+    
+    virtual void setExpectedOutput(data_t *output) = 0;
+    
     // Returns number of neurons in the first layer.
     int getInputNeurons();
     // Returns number of neurons in the last layer.
@@ -95,6 +98,7 @@ protected:
     Layer **layers;
     
     data_t *inputs;
+    data_t *outputDiffs;
 
     int inputsCount = 0;
     

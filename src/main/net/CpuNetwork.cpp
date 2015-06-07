@@ -68,6 +68,7 @@ void CpuNetwork::reinit() {
 void CpuNetwork::allocateMemory() {
     LOG()->debug("Allocating memory for %d inputs.", this->inputsCount);
     this->inputs = new data_t[this->inputsCount];
+    this->outputDiffs = new data_t[this->inputsCount];
     
     LOG()->debug("Allocating memory for %d weights.", this->weightsCount);
     this->weights = new data_t[this->weightsCount];
@@ -83,7 +84,10 @@ void CpuNetwork::forward() {
 }
 
 void CpuNetwork::backward() {
-    for (int i = 1; i < this->noLayers; i++) {
+    
+    this->layers[noLayers-1]->backwardLastCpu(expectedOutput);
+    
+    for (int i = noLayers-2; i > 0; i--) {
         LOG()->debug("Computing backward run on CPU for layer %d.", i);
         this->layers[i]->backwardCpu();
     }
@@ -99,4 +103,8 @@ data_t *CpuNetwork::getInput() {
 
 data_t *CpuNetwork::getOutput() {
     return this->layers[this->noLayers-1]->getInputs();
+}
+
+void CpuNetwork::setExpectedOutput(data_t* output) {
+    expectedOutput = output;
 }

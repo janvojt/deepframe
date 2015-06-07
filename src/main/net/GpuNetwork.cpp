@@ -69,8 +69,13 @@ void GpuNetwork::reinit() {
 }
 
 void GpuNetwork::allocateMemory() {
-    checkCudaErrors(cudaMalloc(&this->weights, sizeof(data_t) * this->weightsCount));
     checkCudaErrors(cudaMalloc(&this->inputs, sizeof(data_t) * this->inputsCount));
+    checkCudaErrors(cudaMalloc(&this->outputDiffs, sizeof(data_t) * this->inputsCount));
+    checkCudaErrors(cudaMalloc(&this->weights, sizeof(data_t) * this->weightsCount));
+    checkCudaErrors(cudaMalloc(&this->weightDiffs, sizeof(data_t) * this->weightsCount));
+    
+    this->memExpectedOutput = this->getOutputNeurons() * sizeof(data_t);
+    checkCudaErrors(cudaMalloc(&this->expectedOutput, this->memExpectedOutput));
 }
 
 //void GpuNetwork::forward() {
@@ -143,6 +148,10 @@ data_t *GpuNetwork::getOutput() {
     return this->output;
 }
 
+void GpuNetwork::setExpectedOutput(data_t* output) {
+    checkCudaErrors(cudaMemcpy(expectedOutput, output, this->memExpectedOutput, cudaMemcpyHostToDevice));
+}
+
 void GpuNetwork::forward() {
     for (int i = 1; i < this->noLayers; i++) {
         LOG()->debug("Computing forward run on GPU for layer %d.", i);
@@ -155,4 +164,8 @@ void GpuNetwork::backward() {
         LOG()->debug("Computing backward run on GPU for layer %d.", i);
         this->layers[i]->backwardGpu();
     }
+}
+
+void GpuNetwork::computeOutputDiffs() {
+    
 }

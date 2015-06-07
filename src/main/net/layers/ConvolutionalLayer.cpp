@@ -101,6 +101,15 @@ void ConvolutionalLayer::backwardGpu() {
     //TODO
 }
 
+void ConvolutionalLayer::backwardLastCpu(data_t* expectedOutput) {
+    LOG()->error("Backpropagation based on expected output is not implemented in Convolutional layer. This error happens when Convolutional layer is the last network layer.");
+}
+
+void ConvolutionalLayer::backwardLastGpu(data_t* expectedOutput) {
+    LOG()->error("Backpropagation based on expected output is not implemented in Convolutional layer. This error happens when Convolutional layer is the last network layer.");
+}
+
+
 void ConvolutionalLayer::processConfString(string confString) {
     // dummy variable for delimiters
     char sep;

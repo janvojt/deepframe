@@ -31,6 +31,9 @@ public:
     void backwardCpu();
     void backwardGpu();
     
+    virtual void backwardLastCpu(data_t* expectedOutput);
+    virtual void backwardLastGpu(data_t* expectedOutput);
+    
     ConvolutionalConfig getConfig();
     
     int getOutputFeatures();

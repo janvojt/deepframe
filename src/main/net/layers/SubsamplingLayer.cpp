@@ -116,6 +116,13 @@ void SubsamplingLayer::backwardGpu() {
     //TODO
 }
 
+void SubsamplingLayer::backwardLastCpu(data_t* expectedOutput) {
+    LOG()->error("Backpropagation based on expected output is not implemented in Subsampling layer. This error happens when Subsampling layer is the last network layer.");
+}
+
+void SubsamplingLayer::backwardLastGpu(data_t* expectedOutput) {
+    LOG()->error("Backpropagation based on expected output is not implemented in Subsampling layer. This error happens when Subsampling layer is the last network layer.");
+}
 
 SubsamplingConfig SubsamplingLayer::getConfig() {
     return this->conf;

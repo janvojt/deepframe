@@ -47,6 +47,8 @@ public:
     // Returns pointer to the beginning of the output array.
     data_t *getOutput();
     
+    virtual void setExpectedOutput(data_t* output);
+    
     virtual void forward();
 
     virtual void backward();
@@ -57,6 +59,7 @@ protected:
     
 private:
     
+    data_t *expectedOutput;
 };
 
 #endif	/* CPUNETWORK_H */

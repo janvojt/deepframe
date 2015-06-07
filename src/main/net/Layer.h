@@ -29,14 +29,19 @@ public:
     virtual void backwardCpu() = 0;
     virtual void backwardGpu() = 0;
     
+    virtual void backwardLastCpu(data_t *expectedOutput) = 0;
+    virtual void backwardLastGpu(data_t *expectedOutput) = 0;
+    
     int getWeightsCount();
     
     int getOutputsCount();
     
     data_t *getInputs();
-    void setInputs(data_t *inputs);
+    data_t *getOutputDiffs();
+    void setInputs(data_t *inputs, data_t *outputDiffs);
     
     data_t *getWeights();
+    data_t *getWeightDiffs();
     void setWeights(data_t *weights, data_t *weightDiffs);
     
     void setNextLayer(Layer *nextLayer);
@@ -46,6 +51,7 @@ protected:
     virtual void setup(string confString) = 0;
     
     data_t *inputs = NULL;
+    data_t *outputDiffs = NULL;
     
     int inputsCount;
     
@@ -62,6 +68,10 @@ protected:
     bool isLast = true;
     
     NetworkConfiguration *netConf;
+    
+    /** Learning rate is redundantly saved in layer for better performance. */
+    data_t lr;
+    
 };
 
 #endif	/* LAYER_H */

@@ -49,6 +49,8 @@ public:
     data_t *getInput();
     // Returns pointer to the beginning of the output array.
     data_t *getOutput();
+
+    virtual void setExpectedOutput(data_t* output);
     
     virtual void forward();
 
@@ -65,10 +67,19 @@ private:
     // Array representing network output.
     // Allocated on host memory.
     data_t *output;
+    
+    /** Expected output of the network for current input (pattern). */
+    data_t *expectedOutput;
+    
+    /** Memory size required to store #expectedOutput. */
+    int memExpectedOutput;
+    
     // Holds GPU configuration and device properties.
     GpuConfiguration *gpuConf;
     // CUDA Basic Linear Algebra Subprograms handle.
     cublasHandle_t cublasHandle;
+    
+    void computeOutputDiffs();
 };
 
 #endif	/* GPUNETWORK_H */

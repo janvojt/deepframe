@@ -58,6 +58,10 @@ public:
      */
     char *getConfSource();
     
+    data_t getLearningRate();
+    
+    void setLearningRate(data_t learningRate);
+    
     // Pointer to activation function normalizing the neurons potential.
     // Input potential is preserved and the normalized value
     // is put into the target array. It is also possible to provide
@@ -104,6 +108,9 @@ private:
      * network, or a path to configuration file.
      */
     char *confSource = NULL;
+    
+    /** Learning rate used in backpropagation. */
+    data_t learningRate = 1;
 };
 
 #endif	/* NETWORKCONFIGURATION_H */
