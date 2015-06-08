@@ -39,6 +39,12 @@ BackpropagationLearner::~BackpropagationLearner() {
 
 TrainingResult* BackpropagationLearner::train(LabeledDataset *trainingSet, LabeledDataset *validationSet, int valIdx) {
     
+    TrainingResult *result = new TrainingResult();
+    if (epochLimit <= 0) {
+        LOG()->info("Learning skipped based on zero epoch limit.");
+        return result;
+    } 
+    
     LOG()->info("Started training with:\n"
             "   - cross-validation fold: %d,\n"
             "   - epoch limit: %d,\n"
@@ -47,7 +53,6 @@ TrainingResult* BackpropagationLearner::train(LabeledDataset *trainingSet, Label
             "   - learning rate: %f."
             , valIdx, this->epochLimit, this->targetMse, this->improveEpochs, this->learningRate);
     
-    TrainingResult *result = new TrainingResult();
     long epochCounter = 0;
     do {
         
