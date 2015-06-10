@@ -368,9 +368,9 @@ NetworkConfiguration *createNetworkConfiguration(config* conf) {
     }
     
     // Setup network configuration.
-    netConf->parseLayerConf(conf->layerConf);
     netConf->setBias(conf->bias);
     netConf->parseInitInterval(conf->initInterval);
+    netConf->parseLayerConf(conf->layerConf);
     
     return netConf;
 }
