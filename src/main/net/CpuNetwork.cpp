@@ -99,7 +99,9 @@ void CpuNetwork::backward() {
 }
 
 void CpuNetwork::setInput(data_t* input) {
-    std::memcpy(this->inputs, input, this->layers[0]->getOutputsCount());
+    Layer *l = this->layers[0];
+    int outputsCount = l->getOutputsCount();
+    std::memcpy(this->inputs, input, outputsCount * sizeof(data_t));
 }
 
 data_t *CpuNetwork::getInput() {
