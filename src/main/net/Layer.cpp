@@ -29,8 +29,8 @@ void Layer::setup(Layer* previousLayer, NetworkConfiguration* netConf, string co
     this->setup(confString);
 }
 
-data_t* Layer::getInputs() {
-    return this->inputs;
+data_t* Layer::getOutputs() {
+    return this->outputs;
 }
 
 data_t* Layer::getOutputDiffs() {
@@ -38,7 +38,7 @@ data_t* Layer::getOutputDiffs() {
 }
 
 void Layer::setInputs(data_t* inputs, data_t *outputDiffs) {
-    this->inputs = inputs;
+    this->outputs = inputs;
     this->outputDiffs = outputDiffs;
 }
 
@@ -65,5 +65,5 @@ int Layer::getWeightsCount() {
 }
 
 int Layer::getOutputsCount() {
-    return inputsCount;
+    return outputsCount;
 }

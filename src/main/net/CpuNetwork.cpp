@@ -109,7 +109,7 @@ data_t *CpuNetwork::getInput() {
 }
 
 data_t *CpuNetwork::getOutput() {
-    return this->layers[this->noLayers-1]->getInputs();
+    return this->layers[this->noLayers-1]->getOutputs();
 }
 
 void CpuNetwork::setExpectedOutput(data_t* output) {

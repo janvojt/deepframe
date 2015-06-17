@@ -36,7 +36,7 @@ void SubsamplingLayer::setup(string confString) {
         featureWidth = conf.windowWidth;
         featureHeight = conf.windowHeight;
         featuresCount = 1;
-        this->inputsCount = conf.windowWidth * conf.windowHeight;
+        this->outputsCount = conf.windowWidth * conf.windowHeight;
         this->weightsCount = 0;
     } else {
         ConvolutionalLayer *convLayer = (ConvolutionalLayer*) previousLayer;
@@ -46,7 +46,7 @@ void SubsamplingLayer::setup(string confString) {
 
         featureWidth = (inputWidth + conf.windowWidth - 1)  / conf.windowWidth; // round up
         featureHeight = (inputHeight + conf.windowHeight - 1) / conf.windowHeight; // round up
-        this->inputsCount = featureWidth * featureHeight * featuresCount;
+        this->outputsCount = featureWidth * featureHeight * featuresCount;
 
         // subsampling layer does not need any weights
         // but uses a trainable parameter for each feature map
@@ -57,9 +57,9 @@ void SubsamplingLayer::setup(string confString) {
 
 void SubsamplingLayer::forwardCpu() {
     
-    data_t *inputPtr = this->previousLayer->getInputs();
-    data_t *outputPtr = this->getInputs();
-    int outputCount = this->inputsCount;
+    data_t *inputPtr = this->previousLayer->getOutputs();
+    data_t *outputPtr = this->getOutputs();
+    int outputCount = this->outputsCount;
     
     int wfeatureWidth = inputWidth / conf.windowWidth;
     int wfeatureHeight = inputHeight / conf.windowHeight;

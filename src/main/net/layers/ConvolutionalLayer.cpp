@@ -39,7 +39,7 @@ void ConvolutionalLayer::setup(string confString) {
     featureWidth = subsamplingLayer->getFeatureWidth() - conf.windowSize + 1;
     featureHeight = subsamplingLayer->getFeatureHeight() - conf.windowSize + 1;
     
-    this->inputsCount = featuresCount
+    this->outputsCount = featuresCount
             * featureWidth * featureHeight;
     
     this->weightsCount = featuresCount
@@ -48,11 +48,11 @@ void ConvolutionalLayer::setup(string confString) {
 
 void ConvolutionalLayer::forwardCpu() {
     
-    data_t *inputPtr = this->previousLayer->getInputs();
-    data_t *outputPtr = this->getInputs();
+    data_t *inputPtr = this->previousLayer->getOutputs();
+    data_t *outputPtr = this->getOutputs();
 
     // clear output
-    std::fill_n(outputPtr, this->inputsCount, 0);
+    std::fill_n(outputPtr, this->outputsCount, 0);
 
     // loop through destination neuron
     for (int f = 0; f < featuresCount; f++) { // destination feature index

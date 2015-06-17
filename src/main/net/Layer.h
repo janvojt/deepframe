@@ -36,7 +36,7 @@ public:
     
     int getOutputsCount();
     
-    data_t *getInputs();
+    data_t *getOutputs();
     data_t *getOutputDiffs();
     void setInputs(data_t *inputs, data_t *outputDiffs);
     
@@ -50,10 +50,10 @@ protected:
     
     virtual void setup(string confString) = 0;
     
-    data_t *inputs = NULL;
+    data_t *outputs = NULL;
     data_t *outputDiffs = NULL;
     
-    int inputsCount;
+    int outputsCount;
     
     data_t *weights = NULL;
     
