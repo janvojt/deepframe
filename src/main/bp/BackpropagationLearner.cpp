@@ -51,7 +51,7 @@ TrainingResult* BackpropagationLearner::train(LabeledDataset *trainingSet, Label
             "   - target MSE: %f,\n"
             "   - epochs in which improvement is required: %d,\n"
             "   - learning rate: %f."
-            , valIdx, this->epochLimit, this->targetMse, this->improveEpochs, this->learningRate);
+            , valIdx, this->epochLimit, this->targetMse, this->improveEpochs, this->network->getConfiguration()->getLearningRate());
     
     long epochCounter = 0;
     do {

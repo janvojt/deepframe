@@ -79,11 +79,11 @@ const struct option optsLong[] = {
 /* Application configuration. */
 struct config {
     /* learning rate */
-    double lr = .3;
+    data_t lr = .3;
     /* Interval network weights are initialized in. */
     char* initInterval = NULL;
     /* mean square error */
-    double mse = .01;
+    data_t mse = .01;
     /* Number of epochs during which error improvement
      *  is required to keep learning. */
     int improveEpochs = 0;
@@ -370,6 +370,7 @@ NetworkConfiguration *createNetworkConfiguration(config* conf) {
     // Setup network configuration.
     netConf->setBias(conf->bias);
     netConf->parseInitInterval(conf->initInterval);
+    netConf->setLearningRate(conf->lr);
     netConf->parseLayerConf(conf->layerConf);
     
     return netConf;
@@ -431,7 +432,7 @@ void printImageLabels(LabeledDataset *lds) {
 int main(int argc, char *argv[]) {
     
     LOG()->info("Compiled with %dbit precision for data types.", 8*sizeof(data_t));
-        
+    
     // prepare network configuration
     config* conf = processOptions(argc, argv);
 
@@ -498,7 +499,7 @@ int main(int argc, char *argv[]) {
         tds = p->parse();
         delete p;
     }
-    
+
     // Prepare training dataset.
     // If none was provided in options use XOR dataset by default.
     LabeledDataset *lds;
@@ -524,7 +525,6 @@ int main(int argc, char *argv[]) {
 //    return 0;
     
     // configure BP learner
-    bp->setLearningRate(conf->lr);
     bp->setTargetMse(conf->mse);
     bp->setErrorComputer(new MseErrorComputer());
     bp->setEpochLimit(conf->maxEpochs);
