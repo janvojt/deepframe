@@ -11,6 +11,7 @@
 #include <sstream>
 #include "../../common.h"
 #include "../LayerFactory.h"
+#include "../../util/cpuDebugHelpers.h"
 
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -38,6 +39,7 @@ void FullyConnectedLayer::setup(string confString) {
         this->weightsCount = 0;
     }
     this->outputsCount = conf.outputSize;
+    LOG()->debug("Fully connected layer size is %d neurons.", this->outputsCount);
 }
 
 void FullyConnectedLayer::forwardCpu() {
@@ -61,12 +63,14 @@ void FullyConnectedLayer::forwardCpu() {
     if (conf.useBias) {
         for (int i = 0; i<conf.outputSize; i++) {
             outputPtr[i] += *weightPtr;
+//            LOG()->debug("Input %d after applying bias: %f.", i, outputPtr[i]);
             weightPtr++;
         }
     }
     
     // Run through activation function
     netConf->activationFnc(outputPtr, outputPtr, conf.outputSize);
+//    dumpHostArray('O', outputPtr, outputsCount);
 }
 
 void FullyConnectedLayer::forwardGpu() {
@@ -103,6 +107,8 @@ void FullyConnectedLayer::backwardCpu() {
 
 void FullyConnectedLayer::backwardLastCpu(data_t* expectedOutput) {
     
+//    LOG()->debug("Backpropagating (%f, %f) -> (%f).", *(outputs-4), *(outputs-3), *expectedOutput);
+    
     void (*daf) (data_t*,data_t*,int) = this->netConf->dActivationFnc;
     
     // compute local gradients
@@ -112,8 +118,7 @@ void FullyConnectedLayer::backwardLastCpu(data_t* expectedOutput) {
         outputDiffs[i] = (outputs[i] - expectedOutput[i]) * dv[i];
     }
     delete[] dv;
-    
-    computeTotalDiffs();
+//    dumpHostArray('o', outputDiffs, outputsCount);
 }
 
 void FullyConnectedLayer::backwardGpu() {
@@ -126,27 +131,36 @@ void FullyConnectedLayer::backwardLastGpu(data_t* expectedOutput) {
 
 void FullyConnectedLayer::computeTotalDiffs() {
     
-    // COMPUTE TOTAL DERIVATIVES for weights between this and previous layer
-    int prevNeurons = previousLayer->getOutputsCount();
-    data_t *prevOutputs = previousLayer->getOutputs();
-    for (int i = 0; i<prevNeurons; i++) {
-        for (int j = 0; j<outputsCount; j++) {
-            weightDiffs[i*outputsCount+j] = -lr * outputDiffs[j] * prevOutputs[i];
+    // Initialize helper variables
+    int nextNeurons = nextLayer->getOutputsCount();
+    int nextWeightsCount = nextLayer->getWeightsCount();
+    data_t *nextWeights = nextLayer->getWeights();
+    data_t *nextWeightDiffs = nextLayer->getWeightDiffs();
+    data_t *nextOutputDiffs = nextLayer->getOutputDiffs();
+    
+    // COMPUTE TOTAL DERIVATIVES for weights between this and next layer
+    for (int i = 0; i<outputsCount; i++) {
+        for (int j = 0; j<nextNeurons; j++) {
+            nextWeightDiffs[i*nextNeurons+j] = -lr * nextOutputDiffs[j] * outputs[i];
         }
     }
+//    dumpHostArray('w', nextWeightDiffs, nextNeurons * outputsCount);
 
-    // COMPUTE BIAS DERIVATIVES for this layer
+    // COMPUTE BIAS DERIVATIVES for next layer
     if (netConf->getBias()) {
-        data_t *biasDiff = weightDiffs + weightsCount - outputsCount;
-        for (int i = 0; i<outputsCount; i++) {
-            biasDiff[i] = -lr * outputDiffs[i];
+        data_t *nextBiasDiff = nextWeightDiffs + nextWeightsCount - nextNeurons;
+        for (int i = 0; i<nextNeurons; i++) {
+            nextBiasDiff[i] = -lr * nextOutputDiffs[i];
         }
+//        dumpHostArray('b', nextBiasDiff, nextNeurons);
     }
     
-    // ADJUST WEIGHTS AND BIAS
-    for (int i = 0; i<weightsCount; i++) {
-        weights[i] += weightDiffs[i];
+    // ADJUST WEIGHTS AND BIAS in next layer
+    for (int i = 0; i<nextWeightsCount; i++) {
+        nextWeights[i] += nextWeightDiffs[i];
     }
+//    dumpHostArray('W', nextWeights, nextWeightsCount-nextNeurons);
+//    dumpHostArray('B', nextWeights+nextWeightsCount-nextNeurons, nextNeurons);
 }
 
 void FullyConnectedLayer::processConfString(string confString) {

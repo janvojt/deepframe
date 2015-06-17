@@ -83,17 +83,18 @@ void CpuNetwork::allocateMemory() {
 
 void CpuNetwork::forward() {
     for (int i = 1; i < this->noLayers; i++) {
-        LOG()->debug("Computing forward run on CPU for layer %d.", i);
+//        LOG()->debug("Computing forward run on CPU for layer %d.", i);
         this->layers[i]->forwardCpu();
     }
 }
 
 void CpuNetwork::backward() {
     
+//    LOG()->debug("Computing backward run on CPU for layer %d.", noLayers-1);
     this->layers[noLayers-1]->backwardLastCpu(expectedOutput);
     
-    for (int i = noLayers-2; i > 0; i--) {
-        LOG()->debug("Computing backward run on CPU for layer %d.", i);
+    for (int i = noLayers-2; i >= 0; i--) {
+//        LOG()->debug("Computing backward run on CPU for layer %d.", i);
         this->layers[i]->backwardCpu();
     }
 }

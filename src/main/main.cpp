@@ -500,6 +500,9 @@ int main(int argc, char *argv[]) {
         delete p;
     }
 
+    // Run before learning (just to see what we get without learning)
+//    runTest(net, tds);
+    
     // Prepare training dataset.
     // If none was provided in options use XOR dataset by default.
     LabeledDataset *lds;
