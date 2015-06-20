@@ -11,6 +11,7 @@
 #include <sstream>
 #include "../../common.h"
 #include "../LayerFactory.h"
+#include "../../util/cudaHelpers.h"
 #include "../../util/cpuDebugHelpers.h"
 
 #include "../../log/LoggerFactory.h"
@@ -46,15 +47,14 @@ void FullyConnectedLayer::forwardCpu() {
     
     int inputSize = this->previousLayer->getOutputsCount();
     data_t *inputPtr = this->previousLayer->getOutputs();
-    data_t *outputPtr = this->getOutputs();
     
     // Clear output neurons
-    std::fill_n(outputPtr, conf.outputSize, 0);
+    std::fill_n(outputs, conf.outputSize, 0);
     
     data_t *weightPtr = this->weights;
     for (int i = 0; i<inputSize; i++) {
         for (int j = 0; j<conf.outputSize; j++) {
-            outputPtr[j] += inputPtr[i] * *weightPtr;
+            outputs[j] += inputPtr[i] * *weightPtr;
             weightPtr++;
         }
     }
@@ -62,19 +62,41 @@ void FullyConnectedLayer::forwardCpu() {
     // Apply bias
     if (conf.useBias) {
         for (int i = 0; i<conf.outputSize; i++) {
-            outputPtr[i] += *weightPtr;
+            outputs[i] += *weightPtr;
 //            LOG()->debug("Input %d after applying bias: %f.", i, outputPtr[i]);
             weightPtr++;
         }
     }
     
     // Run through activation function
-    netConf->activationFnc(outputPtr, outputPtr, conf.outputSize);
+    netConf->activationFnc(outputs, outputs, conf.outputSize);
 //    dumpHostArray('O', outputPtr, outputsCount);
 }
 
 void FullyConnectedLayer::forwardGpu() {
-    //TODO
+    
+    int inputSize = this->previousLayer->getOutputsCount();
+    data_t *inputPtr = this->previousLayer->getOutputs();
+
+    // clear this layer just before working with it
+    cudaMemset(outputs, 0.0, outputsCount);
+
+    //note cuBLAS is column primary!
+    //need to transpose the order
+    const data_t alpha = 1.0;
+    const data_t beta = 0.0;
+    k_gemm(this->cublasHandle,
+            CUBLAS_OP_N, CUBLAS_OP_T,
+            1, outputsCount, inputSize,
+            &alpha, inputPtr, 1,
+            weights, outputsCount,
+            &beta, outputs, 1);
+
+    if (this->conf.useBias) {
+        k_sumVectors(outputs, weights + outputsCount, outputsCount);
+    }
+
+    k_computeSigmoid(outputs, outputsCount);
 }
 
 
@@ -122,11 +144,46 @@ void FullyConnectedLayer::backwardLastCpu(data_t* expectedOutput) {
 }
 
 void FullyConnectedLayer::backwardGpu() {
-    //TODO
+    
+    int nextNeurons = nextLayer->getOutputsCount();
+    data_t *nextOutputDiffs = nextLayer->getOutputDiffs();
+    data_t *nextWeights = nextLayer->getWeights();
+    data_t *nextWeightDiffs = nextLayer->getWeightDiffs();
+    
+    // COMPUTE LOCAL GRADIENTS for this layer
+    k_computeHiddenLocalGradient(
+            outputsCount, nextNeurons,
+            outputs, nextWeights,
+            outputDiffs, nextOutputDiffs);
+//    dumpDeviceArray('l', outputDiffs, outputsCount + nextNeurons);
+    
+    // COMPUTE TOTAL DERIVATIVES for weights between this and next layer
+    k_computeTotalDerivative(outputsCount, nextNeurons,
+            lr, outputs, nextOutputDiffs,
+            nextWeightDiffs);
+//    dumpDeviceArray('w', nextWeightDiffs, outputsCount * nextNeurons);
+        
+    // COMPUTE BIAS DERIVATIVES for layer l+1
+    if (netConf->getBias()) {
+        k_computeBiasDerivative(
+                lr, nextOutputDiffs,
+                nextWeightDiffs + (outputsCount * nextNeurons), // nextBiasDiffs
+                nextNeurons);
+//        dumpDeviceArray('c', weightDiffs + outputsCount, nextNeurons);
+    }
+    
+    // ADJUST WEIGHTS AND BIAS in the next layer
+    k_sumVectors(nextWeights, nextWeightDiffs, outputsCount * nextNeurons);
+//    dumpDeviceArray('w', weights, network->getWeightsOffset(noLayers));
 }
 
 void FullyConnectedLayer::backwardLastGpu(data_t* expectedOutput) {
-    //TODO
+    int memSize = outputsCount * sizeof(data_t);
+    data_t *dExpOutput;
+    checkCudaErrors(cudaMalloc(&dExpOutput, memSize));
+    checkCudaErrors(cudaMemcpy(dExpOutput, expectedOutput, memSize, cudaMemcpyHostToDevice));
+    k_computeOutputLocalGradient(outputs, dExpOutput, outputDiffs, outputsCount);
+    cudaFree(dExpOutput);
 }
 
 void FullyConnectedLayer::computeTotalDiffs() {

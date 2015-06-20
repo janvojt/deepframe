@@ -10,6 +10,7 @@
 
 #include "../common.h"
 #include <string>
+#include <cublas_v2.h>
 #include "NetworkConfiguration.h"
 
 using namespace std;
@@ -45,6 +46,9 @@ public:
     void setWeights(data_t *weights, data_t *weightDiffs);
     
     void setNextLayer(Layer *nextLayer);
+    
+    // CUDA Basic Linear Algebra Subprograms handle.
+    cublasHandle_t cublasHandle;
     
 protected:
     

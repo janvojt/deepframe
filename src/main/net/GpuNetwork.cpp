@@ -76,6 +76,9 @@ void GpuNetwork::reinit() {
 }
 
 void GpuNetwork::allocateMemory() {
+    this->input = new data_t[layers[0]->getOutputsCount()];
+    this->output = new data_t[layers[noLayers-1]->getOutputsCount()];
+    
     checkCudaErrors(cudaMalloc(&this->inputs, sizeof(data_t) * this->inputsCount));
     checkCudaErrors(cudaMalloc(&this->outputDiffs, sizeof(data_t) * this->inputsCount));
     checkCudaErrors(cudaMalloc(&this->weights, sizeof(data_t) * this->weightsCount));
@@ -83,55 +86,11 @@ void GpuNetwork::allocateMemory() {
     
     this->memExpectedOutput = this->getOutputNeurons() * sizeof(data_t);
     checkCudaErrors(cudaMalloc(&this->expectedOutput, this->memExpectedOutput));
+    
+    for (int i = 0; i<noLayers; i++) {
+        this->layers[i]->cublasHandle = this->cublasHandle;
+    }
 }
-
-//void GpuNetwork::forward() {
-//    // number of neurons in so far processed layers
-//    data_t *dWeightsPtr = this->weights + this->getInputNeurons();
-//    data_t *dInputsPtr = this->inputs;
-//    
-//    // copy weights and bias from host to device
-////    int wMemSize = sizeof(data_t) * getWeightsOffset(noLayers);
-////    int iMemSize = sizeof(data_t) * getInputOffset(noLayers);
-////    checkCudaErrors(cudaMemcpy(dInputs, inputs, iMemSize, cudaMemcpyHostToDevice));
-////    checkCudaErrors(cudaMemcpy(dWeights, weights, wMemSize, cudaMemcpyHostToDevice));
-////    if (conf->getBias()) checkCudaErrors(cudaMemcpy(dBias, bias, iMemSize, cudaMemcpyHostToDevice));
-//    
-//    // for every layer
-//    for (int l = 0; l<this->noLayers-1; l++) {
-//        int nThisLayer = this->conf->getNeurons(l);
-//        int nNextLayer = this->conf->getNeurons(l+1);
-//        
-//        // clear the following layer just before working with it
-//        int nextLayerSize = nNextLayer * sizeof(data_t);
-//        cudaMemset(dInputsPtr + nThisLayer, 0.0, nextLayerSize);
-//        
-//        //note cuBLAS is column primary!
-//        //need to transpose the order
-//        const data_t alpha = 1.0;
-//        const data_t beta = 0.0;
-//        k_gemm(this->cublasHandle,
-//                CUBLAS_OP_N, CUBLAS_OP_T,
-//                1, nNextLayer, nThisLayer,
-//                &alpha, dInputsPtr, 1,
-//                dWeightsPtr, nNextLayer,
-//                &beta, dInputsPtr+nThisLayer, 1);
-//        
-//        k_computeSigmoid(dInputsPtr + nThisLayer, nNextLayer);
-//	
-//        dWeightsPtr += nThisLayer * nNextLayer;
-//        dInputsPtr += nThisLayer;
-//    }
-//    
-//    // copy all weights and bias back to host
-////    checkCudaErrors(cudaMemcpy(inputs, dInputs, iMemSize, cudaMemcpyDeviceToHost));
-////    checkCudaErrors(cudaMemcpy(weights, dWeights, wMemSize, cudaMemcpyDeviceToHost));
-////    if (conf->getBias()) checkCudaErrors(cudaMemcpy(bias, dBias, iMemSize, cudaMemcpyDeviceToHost));
-//    
-////    compare('w', dWeights, weights, getWeightsOffset(noLayers));
-////    if (conf->getBias()) compare('b', dBias, bias, getInputOffset(noLayers));
-////    compare('i', dInputs, inputs, getInputOffset(noLayers));
-//}
 
 void GpuNetwork::setInput(data_t* input) {
 //    compare('b', dInputs, inputs, getInputOffset(noLayers));
@@ -139,6 +98,9 @@ void GpuNetwork::setInput(data_t* input) {
     std::memcpy(this->input, input, memSize);
     checkCudaErrors(cudaMemcpy(this->inputs, input, memSize, cudaMemcpyHostToDevice));
 //    compare('a', dInputs, inputs, getInputOffset(noLayers));
+    
+    // input is always in sync
+    inputSynced = true;
 }
 
 data_t *GpuNetwork::getInput() {
@@ -147,10 +109,13 @@ data_t *GpuNetwork::getInput() {
 
 data_t *GpuNetwork::getOutput() {
     
-    // copy network output to host
-    data_t *dOutput = this->inputs + this->layers[this->noLayers-1]->getOutputsCount();
-    int oMemSize = this->getOutputNeurons() * sizeof(data_t);
-    checkCudaErrors(cudaMemcpy(this->output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
+    if (!outputSynced) {
+        // copy network output to host
+        data_t *dOutput = this->layers[noLayers-1]->getOutputs();
+        int oMemSize = this->getOutputNeurons() * sizeof(data_t);
+        checkCudaErrors(cudaMemcpy(this->output, dOutput, oMemSize, cudaMemcpyDeviceToHost));
+        outputSynced = true;
+    }
     
     return this->output;
 }
@@ -164,11 +129,15 @@ void GpuNetwork::forward() {
         LOG()->debug("Computing forward run on GPU for layer %d.", i);
         this->layers[i]->forwardGpu();
     }
+    outputSynced = false;
 }
 
 void GpuNetwork::backward() {
-    for (int i = 1; i < this->noLayers; i++) {
-        LOG()->debug("Computing backward run on GPU for layer %d.", i);
+//    LOG()->debug("Computing backward run on GPU for layer %d.", noLayers-1);
+    this->layers[noLayers-1]->backwardLastGpu(expectedOutput);
+    
+    for (int i = noLayers-2; i >= 0; i--) {
+//        LOG()->debug("Computing backward run on GPU for layer %d.", i);
         this->layers[i]->backwardGpu();
     }
 }

@@ -61,12 +61,30 @@ protected:
     void allocateMemory();
     
 private:
-    // Array representing input coming into the network.
-    // Allocated on host memory.
+    
+    /**
+     * Array representing input coming into the network.
+     * Allocated on host memory.
+     */
     data_t *input;
-    // Array representing network output.
-    // Allocated on host memory.
+    
+    /**
+     * Tells whether network input is synchronized
+     * between GPU and CPU.
+     */
+    bool inputSynced = false;
+    
+    /**
+     * Array representing network output.
+     * Allocated on host memory.
+     */
     data_t *output;
+    
+    /**
+     * Tells whether network output is synchronized
+     * between CPU and GPU.
+     */
+    bool outputSynced = false;
     
     /** Expected output of the network for current input (pattern). */
     data_t *expectedOutput;
