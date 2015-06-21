@@ -12,6 +12,7 @@
 #include "../../common.h"
 #include "../LayerFactory.h"
 #include "../../util/cudaHelpers.h"
+//#include "../../util/cudaDebugHelpers.h"
 #include "../../util/cpuDebugHelpers.h"
 
 #include "../../log/LoggerFactory.h"
@@ -81,6 +82,9 @@ void FullyConnectedLayer::forwardGpu() {
     // clear this layer just before working with it
     cudaMemset(outputs, 0.0, outputsCount);
 
+//    dumpDeviceArray('I', inputPtr, inputSize);
+//    dumpDeviceArray('i', weights, inputSize * outputsCount);
+    
     //note cuBLAS is column primary!
     //need to transpose the order
     const data_t alpha = 1.0;
@@ -93,10 +97,11 @@ void FullyConnectedLayer::forwardGpu() {
             &beta, outputs, 1);
 
     if (this->conf.useBias) {
-        k_sumVectors(outputs, weights + outputsCount, outputsCount);
+        k_sumVectors(outputs, weights + inputSize * outputsCount, outputsCount);
     }
-
+    
     k_computeSigmoid(outputs, outputsCount);
+//    dumpDeviceArray('O', outputs, outputsCount);
 }
 
 
@@ -169,12 +174,13 @@ void FullyConnectedLayer::backwardGpu() {
                 lr, nextOutputDiffs,
                 nextWeightDiffs + (outputsCount * nextNeurons), // nextBiasDiffs
                 nextNeurons);
-//        dumpDeviceArray('c', weightDiffs + outputsCount, nextNeurons);
+//        dumpDeviceArray('b', nextWeightDiffs + (outputsCount * nextNeurons), nextNeurons);
     }
     
     // ADJUST WEIGHTS AND BIAS in the next layer
-    k_sumVectors(nextWeights, nextWeightDiffs, outputsCount * nextNeurons);
-//    dumpDeviceArray('w', weights, network->getWeightsOffset(noLayers));
+    k_sumVectors(nextWeights, nextWeightDiffs, nextLayer->getWeightsCount());
+//    dumpDeviceArray('W', nextWeights, outputsCount * nextNeurons);
+//    dumpDeviceArray('B', nextWeights + outputsCount * nextNeurons, nextNeurons);
 }
 
 void FullyConnectedLayer::backwardLastGpu(data_t* expectedOutput) {
@@ -184,6 +190,7 @@ void FullyConnectedLayer::backwardLastGpu(data_t* expectedOutput) {
     checkCudaErrors(cudaMemcpy(dExpOutput, expectedOutput, memSize, cudaMemcpyHostToDevice));
     k_computeOutputLocalGradient(outputs, dExpOutput, outputDiffs, outputsCount);
     cudaFree(dExpOutput);
+//    dumpDeviceArray('L', outputDiffs, outputsCount);
 }
 
 void FullyConnectedLayer::computeTotalDiffs() {

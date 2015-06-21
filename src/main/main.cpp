@@ -501,7 +501,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Run before learning (just to see what we get without learning)
-//    runTest(net, tds);
+    runTest(net, tds);
     
     // Prepare training dataset.
     // If none was provided in options use XOR dataset by default.

@@ -8,11 +8,12 @@
 #ifndef CUDADEBUGHELPERS_H
 #define	CUDADEBUGHELPERS_H
 
+#include "../common.h"
 #include "cudaHelpers.h"
 
-void dumpDeviceArray(char flag, double *dm, int size);
+void dumpDeviceArray(char flag, data_t *dm, int size);
 
-void compare(char flag, double *dm, double *hm, int size);
+void compare(char flag, data_t *dm, data_t *hm, int size);
 
 #endif	/* CUDADEBUGHELPERS_H */
 

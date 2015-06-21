@@ -13,7 +13,7 @@
 
 #include "GpuConfiguration.h"
 
-#include "../util/cudaDebugHelpers.h"
+//#include "../util/cudaDebugHelpers.h"
 
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -73,6 +73,7 @@ void GpuNetwork::reinit() {
     LOG()->info("Randomly initializing weights within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
     k_generateUniform(*this->gpuConf->getRandGen(), this->weights, this->weightsCount);
     k_spreadInterval(this->conf->getInitMin(), this->conf->getInitMax(), this->weights, this->weightsCount);
+//    dumpDeviceArray('r', this->weights, this->weightsCount);
 }
 
 void GpuNetwork::allocateMemory() {

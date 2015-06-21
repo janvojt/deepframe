@@ -14,10 +14,10 @@
 #include <cuda_runtime.h>
 
 
-void dumpDeviceArray(char flag, double *dm, int size) {
+void dumpDeviceArray(char flag, data_t *dm, int size) {
     std::cout << flag << std::endl;
-    double *hdm = new double[size];
-    checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(double) * size, cudaMemcpyDeviceToHost));
+    data_t *hdm = new data_t[size];
+    checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
     
     for (int i = 0; i<size; i++) {
         std::cout << "Dumping device " << flag << ": " << hdm[i] << std::endl;
