@@ -20,7 +20,6 @@
 #include "log4cpp/Category.hh"
 
 NetworkConfiguration::NetworkConfiguration() {
-    neuronConf = NULL;
     bias = true;
 }
 
@@ -34,10 +33,6 @@ NetworkConfiguration::~NetworkConfiguration() {
             delete[] layersConf[i];
         }
         delete[] layersConf;
-    }
-    
-    if (neuronConf) {
-        delete[] neuronConf;
     }
 }
 
@@ -61,18 +56,14 @@ string NetworkConfiguration::getLayersConf(int layerIndex) {
     return layersConf[layerIndex][1];
 }
 
-void NetworkConfiguration::setNeurons(int layer, int neurons) {
-    if (layer > layers || layer < 0) {
-        LOG()->error("Provided %d as layer index, which is invalid for network with %d layers.", layer, layers);
-        return;
-    } else if (neuronConf == NULL) {
-        initConf();
-    }
-    neuronConf[layer] = neurons;
-}
-
 int NetworkConfiguration::getNeurons(int layer) {
-    return neuronConf[layer];
+    // This is quite ugly. It assumes the number of neurons are the first
+    // integer in the layer configuration string. This is usually not the
+    // case in the vision layers, for example. Also, it generally does not
+    // perform well, but is called only once, so should be fine.
+    int neurons = 0;
+    sscanf(layersConf[layer][1].c_str(), "%d", &neurons);
+    return neurons;
 }
 
 void NetworkConfiguration::setBias(bool enabled) {

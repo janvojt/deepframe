@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include "gtest/gtest.h"
 #include "common.h"
 #include "net/Network.h"
@@ -10,10 +11,9 @@
 NetworkConfiguration* createConf() {
     
     NetworkConfiguration *netConf = new NetworkConfiguration();
-    netConf->setLayers(3);
-    netConf->setNeurons(0, 2);
-    netConf->setNeurons(1, 2);
-    netConf->setNeurons(2, 1);
+    char *layerConf = new char[5];
+    strcpy(layerConf, "2,2,1");
+    netConf->parseLayerConf(layerConf);
     netConf->activationFnc = sigmoidFunction;
     netConf->dActivationFnc = dSigmoidFunction;
     netConf->setBias(true);
