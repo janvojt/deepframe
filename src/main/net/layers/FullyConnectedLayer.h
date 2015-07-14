@@ -47,8 +47,6 @@ private:
     
     void processConfString(string confString);
     
-    void computeTotalDiffs();
-    
     FullyConnectedConfig conf;
 };
 
