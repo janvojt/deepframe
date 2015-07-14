@@ -48,6 +48,8 @@ private:
     void processConfString(string confString);
     
     FullyConnectedConfig conf;
+    
+    data_t *thisOutputDerivatives = NULL;
 };
 
 #endif	/* FULLYCONNECTEDLAYER_H */

@@ -40,8 +40,9 @@ void FullyConnectedLayer::setup(string confString) {
     } else {
         this->weightsCount = 0;
     }
-    this->outputsCount = conf.outputSize;
-    LOG()->debug("Fully connected layer size is %d neurons.", this->outputsCount);
+    outputsCount = conf.outputSize;
+    thisOutputDerivatives = new data_t[outputsCount];
+    LOG()->debug("Fully connected layer size is %d neurons.", outputsCount);
 }
 
 void FullyConnectedLayer::forwardCpu() {
@@ -111,8 +112,7 @@ void FullyConnectedLayer::backwardCpu() {
 
     // compute derivatives of neuron inputs for this layer
     void (*daf) (data_t*,data_t*,int) = this->netConf->dActivationFnc;
-    data_t *thisInputDerivatives = new data_t[outputsCount];
-    daf(outputs, thisInputDerivatives, outputsCount);
+    daf(outputs, thisOutputDerivatives, outputsCount);
 
     // compute local gradients for this layer
     int nextNeurons = nextLayer->getOutputsCount();
@@ -123,10 +123,9 @@ void FullyConnectedLayer::backwardCpu() {
         for (int j = 0; j<nextNeurons; j++) {
             sumNextGradient += nextOutputDiffs[j] * nextWeights[i * nextNeurons + j];
         }
-        outputDiffs[i] = sumNextGradient * thisInputDerivatives[i];
+        outputDiffs[i] = sumNextGradient * thisOutputDerivatives[i];
 //            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
     }
-    delete[] thisInputDerivatives;
 //    dumpHostArray('l', outputDiffs, outputsCount);
     
     // COMPUTE TOTAL DIFFERENTIALS
@@ -167,12 +166,10 @@ void FullyConnectedLayer::backwardLastCpu(data_t* expectedOutput) {
     void (*daf) (data_t*,data_t*,int) = this->netConf->dActivationFnc;
     
     // compute local gradients
-    data_t *dv = new data_t[outputsCount]; //TODO allocate only once
-    daf(outputs, dv, outputsCount);
+    daf(outputs, thisOutputDerivatives, outputsCount);
     for (int i = 0; i<outputsCount; i++) {
-        outputDiffs[i] = (outputs[i] - expectedOutput[i]) * dv[i];
+        outputDiffs[i] = (outputs[i] - expectedOutput[i]) * thisOutputDerivatives[i];
     }
-    delete[] dv;
 //    dumpHostArray('o', outputDiffs, outputsCount);
 }
 
