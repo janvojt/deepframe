@@ -137,10 +137,13 @@ void GpuNetwork::backward() {
 //    LOG()->debug("Computing backward run on GPU for layer %d.", noLayers-1);
     this->layers[noLayers-1]->backwardLastGpu(expectedOutput);
     
-    for (int i = noLayers-2; i >= 0; i--) {
+    for (int i = noLayers-2; i > 0; i--) {
 //        LOG()->debug("Computing backward run on GPU for layer %d.", i);
         this->layers[i]->backwardGpu();
     }
+    
+    // update all weights
+    k_sumVectors(weights, weightDiffs, weightsCount);
 }
 
 void GpuNetwork::computeOutputDiffs() {

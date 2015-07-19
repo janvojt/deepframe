@@ -93,9 +93,14 @@ void CpuNetwork::backward() {
 //    LOG()->debug("Computing backward run on CPU for layer %d.", noLayers-1);
     this->layers[noLayers-1]->backwardLastCpu(expectedOutput);
     
-    for (int i = noLayers-2; i >= 0; i--) {
+    for (int i = noLayers-2; i > 0; i--) {
 //        LOG()->debug("Computing backward run on CPU for layer %d.", i);
         this->layers[i]->backwardCpu();
+    }
+    
+    // update all weights
+    for (int i = 0; i<weightsCount; i++) {
+        weights[i] += weightDiffs[i];
     }
 }
 

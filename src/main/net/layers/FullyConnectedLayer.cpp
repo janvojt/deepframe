@@ -128,35 +128,7 @@ void FullyConnectedLayer::backwardCpu() {
     }
 //    dumpHostArray('l', outputDiffs, outputsCount);
     
-    // COMPUTE TOTAL DIFFERENTIALS
-    
-    // Initialize helper variables
-    int nextWeightsCount = nextLayer->getWeightsCount();
-    data_t *nextWeightDiffs = nextLayer->getWeightDiffs();
-    
-    // COMPUTE TOTAL DERIVATIVES for weights between this and next layer
-    for (int i = 0; i<outputsCount; i++) {
-        for (int j = 0; j<nextNeurons; j++) {
-            nextWeightDiffs[i*nextNeurons+j] = -lr * nextOutputDiffs[j] * outputs[i];
-        }
-    }
-//    dumpHostArray('w', nextWeightDiffs, nextNeurons * outputsCount);
-
-    // COMPUTE BIAS DERIVATIVES for next layer
-    if (netConf->getBias()) {
-        data_t *nextBiasDiff = nextWeightDiffs + nextWeightsCount - nextNeurons;
-        for (int i = 0; i<nextNeurons; i++) {
-            nextBiasDiff[i] = -lr * nextOutputDiffs[i];
-        }
-//        dumpHostArray('b', nextBiasDiff, nextNeurons);
-    }
-    
-    // ADJUST WEIGHTS AND BIAS in next layer
-    for (int i = 0; i<nextWeightsCount; i++) {
-        nextWeights[i] += nextWeightDiffs[i];
-    }
-//    dumpHostArray('W', nextWeights, nextWeightsCount-nextNeurons);
-//    dumpHostArray('B', nextWeights+nextWeightsCount-nextNeurons, nextNeurons);
+    computeWeightDiffsCpu();
 }
 
 void FullyConnectedLayer::backwardLastCpu(data_t* expectedOutput) {
@@ -171,6 +143,31 @@ void FullyConnectedLayer::backwardLastCpu(data_t* expectedOutput) {
         outputDiffs[i] = (outputs[i] - expectedOutput[i]) * thisOutputDerivatives[i];
     }
 //    dumpHostArray('o', outputDiffs, outputsCount);
+    
+    computeWeightDiffsCpu();
+}
+
+void FullyConnectedLayer::computeWeightDiffsCpu() {
+    // Initialize helper variables
+    int prevOutputsCount = previousLayer->getOutputsCount();
+    data_t* prevOutputs = previousLayer->getOutputs();
+    
+    // COMPUTE TOTAL DERIVATIVES for weights between previous and this layer
+    for (int i = 0; i<prevOutputsCount; i++) {
+        for (int j = 0; j<outputsCount; j++) {
+            weightDiffs[i*outputsCount+j] = -lr * outputDiffs[j] * prevOutputs[i];
+        }
+    }
+//    dumpHostArray('w', weightDiffs, outputsCount * prevOutputsCount);
+
+    // COMPUTE BIAS DERIVATIVES for this layer
+    if (netConf->getBias()) {
+        data_t *biasDiff = weightDiffs + weightsCount - outputsCount;
+        for (int i = 0; i<outputsCount; i++) {
+            biasDiff[i] = -lr * outputDiffs[i];
+        }
+//        dumpHostArray('b', biasDiff, outputsCount);
+    }
 }
 
 void FullyConnectedLayer::backwardGpu() {
@@ -187,25 +184,7 @@ void FullyConnectedLayer::backwardGpu() {
             outputDiffs, nextOutputDiffs);
 //    dumpDeviceArray('l', outputDiffs, outputsCount + nextNeurons);
     
-    // COMPUTE TOTAL DERIVATIVES for weights between this and next layer
-    k_computeTotalDerivative(outputsCount, nextNeurons,
-            lr, outputs, nextOutputDiffs,
-            nextWeightDiffs);
-//    dumpDeviceArray('w', nextWeightDiffs, outputsCount * nextNeurons);
-        
-    // COMPUTE BIAS DERIVATIVES for layer l+1
-    if (netConf->getBias()) {
-        k_computeBiasDerivative(
-                lr, nextOutputDiffs,
-                nextWeightDiffs + (outputsCount * nextNeurons), // nextBiasDiffs
-                nextNeurons);
-//        dumpDeviceArray('b', nextWeightDiffs + (outputsCount * nextNeurons), nextNeurons);
-    }
-    
-    // ADJUST WEIGHTS AND BIAS in the next layer
-    k_sumVectors(nextWeights, nextWeightDiffs, nextLayer->getWeightsCount());
-//    dumpDeviceArray('W', nextWeights, outputsCount * nextNeurons);
-//    dumpDeviceArray('B', nextWeights + outputsCount * nextNeurons, nextNeurons);
+    computeWeightDiffsGpu();
 }
 
 void FullyConnectedLayer::backwardLastGpu(data_t* expectedOutput) {
@@ -216,7 +195,31 @@ void FullyConnectedLayer::backwardLastGpu(data_t* expectedOutput) {
     k_computeOutputLocalGradient(outputs, dExpOutput, outputDiffs, outputsCount);
     cudaFree(dExpOutput);
 //    dumpDeviceArray('L', outputDiffs, outputsCount);
+    
+    computeWeightDiffsGpu();
 }
+
+void FullyConnectedLayer::computeWeightDiffsGpu() {
+    // Initialize helper variables
+    int prevOutputsCount = previousLayer->getOutputsCount();
+    data_t* prevOutputs = previousLayer->getOutputs();
+    
+    // COMPUTE TOTAL DERIVATIVES for weights between previous and this layer
+    k_computeTotalDerivative(prevOutputsCount, outputsCount,
+            lr, prevOutputs, outputDiffs,
+            weightDiffs);
+//    dumpDeviceArray('w', nextWeightDiffs, outputsCount * nextNeurons);
+        
+    // COMPUTE BIAS DERIVATIVES for layer l
+    if (netConf->getBias()) {
+        k_computeBiasDerivative(
+                lr, outputDiffs,
+                weightDiffs + (prevOutputsCount * outputsCount), // nextBiasDiffs
+                outputsCount);
+//        dumpDeviceArray('b', weightDiffs + (prevOutputsCount * outputsCount), outputsCount);
+    }
+}
+
 
 void FullyConnectedLayer::processConfString(string confString) {
     // dummy variable for delimiters

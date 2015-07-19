@@ -47,6 +47,9 @@ private:
     
     void processConfString(string confString);
     
+    void computeWeightDiffsCpu();
+    void computeWeightDiffsGpu();
+    
     FullyConnectedConfig conf;
     
     data_t *thisOutputDerivatives = NULL;
