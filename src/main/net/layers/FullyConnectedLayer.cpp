@@ -107,47 +107,6 @@ void FullyConnectedLayer::forwardGpu() {
 
 
 void FullyConnectedLayer::backwardCpu() {
-        
-    // COMPUTE LOCAL GRADIENTS for this layer
-
-    // compute derivatives of neuron inputs for this layer
-    void (*daf) (data_t*,data_t*,int) = this->netConf->dActivationFnc;
-    daf(outputs, thisOutputDerivatives, outputsCount);
-
-    // compute local gradients for this layer
-    int nextNeurons = nextLayer->getOutputsCount();
-    data_t *nextOutputDiffs = nextLayer->getOutputDiffs();
-    data_t *nextWeights = nextLayer->getWeights();
-    for (int i = 0; i<outputsCount; i++) {
-        data_t sumNextGradient = 0;
-        for (int j = 0; j<nextNeurons; j++) {
-            sumNextGradient += nextOutputDiffs[j] * nextWeights[i * nextNeurons + j];
-        }
-        outputDiffs[i] = sumNextGradient * thisOutputDerivatives[i];
-//            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
-    }
-//    dumpHostArray('l', outputDiffs, outputsCount);
-    
-    computeWeightDiffsCpu();
-}
-
-void FullyConnectedLayer::backwardLastCpu(data_t* expectedOutput) {
-    
-//    LOG()->debug("Backpropagating (%f, %f) -> (%f).", *(outputs-4), *(outputs-3), *expectedOutput);
-    
-    void (*daf) (data_t*,data_t*,int) = this->netConf->dActivationFnc;
-    
-    // compute local gradients
-    daf(outputs, thisOutputDerivatives, outputsCount);
-    for (int i = 0; i<outputsCount; i++) {
-        outputDiffs[i] = (outputs[i] - expectedOutput[i]) * thisOutputDerivatives[i];
-    }
-//    dumpHostArray('o', outputDiffs, outputsCount);
-    
-    computeWeightDiffsCpu();
-}
-
-void FullyConnectedLayer::computeWeightDiffsCpu() {
     // Initialize helper variables
     int prevOutputsCount = previousLayer->getOutputsCount();
     data_t* prevOutputs = previousLayer->getOutputs();
@@ -168,38 +127,43 @@ void FullyConnectedLayer::computeWeightDiffsCpu() {
         }
 //        dumpHostArray('b', biasDiff, outputsCount);
     }
+        
+    // COMPUTE LOCAL GRADIENTS for previous layer
+    if (!previousLayer->isFirst()) {
+    
+        // compute derivatives of neuron inputs for this layer
+        void (*daf) (data_t*,data_t*,int) = this->netConf->dActivationFnc;
+        daf(prevOutputs, thisOutputDerivatives, prevOutputsCount);
+
+        // compute local gradients for previous layer
+        data_t* prevOutputDiffs = previousLayer->getOutputDiffs();
+        for (int i = 0; i<prevOutputsCount; i++) {
+            data_t gradientSum = 0;
+            for (int j = 0; j<outputsCount; j++) {
+                gradientSum += outputDiffs[j] * weights[i * outputsCount + j];
+            }
+            prevOutputDiffs[i] = gradientSum * thisOutputDerivatives[i];
+//            LOG()->debug("Local gradient for neuron [%d, %d] : %f.", l, i, thisLocalGradient[i]);
+        }
+//        dumpHostArray('l', outputDiffs, outputsCount);
+    }
+}
+
+void FullyConnectedLayer::backwardLastCpu(data_t* expectedOutput) {
+    
+//    LOG()->debug("Backpropagating (%f, %f) -> (%f).", *(outputs-4), *(outputs-3), *expectedOutput);
+    
+    void (*daf) (data_t*,data_t*,int) = this->netConf->dActivationFnc;
+    
+    // compute local gradients
+    daf(outputs, thisOutputDerivatives, outputsCount);
+    for (int i = 0; i<outputsCount; i++) {
+        outputDiffs[i] = (outputs[i] - expectedOutput[i]) * thisOutputDerivatives[i];
+    }
+//    dumpHostArray('o', outputDiffs, outputsCount);
 }
 
 void FullyConnectedLayer::backwardGpu() {
-    
-    int nextNeurons = nextLayer->getOutputsCount();
-    data_t *nextOutputDiffs = nextLayer->getOutputDiffs();
-    data_t *nextWeights = nextLayer->getWeights();
-    data_t *nextWeightDiffs = nextLayer->getWeightDiffs();
-    
-    // COMPUTE LOCAL GRADIENTS for this layer
-    k_computeHiddenLocalGradient(
-            outputsCount, nextNeurons,
-            outputs, nextWeights,
-            outputDiffs, nextOutputDiffs);
-//    dumpDeviceArray('l', outputDiffs, outputsCount + nextNeurons);
-    
-    computeWeightDiffsGpu();
-}
-
-void FullyConnectedLayer::backwardLastGpu(data_t* expectedOutput) {
-    int memSize = outputsCount * sizeof(data_t);
-    data_t *dExpOutput;
-    checkCudaErrors(cudaMalloc(&dExpOutput, memSize));
-    checkCudaErrors(cudaMemcpy(dExpOutput, expectedOutput, memSize, cudaMemcpyHostToDevice));
-    k_computeOutputLocalGradient(outputs, dExpOutput, outputDiffs, outputsCount);
-    cudaFree(dExpOutput);
-//    dumpDeviceArray('L', outputDiffs, outputsCount);
-    
-    computeWeightDiffsGpu();
-}
-
-void FullyConnectedLayer::computeWeightDiffsGpu() {
     // Initialize helper variables
     int prevOutputsCount = previousLayer->getOutputsCount();
     data_t* prevOutputs = previousLayer->getOutputs();
@@ -218,8 +182,30 @@ void FullyConnectedLayer::computeWeightDiffsGpu() {
                 outputsCount);
 //        dumpDeviceArray('b', weightDiffs + (prevOutputsCount * outputsCount), outputsCount);
     }
+    
+        
+    // COMPUTE LOCAL GRADIENTS for previous layer
+    if (!previousLayer->isFirst()) {
+
+        // COMPUTE LOCAL GRADIENTS for this layer
+        data_t* prevOutputDiffs = previousLayer->getOutputDiffs();
+        k_computeHiddenLocalGradient(
+                prevOutputsCount, outputsCount,
+                prevOutputs, weights,
+                prevOutputDiffs, outputDiffs);
+//        dumpDeviceArray('l', outputDiffs, outputsCount + nextNeurons);
+    }
 }
 
+void FullyConnectedLayer::backwardLastGpu(data_t* expectedOutput) {
+    int memSize = outputsCount * sizeof(data_t);
+    data_t *dExpOutput;
+    checkCudaErrors(cudaMalloc(&dExpOutput, memSize));
+    checkCudaErrors(cudaMemcpy(dExpOutput, expectedOutput, memSize, cudaMemcpyHostToDevice));
+    k_computeOutputLocalGradient(outputs, dExpOutput, outputDiffs, outputsCount);
+    cudaFree(dExpOutput);
+//    dumpDeviceArray('L', outputDiffs, outputsCount);
+}
 
 void FullyConnectedLayer::processConfString(string confString) {
     // dummy variable for delimiters

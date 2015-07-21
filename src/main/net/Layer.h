@@ -47,6 +47,9 @@ public:
     
     void setNextLayer(Layer *nextLayer);
     
+    bool isFirst();
+    bool isLast();
+    
     // CUDA Basic Linear Algebra Subprograms handle.
     cublasHandle_t cublasHandle;
     
@@ -69,7 +72,8 @@ protected:
 
     Layer *nextLayer = NULL;
     
-    bool isLast = true;
+    bool first = true;
+    bool last = true;
     
     NetworkConfiguration *netConf;
     

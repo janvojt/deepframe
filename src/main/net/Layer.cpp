@@ -23,6 +23,7 @@ void Layer::setup(Layer* previousLayer, NetworkConfiguration* netConf, string co
     this->previousLayer = previousLayer;
     if (previousLayer != NULL) {
         previousLayer->setNextLayer(this);
+        this->first = false;
     }
     this->netConf = netConf;
     this->lr = netConf->getLearningRate();
@@ -57,7 +58,7 @@ void Layer::setWeights(data_t* weights, data_t *weightDiffs) {
 
 void Layer::setNextLayer(Layer* nextLayer) {
     this->nextLayer = nextLayer;
-    this->isLast = false;
+    this->last = false;
 }
 
 int Layer::getWeightsCount() {
@@ -66,4 +67,12 @@ int Layer::getWeightsCount() {
 
 int Layer::getOutputsCount() {
     return outputsCount;
+}
+
+bool Layer::isFirst() {
+    return first;
+}
+
+bool Layer::isLast() {
+    return last;
 }
