@@ -33,7 +33,9 @@ void FullyConnectedLayer::setup(string confString) {
     
     if (previousLayer != NULL) {
         // this is not the input layer
-        this->weightsCount = previousLayer->getOutputsCount() * conf.outputSize;
+        int prevOutputsCount = previousLayer->getOutputsCount();
+        this->weightsCount = prevOutputsCount * conf.outputSize;
+        thisOutputDerivatives = new data_t[prevOutputsCount];
         if (conf.useBias) {
             this->weightsCount += conf.outputSize;
         }
@@ -41,7 +43,6 @@ void FullyConnectedLayer::setup(string confString) {
         this->weightsCount = 0;
     }
     outputsCount = conf.outputSize;
-    thisOutputDerivatives = new data_t[outputsCount];
     LOG()->debug("Fully connected layer size is %d neurons.", outputsCount);
 }
 

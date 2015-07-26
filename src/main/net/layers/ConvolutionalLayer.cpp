@@ -49,10 +49,9 @@ void ConvolutionalLayer::setup(string confString) {
 void ConvolutionalLayer::forwardCpu() {
     
     data_t *inputPtr = this->previousLayer->getOutputs();
-    data_t *outputPtr = this->getOutputs();
 
     // clear output
-    std::fill_n(outputPtr, this->outputsCount, 0);
+    std::fill_n(outputs, this->outputsCount, 0);
 
     // loop through destination neuron
     for (int f = 0; f < featuresCount; f++) { // destination feature index
@@ -75,7 +74,7 @@ void ConvolutionalLayer::forwardCpu() {
                             int weightIdx = pf * featuresCount * conf.windowSize * conf.windowSize
                                             + k * conf.windowSize + l;
                             
-                            outputPtr[dstNeuronIdx] += inputPtr[srcNeuronIdx] * this->weights[weightIdx];
+                            outputs[dstNeuronIdx] += inputPtr[srcNeuronIdx] * this->weights[weightIdx];
                             
                         }
                     }
@@ -93,7 +92,44 @@ void ConvolutionalLayer::forwardGpu() {
 
 
 void ConvolutionalLayer::backwardCpu() {
-    //TODO
+    
+    data_t *inputs = previousLayer->getOutputs();
+    data_t *inputDiffs = previousLayer->getOutputDiffs();
+
+    // clear output
+    std::fill_n(inputDiffs, previousLayer->getOutputsCount(), 0);
+    std::fill_n(weightDiffs, weightsCount, 0);
+
+    // loop through destination neuron
+    for (int f = 0; f < featuresCount; f++) { // destination feature index
+        int featureIdx = f * featureHeight * featureWidth;
+        
+        for (int i = 0; i < featureHeight; i++) { // row index
+            int rowIdx = featureIdx + i * featureWidth;
+            
+            for (int j = 0; j < featureWidth; j++) { // column index
+                int dstNeuronIdx = rowIdx + j;
+                
+                // loop through source neurons
+                for (int pf = 0; pf < inputFeatures; pf++) { // source feature index
+                    for (int k = 0; k < conf.windowSize; k++) { // row index
+                        for (int l = 0; l < conf.windowSize; l++) { // column index
+                            
+                            int srcNeuronIdx = pf * conf.windowSize * conf.windowSize
+                                                + (k + i) * conf.windowSize + (l + j);
+                            
+                            int weightIdx = pf * featuresCount * conf.windowSize * conf.windowSize
+                                            + k * conf.windowSize + l;
+                            
+                            weightDiffs[weightIdx] += outputDiffs[dstNeuronIdx] * inputs[srcNeuronIdx];
+                            inputDiffs[srcNeuronIdx] += outputDiffs[dstNeuronIdx] * weights[weightIdx];
+                        }
+                    }
+                }
+                
+            } // end loop through destination neuron
+        }
+    }
 }
 
 

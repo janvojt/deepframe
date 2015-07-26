@@ -57,15 +57,12 @@ void SubsamplingLayer::setup(string confString) {
 
 void SubsamplingLayer::forwardCpu() {
     
-    data_t *inputPtr = this->previousLayer->getOutputs();
-    data_t *outputPtr = this->getOutputs();
-    int outputCount = this->outputsCount;
-    
+    data_t *inputs = this->previousLayer->getOutputs();
     int wfeatureWidth = inputWidth / conf.windowWidth;
     int wfeatureHeight = inputHeight / conf.windowHeight;
     
     // clear output
-    std::fill_n(outputPtr, outputCount, 0);
+    std::fill_n(outputs, outputsCount, 0);
     
     // loop through destination neuron
     for (int f = 0; f < featuresCount; f++) {
@@ -77,7 +74,7 @@ void SubsamplingLayer::forwardCpu() {
             
             for (int j = 0; j < wfeatureWidth; j++) { // column index
                 int dstNeuronIdx = rowIdx + j;
-                int max = -1;
+                data_t max = -1;
                 
                 // loop through source neurons
                 for (int k = 0; k < inputHeight; k++) { // row index
@@ -85,17 +82,17 @@ void SubsamplingLayer::forwardCpu() {
 
                         int srcNeuronIdx =  srcFeatureIdx + (k+i) * inputWidth + (l+j);
 
-                        max = (inputPtr[srcNeuronIdx] > max) ? inputPtr[srcNeuronIdx] : max;
+                        max = (inputs[srcNeuronIdx] > max) ? inputs[srcNeuronIdx] : max;
                     }
                 }
                 
-                outputPtr[dstNeuronIdx] += max * this->weights[f] + this->weights[featuresCount + f];
+                outputs[dstNeuronIdx] += max; // * this->weights[f] + this->weights[featuresCount + f];
                 
             } // end loop through destination neuron
         }
     }
 
-    netConf->activationFnc(outputPtr, outputPtr, outputCount);
+    netConf->activationFnc(outputs, outputs, outputsCount);
     
     // TODO if (conf.inputWidth % conf.windowWidth > 0)
     // TODO if (conf.inputHeight % conf.windowHeight > 0)
@@ -108,7 +105,37 @@ void SubsamplingLayer::forwardGpu() {
 
 
 void SubsamplingLayer::backwardCpu() {
-    //TODO
+    
+    int inputsCount = previousLayer->getOutputsCount();
+    data_t *inputDiffs = previousLayer->getOutputDiffs();
+    int wfeatureWidth = inputWidth / conf.windowWidth;
+    int wfeatureHeight = inputHeight / conf.windowHeight;
+    
+    // clear output
+    std::fill_n(inputDiffs, inputsCount, 0);
+    
+    // loop through destination neuron
+    for (int f = 0; f < featuresCount; f++) {
+        int dstFeatureIdx = f * wfeatureWidth * wfeatureHeight;
+        int srcFeatureIdx = f * inputWidth * inputHeight;
+        
+        for (int i = 0; i < wfeatureHeight; i++) { // row index
+            int rowIdx = dstFeatureIdx + i * wfeatureWidth;
+            
+            for (int j = 0; j < wfeatureWidth; j++) { // column index
+                int dstNeuronIdx = rowIdx + j;
+                
+                // loop through source neurons
+                for (int k = 0; k < inputHeight; k++) { // row index
+                    for (int l = 0; l < inputWidth; l++) { // column index
+
+                        int srcNeuronIdx =  srcFeatureIdx + (k+i) * inputWidth + (l+j);
+                        inputDiffs[srcNeuronIdx] += outputDiffs[dstNeuronIdx];
+                    }
+                }
+            } // end loop through destination neuron
+        }
+    }
 }
 
 
