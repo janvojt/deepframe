@@ -36,8 +36,12 @@ void ConvolutionalLayer::setup(string confString) {
     SubsamplingLayer *subsamplingLayer = (SubsamplingLayer*) previousLayer;
     inputFeatures = subsamplingLayer->getFeaturesCount();
     featuresCount = inputFeatures * conf.featureMultiplier;
-    featureWidth = subsamplingLayer->getFeatureWidth() - conf.windowSize + 1;
-    featureHeight = subsamplingLayer->getFeatureHeight() - conf.windowSize + 1;
+
+    inputFeatureWidth = subsamplingLayer->getFeatureWidth();
+    inputFeatureHeight = subsamplingLayer->getFeatureHeight();
+
+    featureWidth = inputFeatureWidth - conf.windowSize + 1;
+    featureHeight = inputFeatureHeight - conf.windowSize + 1;
     
     this->outputsCount = featuresCount
             * featureWidth * featureHeight;
@@ -65,11 +69,12 @@ void ConvolutionalLayer::forwardCpu() {
                 
                 // loop through source neurons
                 for (int pf = 0; pf < inputFeatures; pf++) { // source feature index
+                    int srcFeatureIdx = pf * inputFeatureWidth * inputFeatureHeight;
+                    
                     for (int k = 0; k < conf.windowSize; k++) { // row index
                         for (int l = 0; l < conf.windowSize; l++) { // column index
                             
-                            int srcNeuronIdx = pf * conf.windowSize * conf.windowSize
-                                                + (k + i) * conf.windowSize + (l + j);
+                            int srcNeuronIdx = srcFeatureIdx + (k + i) * conf.windowSize + (l + j);
                             
                             int weightIdx = pf * featuresCount * conf.windowSize * conf.windowSize
                                             + k * conf.windowSize + l;
@@ -112,11 +117,12 @@ void ConvolutionalLayer::backwardCpu() {
                 
                 // loop through source neurons
                 for (int pf = 0; pf < inputFeatures; pf++) { // source feature index
+                    int srcFeatureIdx = pf * inputFeatureWidth * inputFeatureHeight;
+                    
                     for (int k = 0; k < conf.windowSize; k++) { // row index
                         for (int l = 0; l < conf.windowSize; l++) { // column index
                             
-                            int srcNeuronIdx = pf * conf.windowSize * conf.windowSize
-                                                + (k + i) * conf.windowSize + (l + j);
+                            int srcNeuronIdx = srcFeatureIdx + (k + i) * conf.windowSize + (l + j);
                             
                             int weightIdx = pf * featuresCount * conf.windowSize * conf.windowSize
                                             + k * conf.windowSize + l;

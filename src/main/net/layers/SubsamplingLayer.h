@@ -58,12 +58,10 @@ private:
     int featuresCount;
     
     int featureWidth;
-    
     int featureHeight;
     
-    int inputWidth;
-    
-    int inputHeight;
+    int inputFeatureWidth;
+    int inputFeatureHeight;
 };
 
 #endif	/* SUBSAMPLINGLAYER_H */

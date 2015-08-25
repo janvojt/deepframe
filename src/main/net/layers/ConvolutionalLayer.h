@@ -57,8 +57,10 @@ private:
     int inputFeatures;
     
     int featureWidth;
-    
     int featureHeight;
+    
+    int inputFeatureWidth;
+    int inputFeatureHeight;
 };
 
 #endif	/* CONVOLUTIONALLAYER_H */
