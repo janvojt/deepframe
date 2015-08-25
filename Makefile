@@ -1,5 +1,5 @@
 # CUDA only supports g++ <=4.8 at the time
-CC=/usr/bin/g++ # This is the main compiler
+CC=/usr/local/gcc-4.9.3/bin/g++ # This is the main compiler
 #CC=clang --analyze # and comment out the linker last line for sanity
 
 # Location of the CUDA Toolkit
