@@ -1,10 +1,10 @@
 # CUDA only supports g++ <=4.8 at the time
-CC=/usr/local/gcc-4.9.3/bin/g++ # This is the main compiler
-#CC=clang --analyze # and comment out the linker last line for sanity
+CXX?="/usr/local/gcc-4.9.3/bin/g++" # This is the main compiler
+#CXX=clang --analyze # and comment out the linker last line for sanity
 
 # Location of the CUDA Toolkit
 CUDA_HOME?="/usr/local/cuda"
-NVCC=$(CUDA_HOME)/bin/nvcc -ccbin $(CC)
+NVCC=$(CUDA_HOME)/bin/nvcc -ccbin $(CXX)
 
 SRCDIR=src/main
 BUILDDIR=build/main
