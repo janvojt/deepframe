@@ -74,9 +74,9 @@ void ConvolutionalLayer::forwardCpu() {
                     for (int k = 0; k < conf.windowSize; k++) { // row index
                         for (int l = 0; l < conf.windowSize; l++) { // column index
                             
-                            int srcNeuronIdx = srcFeatureIdx + (k + i) * conf.windowSize + (l + j);
+                            int srcNeuronIdx = srcFeatureIdx + (k + i) * inputFeatureWidth + (l + j);
                             
-                            int weightIdx = pf * featuresCount * conf.windowSize * conf.windowSize
+                            int weightIdx = f * conf.windowSize * conf.windowSize
                                             + k * conf.windowSize + l;
                             
                             outputs[dstNeuronIdx] += inputPtr[srcNeuronIdx] * this->weights[weightIdx];
@@ -122,9 +122,9 @@ void ConvolutionalLayer::backwardCpu() {
                     for (int k = 0; k < conf.windowSize; k++) { // row index
                         for (int l = 0; l < conf.windowSize; l++) { // column index
                             
-                            int srcNeuronIdx = srcFeatureIdx + (k + i) * conf.windowSize + (l + j);
+                            int srcNeuronIdx = srcFeatureIdx + (k + i) * inputFeatureWidth + (l + j);
                             
-                            int weightIdx = pf * featuresCount * conf.windowSize * conf.windowSize
+                            int weightIdx = f * conf.windowSize * conf.windowSize
                                             + k * conf.windowSize + l;
                             
                             weightDiffs[weightIdx] += outputDiffs[dstNeuronIdx] * inputs[srcNeuronIdx];
