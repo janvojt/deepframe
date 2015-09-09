@@ -52,6 +52,8 @@ void SubsamplingLayer::setup(string confString) {
         // but uses a trainable parameter for each feature map
         // and optionally bias for each feature map
         this->weightsCount = conf.useBias ? featuresCount*2 : featuresCount;
+        
+        maxIndices = new int[outputsCount];
     }
 }
 
@@ -74,19 +76,20 @@ void SubsamplingLayer::forwardCpu() {
             
             for (int j = 0; j < wfeatureWidth; j++) { // column index
                 int dstNeuronIdx = rowIdx + j;
-                data_t max = -1;
+                // set maximum to the lowest value possible
+                outputs[dstNeuronIdx] = -1;
                 
                 // loop through source neurons
                 for (int k = 0; k < conf.windowHeight; k++) { // row index
                     for (int l = 0; l < conf.windowWidth; l++) { // column index
 
                         int srcNeuronIdx =  srcFeatureIdx + (k + i*conf.windowHeight) * inputFeatureWidth + (l + j*conf.windowWidth);
-                        max = (inputs[srcNeuronIdx] > max) ? inputs[srcNeuronIdx] : max;
+                        if (inputs[srcNeuronIdx] > outputs[dstNeuronIdx]) {
+                            outputs[dstNeuronIdx] = inputs[srcNeuronIdx];
+                            maxIndices[dstNeuronIdx] = srcNeuronIdx;
+                        }
                     }
                 }
-                
-                outputs[dstNeuronIdx] += max; // * this->weights[f] + this->weights[featuresCount + f];
-                
             } // end loop through destination neuron
         }
     }
@@ -110,7 +113,7 @@ void SubsamplingLayer::backwardCpu() {
     int wfeatureHeight = inputFeatureHeight / conf.windowHeight;
     
     // clear output
-//    std::fill_n(inputDiffs, inputsCount, 0);
+    std::fill_n(inputDiffs, previousLayer->getOutputsCount(), 0);
     
     // loop through destination neuron
     for (int f = 0; f < featuresCount; f++) {
@@ -121,16 +124,10 @@ void SubsamplingLayer::backwardCpu() {
             int rowIdx = dstFeatureIdx + i * wfeatureWidth;
             
             for (int j = 0; j < wfeatureWidth; j++) { // column index
-                int dstNeuronIdx = rowIdx + j;
-                
-                // loop through source neurons
-                for (int k = 0; k < conf.windowHeight; k++) { // row index
-                    for (int l = 0; l < conf.windowWidth; l++) { // column index
 
-                        int srcNeuronIdx =  srcFeatureIdx + (k + i*conf.windowHeight) * inputFeatureWidth + (l + j * conf.windowWidth);
-                        inputDiffs[srcNeuronIdx] = outputDiffs[dstNeuronIdx];
-                    }
-                }
+                int dstNeuronIdx = rowIdx + j;
+                inputDiffs[maxIndices[dstNeuronIdx]] = outputDiffs[dstNeuronIdx];
+
             } // end loop through destination neuron
         }
     }

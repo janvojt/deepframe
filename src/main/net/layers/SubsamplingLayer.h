@@ -62,6 +62,8 @@ private:
     
     int inputFeatureWidth;
     int inputFeatureHeight;
+    
+    int *maxIndices = NULL;
 };
 
 #endif	/* SUBSAMPLINGLAYER_H */
