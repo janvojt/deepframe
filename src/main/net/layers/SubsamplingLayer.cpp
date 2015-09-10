@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <sstream>
+#include <float.h>
 #include "../../common.h"
 #include "../LayerFactory.h"
 
@@ -77,7 +78,7 @@ void SubsamplingLayer::forwardCpu() {
             for (int j = 0; j < wfeatureWidth; j++) { // column index
                 int dstNeuronIdx = rowIdx + j;
                 // set maximum to the lowest value possible
-                outputs[dstNeuronIdx] = -1;
+                outputs[dstNeuronIdx] = -FLT_MAX;
                 
                 // loop through source neurons
                 for (int k = 0; k < conf.windowHeight; k++) { // row index
