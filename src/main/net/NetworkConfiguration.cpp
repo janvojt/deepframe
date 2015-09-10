@@ -56,16 +56,6 @@ string NetworkConfiguration::getLayersConf(int layerIndex) {
     return layersConf[layerIndex][1];
 }
 
-int NetworkConfiguration::getNeurons(int layer) {
-    // This is quite ugly. It assumes the number of neurons are the first
-    // integer in the layer configuration string. This is usually not the
-    // case in the vision layers, for example. Also, it generally does not
-    // perform well, but is called only once, so should be fine.
-    int neurons = 0;
-    sscanf(layersConf[layer][1].c_str(), "%d", &neurons);
-    return neurons;
-}
-
 void NetworkConfiguration::setBias(bool enabled) {
     bias = enabled;
 }

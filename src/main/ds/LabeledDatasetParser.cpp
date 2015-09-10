@@ -36,12 +36,49 @@ LabeledDataset* LabeledDatasetParser::parse() {
         return NULL;
     }
 
-    int inNeurons = netConf->getNeurons(0);
-    int outNeurons = netConf->getNeurons(netConf->getLayers()-1);
+    int inNeurons = 0;
+    int outNeurons = 0;
     int size = 0;
     
     // read dataset size
     fp >> size;
+
+    // truncate LF or CRLF
+    fp.get() == 13 && fp.get();
+        
+    // read input size
+    if (size > 0) {
+        
+        int beginData = fp.tellg();
+        bool countingInput = true;
+        char ch;
+        while ((ch = fp.peek()) != std::char_traits<char>::eof())
+        {
+            if (ch == '\n') {
+                break;
+            } else if (ch == ' '|| ch == '\t' || ch == '\r') {
+                char truncate;
+                fp.read(&truncate, 1);
+            } else if (ch == '>') {
+                char truncate;
+                fp.read(&truncate, 1);
+                countingInput = false;
+            }
+            else
+            {
+                data_t truncate;
+                fp >> truncate;
+                if (countingInput) {
+                    inNeurons++;
+                } else {
+                    outNeurons++;
+                }
+            }
+        }
+        fp.seekg(beginData);
+    }
+    
+    LOG()->info("Reading data file %s with %d inputs and %d outputs.", filepath, inNeurons, outNeurons);
     
     SimpleLabeledDataset *ds = new SimpleLabeledDataset(inNeurons, outNeurons, size);
     

@@ -23,10 +23,6 @@ public:
     // including input and output layer.
     int getLayers();
     void setLayers(int layers);
-    // Returns number of neurons indexed from zero.
-    int getNeurons(int layer);
-    // Sets number of neurons in given layer, layer being indexed from zero.
-    void setNeurons(int layer, int neurons);
     // Enables or disables network bias.
     void setBias(bool enabled);
     // Returns whether bias is enabled.

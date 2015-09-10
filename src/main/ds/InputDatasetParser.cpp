@@ -17,6 +17,8 @@
 #include <iostream>
 #include <fstream>
 
+using namespace std;
+
 InputDatasetParser::InputDatasetParser(char* filepath, NetworkConfiguration* netConf) {
     this->netConf = netConf;
     this->filepath = filepath;
@@ -30,7 +32,7 @@ InputDatasetParser::~InputDatasetParser() {
 
 InputDataset* InputDatasetParser::parse() {
     
-    std::ifstream fp(filepath);
+    ifstream fp(filepath);
     LOG()->info("Parsing file '%s' for test dataset.", filepath);
 
     if (!fp.is_open()) {
@@ -38,11 +40,44 @@ InputDataset* InputDatasetParser::parse() {
         return NULL;
     }
 
-    int inNeurons = netConf->getNeurons(0);
+    int inNeurons = 0;
     int size = 0;
     
     // read dataset size
     fp >> size;
+
+    // truncate LF or CRLF
+    fp.get() == 13 && fp.get();
+        
+    // read input size
+    if (size > 0) {
+        
+        int beginData = fp.tellg();
+        char ch;
+        while ((ch = fp.peek()) != std::char_traits<char>::eof())
+        {
+            if (ch == '\n') {
+                break;
+            } else if (ch == ' '|| ch == '\t' || ch == '\r') {
+                char truncate;
+                fp.read(&truncate, 1);
+            } else if (ch == '>') {
+                LOG()->warn("Using data file with labels as a testing dataset is not currently supported. Parsing will most likely fail.");
+                char truncate;
+                fp.read(&truncate, 1);
+                break;
+            }
+            else
+            {
+                data_t truncate;
+                fp >> truncate;
+                inNeurons++;
+            }
+        }
+        fp.seekg(beginData);
+    }
+    
+    LOG()->info("Reading data file %s with %d inputs.", filepath, inNeurons);
     
     SimpleInputDataset *ds = new SimpleInputDataset(inNeurons, size);
     
