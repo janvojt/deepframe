@@ -83,28 +83,9 @@ TrainingResult* BackpropagationLearner::train(LabeledDataset *trainingSet, Label
             
             // Print output and expected output of the network
             if (LOG()->isDebugEnabled()) {
-                data_t *output = network->getOutput();
                 int outputsCount = network->getOutputNeurons();
-                log4cpp::CategoryStream debugStream = LOG()->debugStream();
-                
-                char const *dynSep;
-                
-                debugStream << "expected output: [";
-                dynSep = EMPTY_STRING;
-                for (int i = 0; i<outputsCount; i++) {
-                    debugStream << dynSep << std::fixed << std::setprecision(6)  << expOutput[i];
-                    dynSep = COMMA_STRING;
-                }
-                debugStream << "]";
-                debugStream.flush();
-                
-                debugStream << "actual   output: [";
-                dynSep = EMPTY_STRING;
-                for (int i = 0; i<outputsCount; i++) {
-                    debugStream << dynSep << output[i];
-                    dynSep = COMMA_STRING;
-                }
-                debugStream << "]";
+                logOutput("expected output:", expOutput, outputsCount);
+                logOutput("actual   output:", network->getOutput(), outputsCount);
             }
             
             // check for NaNs
@@ -194,6 +175,21 @@ data_t BackpropagationLearner::computeError(LabeledDataset* ds) {
     }
     
     return vMse / datasetSize;
+}
+
+void BackpropagationLearner::logOutput(const char *message, data_t *output, int outputsCount) {
+
+    log4cpp::CategoryStream debugStream = LOG()->debugStream();
+    char const *dynSep;
+
+    debugStream << message << " [";
+    dynSep = EMPTY_STRING;
+    for (int i = 0; i<outputsCount; i++) {
+        debugStream << dynSep << std::fixed << std::setprecision(6)  << output[i];
+        dynSep = COMMA_STRING;
+    }
+    debugStream << "]";
+    debugStream.flush();
 }
 
 void BackpropagationLearner::setImproveEpochs(int improveEpochs) {

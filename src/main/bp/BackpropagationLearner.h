@@ -91,6 +91,14 @@ private:
      */
     data_t computeError(LabeledDataset *ds);
     
+    /**
+     * Log given output array values.
+     * @param message introductory text of logged message
+     * @param output array of values to log
+     * @param outputsCount size of the array
+     */
+    void logOutput(const char *message, data_t *output, int outputsCount);
+    
     // Cache with last error rates.
     data_t *errorCache;
     // Cursor for iterating the error cache.
