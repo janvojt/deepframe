@@ -8,7 +8,7 @@
 #ifndef CPUDEBUGHELPERS_H
 #define	CPUDEBUGHELPERS_H
 
-void dumpHostArray(char flag, float *array, int size);
+void dumpHostArray(const char *flag, float *array, int size);
 
 #endif	/* CPUDEBUGHELPERS_H */
 

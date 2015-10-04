@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "../common.h"
+#include "LayerFactory.h"
 
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -36,6 +37,18 @@ Network::~Network() {
 }
 
 void Network::setup() {
+    
+    Layer *prevLayer = NULL;
+    for (int i = 0; i<conf->getLayers(); i++) {
+        string layerType = conf->getLayerType(i);
+        string layerConf = conf->getLayersConf(i);
+        LOG()->info("Setting up layer %d (%s) with configuration '%s'.", i+1, layerType.c_str(), layerConf.c_str());
+        Layer *layer = LayerFactory::createInstance(layerType);
+        layer->setup(prevLayer, conf, layerConf);
+        addLayer(layer);
+        prevLayer = layer;
+    }
+    
     if (layerCursor > noLayers) {
         LOG()->error("Network cannot be initialized, because it contains %d out of %d layers.", layerCursor, noLayers);
     } else if (isInitialized) {

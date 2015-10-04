@@ -21,7 +21,6 @@
 #include "net/GpuNetwork.h"
 #include "net/CpuNetwork.h"
 #include "net/GpuConfiguration.h"
-#include "net/LayerFactory.h"
 #include "ds/SimpleLabeledDataset.h"
 #include "ds/LabeledDatasetParser.h"
 #include "ds/SimpleInputDataset.h"
@@ -472,16 +471,6 @@ int main(int argc, char *argv[]) {
     }
     
     // Configure network layers
-    Layer *prevLayer = NULL;
-    for (int i = 0; i<netConf->getLayers(); i++) {
-        string layerType = netConf->getLayerType(i);
-        string layerConf = netConf->getLayersConf(i);
-        LOG()->info("Setting up layer %d (%s) with configuration '%s'.", i+1, layerType.c_str(), layerConf.c_str());
-        Layer *layer = LayerFactory::createInstance(layerType);
-        layer->setup(prevLayer, netConf, layerConf);
-        net->addLayer(layer);
-        prevLayer = layer;
-    }
     net->setup();
     
     // Prepare test dataset.
