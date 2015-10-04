@@ -106,6 +106,11 @@ TrainingResult* BackpropagationLearner::train(LabeledDataset *trainingSet, Label
                 }
                 debugStream << "]";
             }
+            
+            // check for NaNs
+            if (avgmse != avgmse) {
+                break;
+            }
         }
         
         // compute MSE on training data
@@ -126,6 +131,10 @@ TrainingResult* BackpropagationLearner::train(LabeledDataset *trainingSet, Label
             break;
         } else if (!isErrorImprovement(result->getError(), epochCounter)) {
             LOG()->info("Validation fold %d: Training interrupted after %d epochs with MSE of %f, because MSE improvement in last %d epochs was less than %f.", valIdx, epochCounter, result->getError(), improveEpochs, deltaError);
+            break;
+        } else if (mse != mse) {
+            // check for NaNs
+            LOG()->error("Stumbled upon NaN while learning. Please rerun with different initialization values for weights and/or bias. Quitting learning...");
             break;
         } else if (epochCounter >= this->epochLimit) {
             LOG()->info("Validation fold %d: Training interrupted after %d epochs with MSE of %f.", valIdx, epochCounter, result->getError());
