@@ -14,6 +14,7 @@
 
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
+#include "../../util/cudaDebugHelpers.h"
 
 ConvolutionalLayer::ConvolutionalLayer() {
 }
@@ -43,19 +44,29 @@ void ConvolutionalLayer::setup(string confString) {
     featureWidth = inputFeatureWidth - conf.windowSize + 1;
     featureHeight = inputFeatureHeight - conf.windowSize + 1;
     
-    this->outputsCount = featuresCount
+    outputsCount = featuresCount
             * featureWidth * featureHeight;
     
-    this->weightsCount = featuresCount
+    weightsCount = featuresCount
             * conf.windowSize * conf.windowSize;
+    
+    kernelHeight = conf.windowSize;
+    kernelWidth = conf.windowSize;
+    kernelDim = inputFeatures * kernelHeight * kernelWidth;
+    featureSize = featureWidth * featureHeight; // feature size
+    colWidth = featureSize; // width of column buffer
+    colHeight = kernelDim; // height of column buffer
+    colSize = colWidth * colHeight;
+    
+    checkCudaErrors(cudaMalloc(&colBuffer, colSize * sizeof(data_t)));
 }
 
 void ConvolutionalLayer::forwardCpu() {
     
-    data_t *inputPtr = this->previousLayer->getOutputs();
+    data_t *inputPtr = previousLayer->getOutputs();
 
     // clear output
-    std::fill_n(outputs, this->outputsCount, 0);
+    std::fill_n(outputs, outputsCount, 0);
 
     // loop through destination neuron
     for (int f = 0; f < featuresCount; f++) { // destination feature index
@@ -79,7 +90,7 @@ void ConvolutionalLayer::forwardCpu() {
                             int weightIdx = f * conf.windowSize * conf.windowSize
                                             + k * conf.windowSize + l;
                             
-                            outputs[dstNeuronIdx] += inputPtr[srcNeuronIdx] * this->weights[weightIdx];
+                            outputs[dstNeuronIdx] += inputPtr[srcNeuronIdx] * weights[weightIdx];
                             
                         }
                     }
@@ -90,11 +101,17 @@ void ConvolutionalLayer::forwardCpu() {
     }
 }
 
-
 void ConvolutionalLayer::forwardGpu() {
-    //TODO
-}
 
+    const data_t* inputs = previousLayer->getOutputs();
+    
+    k_conv_im2col(inputs, colBuffer);
+
+    k_gemm(cublasHandle, CblasNoTrans, CblasNoTrans,
+            featuresCount, featureSize, kernelDim,
+            (data_t) 1., weights, colBuffer,
+            (data_t) 0., outputs);
+}
 
 void ConvolutionalLayer::backwardCpu() {
     
@@ -138,9 +155,52 @@ void ConvolutionalLayer::backwardCpu() {
     }
 }
 
+/**
+ * W = I * O + W
+ * 
+ * @param input
+ * @param output
+ * @param weights
+ */
+void ConvolutionalLayer::k_weightGemm(const data_t* input,
+        const data_t* output, data_t* weights) {
+    
+    k_conv_im2col(input, colBuffer);
+    
+    k_gemm(cublasHandle, CblasNoTrans, CblasTrans, featuresCount,
+            kernelDim, featureSize,
+            (data_t) 1., output, colBuffer,
+            (data_t) 1., weights);
+}
+
+/**
+ * I = O * W + I
+ * 
+ * @param output
+ * @param weights
+ * @param input
+ */
+void ConvolutionalLayer::k_backwardGemm(const data_t* output,
+        const data_t* weights, data_t* input) {
+    
+    k_gemm(cublasHandle, CblasTrans, CblasNoTrans, kernelDim,
+            featureSize, featuresCount,
+            (data_t) 1., weights, output,
+            (data_t) 0., colBuffer);
+
+    k_conv_col2im(colBuffer, input);
+}
 
 void ConvolutionalLayer::backwardGpu() {
-    //TODO
+    
+    const data_t* inputs = previousLayer->getOutputs();
+    data_t* inputDiffs = previousLayer->getOutputDiffs();
+    
+    // gradient w.r.t. weight. Note that we will accumulate diffs.
+    k_weightGemm(inputs, outputDiffs, weightDiffs);
+    
+    // gradient w.r.t. bottom data, if necessary.
+    k_backwardGemm(outputDiffs, weights, inputDiffs);
 }
 
 void ConvolutionalLayer::backwardLastCpu(data_t* expectedOutput) {

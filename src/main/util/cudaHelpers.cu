@@ -9,7 +9,7 @@
 
 #include <cuda_runtime.h>
 #include <cuda.h>
-
+#include <cfloat>
 
 __global__
 void sumVectors(data_t *dA, data_t *dB, int elements) {
@@ -154,40 +154,6 @@ void k_spreadInterval(data_t min, data_t max, data_t *dArray, int size) {
     spreadInterval<<<bs,ts>>>(min, max, dArray, size);
 }
 
-
-/** Delegates GEMM call to cuBLAS for single precision. */
-cublasStatus_t k_gemm(cublasContext *handle,
-        cublasOperation_t transa,
-        cublasOperation_t transb,
-        int m,
-        int n,
-        int k,
-        const data_t *alpha, /* host or device pointer */
-        const data_t *A,
-        int lda,
-        const data_t *B,
-        int ldb,
-        const data_t *beta, /* host or device pointer */
-        float *C,
-        int ldc) {
-    
-#ifdef USE_64BIT_PRECISION
-    return cublasDgemm(handle,
-            transa, transb,
-            m, n, k,
-            alpha, A, lda,
-            B, ldb,
-            beta, C, ldc);
-#else
-    return cublasSgemm(handle,
-            transa, transb,
-            m, n, k,
-            alpha, A, lda,
-            B, ldb,
-            beta, C, ldc);
-#endif
-}
-
 curandStatus_t k_generateUniform(curandGenerator_t generator,
         data_t *outputPtr,
         size_t num) {
@@ -197,4 +163,226 @@ curandStatus_t k_generateUniform(curandGenerator_t generator,
 #else
     return curandGenerateUniform(generator, outputPtr, num);
 #endif
+}
+
+
+__global__ void im2col(const int n, const data_t* data_im,
+    const int height, const int width, const int kernelHeight, const int kernelWidth,
+    const int padHeight, const int padWidth,
+    const int strideHeight, const int strideWidth,
+    const int heightCol, const int widthCol,
+    data_t* data_col) {
+  CUDA_KERNEL_LOOP(index, n) {
+    int w_out = index % widthCol;
+    int h_index = index / widthCol;
+    int h_out = h_index % heightCol;
+    int channel_in = h_index / heightCol;
+    int channel_out = channel_in * kernelHeight * kernelWidth;
+    int h_in = h_out * strideHeight - padHeight;
+    int w_in = w_out * strideWidth - padWidth;
+    data_t* data_col_ptr = data_col;
+    data_col_ptr += (channel_out * heightCol + h_out) * widthCol + w_out;
+    const data_t* data_im_ptr = data_im;
+    data_im_ptr += (channel_in * height + h_in) * width + w_in;
+    for (int i = 0; i < kernelHeight; ++i) {
+      for (int j = 0; j < kernelWidth; ++j) {
+        int h = h_in + i;
+        int w = w_in + j;
+        *data_col_ptr = (h >= 0 && w >= 0 && h < height && w < width) ?
+            data_im_ptr[i * width + j] : 0;
+        data_col_ptr += heightCol * widthCol;
+      }
+    }
+  }
+}
+
+void k_im2col(const data_t* data_im, const int channels,
+    const int height, const int width, const int kernelHeight, const int kernelWidth,
+    const int padHeight, const int padWidth,
+    const int strideHeight, const int strideWidth,
+    data_t* data_col) {
+  // We are going to launch channels * height_col * width_col kernels, each
+  // kernel responsible for copying a single-channel grid.
+  int height_col = (height + 2 * padHeight - kernelHeight) / strideHeight + 1;
+  int width_col = (width + 2 * padWidth - kernelWidth) / strideWidth + 1;
+  int num_kernels = channels * height_col * width_col;
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  im2col<<<CUDA_GET_BLOCKS(num_kernels),
+                             CUDA_NUM_THREADS>>>(
+      num_kernels, data_im, height, width, kernelHeight, kernelWidth, padHeight,
+      padWidth, strideHeight, strideWidth, height_col,
+      width_col, data_col);
+}
+
+
+__global__ void col2im(const int n, const data_t* data_col,
+    const int height, const int width, const int channels,
+    const int patchHeight, const int patchWidth,
+    const int padHeight, const int padWidth,
+    const int strideHeight, const int strideWidth,
+    const int heightCol, const int widthCol,
+    data_t* data_im) {
+  CUDA_KERNEL_LOOP(index, n) {
+    data_t val = 0;
+    int w = index % width + padWidth;
+    int h = (index / width) % height + padHeight;
+    int c = index / (width * height);
+    // compute the start and end of the output
+    int w_col_start = (w < patchWidth) ? 0 : (w - patchWidth) / strideWidth + 1;
+    int w_col_end = min(w / strideWidth + 1, widthCol);
+    int h_col_start = (h < patchHeight) ? 0 : (h - patchHeight) / strideHeight + 1;
+    int h_col_end = min(h / strideHeight + 1, heightCol);
+    
+    // equivalent implementation
+    int offset =
+        (c * patchHeight * patchWidth + h * patchWidth + w) * heightCol * widthCol;
+    int coeff_h_col = (1 - strideHeight * patchWidth * heightCol) * widthCol;
+    int coeff_w_col = (1 - strideWidth * heightCol * widthCol);
+    for (int h_col = h_col_start; h_col < h_col_end; ++h_col) {
+      for (int w_col = w_col_start; w_col < w_col_end; ++w_col) {
+        val += data_col[offset + h_col * coeff_h_col + w_col * coeff_w_col];
+      }
+    }
+    data_im[index] = val;
+  }
+}
+
+void k_col2im(const data_t* data_col, const int channels,
+    const int height, const int width, const int patchHeight, const int patchWidth,
+    const int padHeight, const int padWidth, const int strideHeight,
+    const int strideWidth, data_t* data_im) {
+  int height_col = (height + 2 * padHeight - patchHeight) / strideHeight + 1;
+  int width_col = (width + 2 * padWidth - patchWidth) / strideWidth + 1;
+  int num_kernels = channels * height * width;
+  // To avoid involving atomic operations, we will launch one kernel per
+  // bottom dimension, and then in the kernel add up the top dimensions.
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  col2im<<<CUDA_GET_BLOCKS(num_kernels),
+                             CUDA_NUM_THREADS>>>(
+      num_kernels, data_col, height, width, channels, patchHeight, patchWidth,
+      padHeight, padWidth, strideHeight, strideWidth,
+      height_col, width_col, data_im);
+}
+
+void k_gemm(cublasContext *handle, const CBLAS_TRANSPOSE TransA,
+    const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+    const float alpha, const float* A, const float* B, const float beta,
+    float* C) {
+  // Note that cublas follows fortran order.
+  int lda = (TransA == CblasNoTrans) ? K : M;
+  int ldb = (TransB == CblasNoTrans) ? N : K;
+  cublasOperation_t cuTransA =
+      (TransA == CblasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
+  cublasOperation_t cuTransB =
+      (TransB == CblasNoTrans) ? CUBLAS_OP_N : CUBLAS_OP_T;
+    
+#ifdef USE_64BIT_PRECISION
+  CUBLAS_CHECK(cublasDgemm(handle, cuTransB, cuTransA,
+          N, M, K, &alpha, B, ldb, A, lda, &beta, C, N));
+#else
+  CUBLAS_CHECK(cublasSgemm(handle, cuTransB, cuTransA,
+          N, M, K, &alpha, B, ldb, A, lda, &beta, C, N));
+#endif
+}
+
+
+__global__ void MaxPoolForward(const int nthreads,
+    const data_t* const inputs, const int featuresCount,
+    const int inputFeatureHeight, const int inputFeatureWidth, const int featureHeight,
+    const int featureWidth, const int kernelHeight, const int kernelWidth,
+    const int strideHeight, const int strideWidth, const int padHeight, const int padWidth,
+    data_t* const outputs, int* mask) {
+  CUDA_KERNEL_LOOP(index, nthreads) {
+    const int pw = index % featureWidth;
+    const int ph = (index / featureWidth) % featureHeight;
+    const int c = (index / featureWidth / featureHeight) % featuresCount;
+    const int n = index / featureWidth / featureHeight / featuresCount;
+    int hstart = ph * strideHeight - padHeight;
+    int wstart = pw * strideWidth - padWidth;
+    const int hend = min(hstart + kernelHeight, inputFeatureHeight);
+    const int wend = min(wstart + kernelWidth, inputFeatureWidth);
+    hstart = max(hstart, 0);
+    wstart = max(wstart, 0);
+    data_t maxval = -FLT_MAX;
+    int maxidx = -1;
+    const data_t* const inputSlice =
+        inputs + (n * featuresCount + c) * inputFeatureHeight * inputFeatureWidth;
+    for (int h = hstart; h < hend; ++h) {
+      for (int w = wstart; w < wend; ++w) {
+        if (inputSlice[h * inputFeatureWidth + w] > maxval) {
+          maxidx = h * inputFeatureWidth + w;
+          maxval = inputSlice[maxidx];
+        }
+      }
+    }
+    outputs[index] = maxval;
+    mask[index] = maxidx;
+  }
+}
+
+void k_MaxPoolForward(const int nthreads,
+    const data_t* const inputs, const int featuresCount,
+    const int inputFeatureHeight, const int inputFeatureWidth, const int featureHeight,
+    const int featureWidth, const int kernelHeight, const int kernelWidth,
+    const int strideHeight, const int strideWidth, const int padHeight, const int padWidth,
+    data_t* const outputs, int* mask) {
+
+    MaxPoolForward<<<CUDA_GET_BLOCKS(nthreads), CUDA_NUM_THREADS>>>(
+            nthreads, inputs, featuresCount,
+            inputFeatureHeight, inputFeatureWidth, featureHeight,
+            featureWidth, kernelHeight, kernelWidth,
+            strideHeight, strideWidth, padHeight, padWidth,
+            outputs, mask);
+}
+
+
+__global__ void MaxPoolBackward(const int nthreads, const data_t* const outputDiffs,
+    const int* const mask,
+    const int channels, const int inputFeatureHeight, const int inputFeatureWidth,
+    const int featureHeight, const int featureWidth, const int kernelHeight,
+    const int kernelWidth, const int strideHeight, const int strideWidth, const int padHeight,
+    const int padWidth, data_t* const inputDiffs) {
+    
+  CUDA_KERNEL_LOOP(index, nthreads) {
+    // find out the local index
+    // find out the local offset
+    const int w = index % inputFeatureWidth;
+    const int h = (index / inputFeatureWidth) % inputFeatureHeight;
+    const int c = (index / inputFeatureWidth / inputFeatureHeight) % channels;
+    const int n = index / inputFeatureWidth / inputFeatureHeight / channels;
+    const int phstart =
+         (h + padHeight < kernelHeight) ? 0 : (h + padHeight - kernelHeight) / strideHeight + 1;
+    const int phend = min((h + padHeight) / strideHeight + 1, featureHeight);
+    const int pwstart =
+         (w + padWidth < kernelWidth) ? 0 : (w + padWidth - kernelWidth) / strideWidth + 1;
+    const int pwend = min((w + padWidth) / strideWidth + 1, featureWidth);
+    data_t gradient = 0;
+    const int offset = (n * channels + c) * featureHeight * featureWidth;
+    const data_t* const outputDiffSlice = outputDiffs + offset;
+    if (mask) {
+      const int* const maskSlice = mask + offset;
+      for (int ph = phstart; ph < phend; ++ph) {
+        for (int pw = pwstart; pw < pwend; ++pw) {
+          if (maskSlice[ph * featureWidth + pw] == h * inputFeatureWidth + w) {
+            gradient += outputDiffSlice[ph * featureWidth + pw];
+          }
+        }
+      }
+    }
+    inputDiffs[index] = gradient;
+  }
+}
+
+void k_MaxPoolBackward(const int nthreads, const data_t* const outputDiffs,
+    const int* const mask,
+    const int channels, const int inputFeatureHeight, const int inputFeatureWidth,
+    const int featureHeight, const int featureWidth, const int kernelHeight,
+    const int kernelWidth, const int stride_h, const int strideWidth, const int padHeight,
+    const int padWidth, data_t* const inputDiffs) {
+    
+    MaxPoolBackward<<<CUDA_GET_BLOCKS(nthreads), CUDA_NUM_THREADS>>>(nthreads, outputDiffs,
+    mask, channels, inputFeatureHeight, inputFeatureWidth,
+    featureHeight, featureWidth, kernelHeight,
+    kernelWidth, stride_h, strideWidth, padHeight,
+    padWidth, inputDiffs);
 }

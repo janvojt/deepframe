@@ -24,5 +24,8 @@ typedef float data_t;
   template class classname<float>; \
   template class classname<double>
 
+extern const char* COMMA_STRING;
+extern const char* EMPTY_STRING;
+
 #endif	/* COMMON_H */
 

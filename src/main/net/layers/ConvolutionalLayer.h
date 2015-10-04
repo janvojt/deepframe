@@ -11,6 +11,7 @@
 #include <string>
 #include "../Layer.h"
 #include "SubsamplingLayer.h"
+#include "../../util/cudaHelpers.h"
 
 using namespace std;
 
@@ -50,17 +51,44 @@ private:
     
     void processConfString(string confString);
     
+    void k_weightGemm(const data_t* input,
+        const data_t* output, data_t* weights);
+    
+    void k_backwardGemm(const data_t* output,
+    const data_t* weights, data_t* input);
+
+    inline void k_conv_im2col(const data_t* data, data_t* colBuffer) {
+        k_im2col(data, inputFeatures, inputFeatureHeight, inputFeatureWidth,
+                kernelHeight, kernelWidth, padHeight, padWidth, strideHeight, strideWidth, colBuffer);
+    }
+
+    inline void k_conv_col2im(const data_t* colBuffer, data_t* data) {
+        k_col2im(colBuffer, inputFeatures, inputFeatureHeight, inputFeatureWidth,
+                kernelHeight, kernelWidth, padHeight, padWidth, strideHeight, strideWidth, data);
+    }
+    
     ConvolutionalConfig conf;
     
+    data_t *colBuffer;
+
     int featuresCount;
-    
     int inputFeatures;
-    
+    int featureSize;
     int featureWidth;
     int featureHeight;
-    
-    int inputFeatureWidth;
     int inputFeatureHeight;
+    int inputFeatureWidth;
+    
+    int colWidth;
+    int colHeight;
+    int colSize;
+    
+    int kernelHeight, kernelWidth;
+    int kernelDim;
+    
+    // TODO implement stride and padding
+    int strideHeight = 1, strideWidth = 1;
+    int padHeight = 0, padWidth = 0;
 };
 
 #endif	/* CONVOLUTIONALLAYER_H */

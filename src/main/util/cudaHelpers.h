@@ -16,8 +16,60 @@
 
 #include <curand.h>
 #include <cublas_v2.h>
+#include <cblas.h>
 
-#define checkCudaErrors(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+// CUDA: thread number configuration.
+// Use 1024 threads per block, which requires cuda sm_2x or above,
+// or fall back to attempt compatibility (best of luck to you).
+#if __CUDA_ARCH__ >= 200
+    const int CUDA_NUM_THREADS = 1024;
+#else
+    const int CUDA_NUM_THREADS = 512;
+#endif
+
+// CUDA: number of blocks for threads.
+inline int CUDA_GET_BLOCKS(const int N) {
+  return (N + CUDA_NUM_THREADS - 1) / CUDA_NUM_THREADS;
+}
+
+
+#define CUBLAS_CHECK(condition) { \
+    gpuCublasAssert(condition, __FILE__, __LINE__); \
+}
+
+inline void gpuCublasAssert(cublasStatus_t code, const char *file, int line, bool abort = true) {
+    if (code != CUBLAS_STATUS_SUCCESS) {
+        const char *errorMsg;
+        switch (code) {
+            case CUBLAS_STATUS_SUCCESS:
+                errorMsg = "CUBLAS_STATUS_SUCCESS";
+            case CUBLAS_STATUS_NOT_INITIALIZED:
+                errorMsg = "CUBLAS_STATUS_NOT_INITIALIZED";
+            case CUBLAS_STATUS_ALLOC_FAILED:
+                errorMsg = "CUBLAS_STATUS_ALLOC_FAILED";
+            case CUBLAS_STATUS_INVALID_VALUE:
+                errorMsg = "CUBLAS_STATUS_INVALID_VALUE";
+            case CUBLAS_STATUS_ARCH_MISMATCH:
+                errorMsg = "CUBLAS_STATUS_ARCH_MISMATCH";
+            case CUBLAS_STATUS_MAPPING_ERROR:
+                errorMsg = "CUBLAS_STATUS_MAPPING_ERROR";
+            case CUBLAS_STATUS_EXECUTION_FAILED:
+                errorMsg = "CUBLAS_STATUS_EXECUTION_FAILED";
+            case CUBLAS_STATUS_INTERNAL_ERROR:
+                errorMsg = "CUBLAS_STATUS_INTERNAL_ERROR";
+            case CUBLAS_STATUS_NOT_SUPPORTED:
+                errorMsg = "CUBLAS_STATUS_NOT_SUPPORTED";
+            case CUBLAS_STATUS_LICENSE_ERROR:
+                errorMsg = "CUBLAS_STATUS_LICENSE_ERROR";
+            default:
+                errorMsg = "Unknown cublas status";
+        }
+        fprintf(stderr, "CUBLAS: GPUassert: %s (%s:%d)\n", errorMsg, file, line);
+        if (abort) exit(code);
+    }
+};
+
+#define checkCudaErrors(ans) { gpuAssert(ans, __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {
    if (code != cudaSuccess) 
@@ -26,6 +78,12 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
       if (abort) exit(code);
    }
 }
+
+// CUDA: grid stride looping
+#define CUDA_KERNEL_LOOP(i, n) \
+  for (int i = blockIdx.x * blockDim.x + threadIdx.x; \
+       i < (n); \
+       i += blockDim.x * gridDim.x)
 
 // Computes matrix sum A = A + B.
 void k_sumVectors(data_t *dA, data_t *dB, int elements);
@@ -62,39 +120,6 @@ void k_computeSigmoid(data_t *dArray, int elements);
 void k_spreadInterval(data_t min, data_t max, data_t *dArray, int size);
 
 /**
- * Delegates GEMM operation to appropriate cuBLAS call of correct data type.
- * 
- * @param handle
- * @param transa
- * @param transb
- * @param m
- * @param n
- * @param k
- * @param alpha
- * @param A
- * @param lda
- * @param B
- * @param ldb
- * @param beta
- * @param C
- * @param ldc
- * @return 
- */
-cublasStatus_t k_gemm(cublasContext *handle,
-        cublasOperation_t transa,
-        cublasOperation_t transb,
-        int m,
-        int n,
-        int k,
-        const data_t *alpha, /* host or device pointer */
-        const data_t *A,
-        int lda,
-        const data_t *B,
-        int ldb,
-        const data_t *beta, /* host or device pointer */
-        data_t *C,
-        int ldc);
-/**
  * Delegates random number generation to appropriate cuRAND call of correct
  * data type.
  * 
@@ -107,6 +132,53 @@ curandStatus_t k_generateUniform(curandGenerator_t generator,
         data_t *outputPtr,
         size_t num);
 
+void k_im2col(const data_t* data_im, const int channels,
+    const int height, const int width, const int kernel_h, const int kernel_w,
+    const int pad_h, const int pad_w,
+    const int stride_h, const int stride_w,
+    data_t* data_col);
+
+void k_col2im(const data_t* data_col, const int channels,
+    const int height, const int width, const int patch_h, const int patch_w,
+    const int pad_h, const int pad_w, const int stride_h,
+    const int stride_w, data_t* data_im);
+
+
+/**
+ * Delegates GEMM call to cuBLAS abstracting out derivable parameters.
+ * 
+ * C = α op ( B ) op ( A ) + β C
+ * 
+ * @param handle
+ * @param TransA
+ * @param TransB
+ * @param M
+ * @param N
+ * @param K
+ * @param alpha
+ * @param A
+ * @param B
+ * @param beta
+ * @param C
+ */
+void k_gemm(cublasContext *handle, const CBLAS_TRANSPOSE TransA,
+    const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+    const float alpha, const float* A, const float* B, const float beta,
+    float* C);
+
+void k_MaxPoolForward(const int nthreads,
+    const data_t* const inputs, const int channels,
+    const int inputFeatureHeight, const int inputFeatureWidth, const int featureHeight,
+    const int featureWidth, const int kernel_h, const int kernel_w,
+    const int stride_h, const int stride_w, const int pad_h, const int pad_w,
+    data_t* const outputs, int* mask);
+
+void k_MaxPoolBackward(const int nthreads, const data_t* const outputDiffs,
+    const int* const mask, const int featuresCount,
+    const int inputFeatureHeight, const int inputFeatureWidth,
+    const int featureHeight, const int featureWidth, const int kernel_h,
+    const int kernel_w, const int stride_h, const int stride_w, const int pad_h,
+    const int pad_w, data_t* const inputDiffs);
 
 #endif	/* CUDAHELPERS_H */
 

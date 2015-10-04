@@ -14,7 +14,20 @@
 #include <cuda_runtime.h>
 
 
-void dumpDeviceArray(char flag, data_t *dm, int size) {
+void dumpDeviceInts(const char *flag, const int *dm, const int size) {
+    std::cout << flag << std::endl;
+    int *hdm = new int[size];
+    checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(int) * size, cudaMemcpyDeviceToHost));
+    
+    for (int i = 0; i<size; i++) {
+        std::cout << "Dumping device " << flag << ": " << hdm[i] << std::endl;
+    }
+    std::cout << "-----------------------------" << std::endl;
+    
+    delete[] hdm;
+}
+
+void dumpDeviceArray(const char *flag, const data_t *dm, const int size) {
     std::cout << flag << std::endl;
     data_t *hdm = new data_t[size];
     checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
@@ -28,7 +41,7 @@ void dumpDeviceArray(char flag, data_t *dm, int size) {
 }
 
 
-void compare(char flag, double *dm, double *hm, int size) {
+void compare(const char *flag, double *dm, double *hm, const int size) {
     double *hdm = new double[size];
     checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(double) * size, cudaMemcpyDeviceToHost));
     
@@ -37,6 +50,21 @@ void compare(char flag, double *dm, double *hm, int size) {
             std::cout << "Comparing " << flag << ": " << hdm[i] << " =?= " << hm[i] << std::endl;
         } else {
             std::cout << "Comparing " << flag << ": " << hdm[i] << " =?= " << hm[i] << "        !!!!!!!!!!!!!!!!!!" << std::endl;
+        }
+    }
+    
+    delete[] hdm;
+}
+
+
+void isNan(const char *flag, const data_t *dm, const int size) {
+    data_t *hdm = new data_t[size];
+    checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
+    
+    for (int i = 0; i<size; i++) {
+        if (hdm[i] != hdm[i]) {
+            std::cout << "#### detected NaN for " << flag << "[" << i << "]: " << hdm[i] << std::endl;
+            break;
         }
     }
     

@@ -37,8 +37,8 @@ void SubsamplingLayer::setup(string confString) {
         featureWidth = conf.windowWidth;
         featureHeight = conf.windowHeight;
         featuresCount = 1;
-        this->outputsCount = conf.windowWidth * conf.windowHeight;
-        this->weightsCount = 0;
+        outputsCount = conf.windowWidth * conf.windowHeight;
+        weightsCount = 0;
     } else {
         ConvolutionalLayer *convLayer = (ConvolutionalLayer*) previousLayer;
         featuresCount = convLayer->getOutputFeatures();
@@ -47,20 +47,24 @@ void SubsamplingLayer::setup(string confString) {
 
         featureWidth = (inputFeatureWidth + conf.windowWidth - 1)  / conf.windowWidth; // round up
         featureHeight = (inputFeatureHeight + conf.windowHeight - 1) / conf.windowHeight; // round up
-        this->outputsCount = featureWidth * featureHeight * featuresCount;
+        outputsCount = featureWidth * featureHeight * featuresCount;
 
         // subsampling layer does not need any weights
         // but uses a trainable parameter for each feature map
         // and optionally bias for each feature map
-        this->weightsCount = conf.useBias ? featuresCount*2 : featuresCount;
+        weightsCount = conf.useBias ? featuresCount*2 : featuresCount;
         
         maxIndices = new int[outputsCount];
+        checkCudaErrors(cudaMalloc(&d_maxIndices, outputsCount * sizeof(int)));
+        
+        strideHeight = conf.windowHeight;
+        strideWidth = conf.windowWidth;
     }
 }
 
 void SubsamplingLayer::forwardCpu() {
     
-    data_t *inputs = this->previousLayer->getOutputs();
+    data_t *inputs = previousLayer->getOutputs();
     int wfeatureWidth = inputFeatureWidth / conf.windowWidth;
     int wfeatureHeight = inputFeatureHeight / conf.windowHeight;
     
@@ -103,7 +107,13 @@ void SubsamplingLayer::forwardCpu() {
 
 
 void SubsamplingLayer::forwardGpu() {
-    //TODO
+    
+    const data_t* inputs = previousLayer->getOutputs();
+    k_MaxPoolForward(
+            outputsCount, inputs, featuresCount,
+            inputFeatureHeight, inputFeatureWidth, featureHeight, featureWidth,
+            conf.windowHeight, conf.windowWidth, strideHeight, strideWidth,
+            padHeight, padWidth, outputs, d_maxIndices);
 }
 
 
@@ -119,7 +129,6 @@ void SubsamplingLayer::backwardCpu() {
     // loop through destination neuron
     for (int f = 0; f < featuresCount; f++) {
         int dstFeatureIdx = f * wfeatureWidth * wfeatureHeight;
-        int srcFeatureIdx = f * inputFeatureWidth * inputFeatureHeight;
         
         for (int i = 0; i < wfeatureHeight; i++) { // row index
             int rowIdx = dstFeatureIdx + i * wfeatureWidth;
@@ -137,9 +146,17 @@ void SubsamplingLayer::backwardCpu() {
     // TODO if (conf.inputHeight % conf.windowHeight > 0)
 }
 
-
 void SubsamplingLayer::backwardGpu() {
-    //TODO
+
+    data_t* inputDiffs = previousLayer->getOutputDiffs();
+    int inputsCount = previousLayer->getOutputsCount();
+    cudaMemset(inputDiffs, 0, inputsCount * sizeof(data_t));
+
+    k_MaxPoolBackward(
+            inputsCount, outputDiffs, d_maxIndices, featuresCount,
+            inputFeatureHeight, inputFeatureWidth, featureHeight, featureWidth,
+            conf.windowHeight, conf.windowWidth, strideHeight, strideWidth, padHeight, padWidth,
+            inputDiffs);
 }
 
 void SubsamplingLayer::backwardLastCpu(data_t* expectedOutput) {

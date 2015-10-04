@@ -79,24 +79,21 @@ void FullyConnectedLayer::forwardCpu() {
 void FullyConnectedLayer::forwardGpu() {
     
     int inputSize = this->previousLayer->getOutputsCount();
-    data_t *inputPtr = this->previousLayer->getOutputs();
+    data_t *inputs = this->previousLayer->getOutputs();
 
     // clear this layer just before working with it
-    cudaMemset(outputs, 0.0, outputsCount);
+    cudaMemset(outputs, 0, outputsCount * sizeof(data_t));
 
 //    dumpDeviceArray('I', inputPtr, inputSize);
 //    dumpDeviceArray('i', weights, inputSize * outputsCount);
     
     //note cuBLAS is column primary!
     //need to transpose the order
-    const data_t alpha = 1.0;
-    const data_t beta = 0.0;
     k_gemm(this->cublasHandle,
-            CUBLAS_OP_N, CUBLAS_OP_T,
-            1, outputsCount, inputSize,
-            &alpha, inputPtr, 1,
-            weights, outputsCount,
-            &beta, outputs, 1);
+            CblasTrans, CblasNoTrans,
+            /*n*/outputsCount,/*m*/ 1,/*k*/ inputSize,
+            (data_t) 1., weights,
+            inputs, (data_t) 1., outputs);
 
     if (this->conf.useBias) {
         k_sumVectors(outputs, weights + inputSize * outputsCount, outputsCount);

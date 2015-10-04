@@ -63,7 +63,14 @@ private:
     int inputFeatureWidth;
     int inputFeatureHeight;
     
+    /** Device memory for storing indices of activated neurons in pooling. */
+    int *d_maxIndices = NULL;
+    /** Host memory for storing indices of activated neurons in pooling. */
     int *maxIndices = NULL;
+    
+    // TODO implement stride and padding
+    int strideHeight = 1, strideWidth = 1;
+    int padHeight = 0, padWidth = 0;
 };
 
 #endif	/* SUBSAMPLINGLAYER_H */

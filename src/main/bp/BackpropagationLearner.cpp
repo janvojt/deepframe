@@ -10,11 +10,13 @@
 #include <cstring>
 #include <string>
 #include <stdexcept>
+#include <iomanip>
 
 #include "../common.h"
 
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
+#include "log4cpp/CategoryStream.hh"
 
 const int MAX_IMPROVEMENT_EPOCHS = 1000;
 
@@ -74,7 +76,36 @@ TrainingResult* BackpropagationLearner::train(LabeledDataset *trainingSet, Label
             LOG()->debug("Validation fold %d: Starting backward phase for dataset %d in epoch %d.", valIdx, datasetSize, epochCounter);
             doBackwardPhase(expOutput);
             
-            mse += this->errorComputer->compute(this->network, expOutput);
+            data_t e = this->errorComputer->compute(this->network, expOutput);
+            mse += e;
+            data_t avgmse = mse / datasetSize;
+            LOG()->debug("Validation fold %d: Error for last pattern was %f. Average error so far is %f. (pattern %d in epoch %d).", valIdx, e, avgmse, datasetSize, epochCounter);
+            
+            // Print output and expected output of the network
+            if (LOG()->isDebugEnabled()) {
+                data_t *output = network->getOutput();
+                int outputsCount = network->getOutputNeurons();
+                log4cpp::CategoryStream debugStream = LOG()->debugStream();
+                
+                char const *dynSep;
+                
+                debugStream << "expected output: [";
+                dynSep = EMPTY_STRING;
+                for (int i = 0; i<outputsCount; i++) {
+                    debugStream << dynSep << std::fixed << std::setprecision(6)  << expOutput[i];
+                    dynSep = COMMA_STRING;
+                }
+                debugStream << "]";
+                debugStream.flush();
+                
+                debugStream << "actual   output: [";
+                dynSep = EMPTY_STRING;
+                for (int i = 0; i<outputsCount; i++) {
+                    debugStream << dynSep << output[i];
+                    dynSep = COMMA_STRING;
+                }
+                debugStream << "]";
+            }
         }
         
         // compute MSE on training data

@@ -90,11 +90,11 @@ void CpuNetwork::forward() {
 
 void CpuNetwork::backward() {
     
-//    LOG()->debug("Computing backward run on CPU for layer %d.", noLayers-1);
+    LOG()->debug("Computing output gradients for last layer on CPU.");
     this->layers[noLayers-1]->backwardLastCpu(expectedOutput);
     
     for (int i = noLayers-1; i > 0; i--) {
-//        LOG()->debug("Computing backward run on CPU for layer %d.", i);
+        LOG()->debug("Computing backward run on CPU for layer %d.", i);
         this->layers[i]->backwardCpu();
     }
     

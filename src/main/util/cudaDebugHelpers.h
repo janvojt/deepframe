@@ -11,9 +11,13 @@
 #include "../common.h"
 #include "cudaHelpers.h"
 
-void dumpDeviceArray(char flag, data_t *dm, int size);
+void dumpDeviceInts(const char *flag, const int *dm, const int size);
 
-void compare(char flag, data_t *dm, data_t *hm, int size);
+void dumpDeviceArray(const char *flag, const data_t *dm, const int size);
+
+void compare(const char *flag, const data_t *dm, const data_t *hm, const int size);
+
+void isNan(const char *flag, const data_t *dm, const int size);
 
 #endif	/* CUDADEBUGHELPERS_H */
 
