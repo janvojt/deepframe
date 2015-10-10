@@ -52,7 +52,8 @@ void SubsamplingLayer::setup(string confString) {
         // subsampling layer does not need any weights
         // but uses a trainable parameter for each feature map
         // and optionally bias for each feature map
-        weightsCount = conf.useBias ? featuresCount*2 : featuresCount;
+//        weightsCount = conf.useBias ? featuresCount*2 : featuresCount;
+        weightsCount = featuresCount;
         
         maxIndices = new int[outputsCount];
         checkCudaErrors(cudaMalloc(&d_maxIndices, outputsCount * sizeof(int)));
@@ -189,12 +190,6 @@ void SubsamplingLayer::processConfString(string confString) {
     if (!(iss >> lr)) {
         LOG()->warn("Could not read learning rate for Subsampling layer from configuration. Using default of 1.");
         lr = 1;
-    }
-    
-    iss >> sep;
-    if (!(iss >> boolalpha >> conf.useBias)) {
-        LOG()->warn("Could not read bias configuration for Subsampling layer. Not using bias...");
-        conf.useBias = false;
     }
 }
 

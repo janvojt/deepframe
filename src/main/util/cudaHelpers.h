@@ -166,6 +166,20 @@ void k_gemm(cublasContext *handle, const CBLAS_TRANSPOSE TransA,
     const float alpha, const float* A, const float* B, const float beta,
     float* C);
 
+/**
+ * Delegates AXPY call to cuBLAS.
+ * Y = α X + Y
+ * 
+ * @param handle
+ * @param n
+ * @param alpha
+ * @param x
+ * @param incx
+ * @param y
+ * @param incy
+ */
+void k_axpy(cublasContext *handle, int n, data_t alpha, const data_t *x, int incx, data_t *y, int incy);
+
 void k_MaxPoolForward(const int nthreads,
     const data_t* const inputs, const int channels,
     const int inputFeatureHeight, const int inputFeatureWidth, const int featureHeight,

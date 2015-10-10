@@ -66,7 +66,11 @@ protected:
     
     data_t *weightDiffs = NULL;
     
+    /** Number of weights including bias. */
     int weightsCount;
+    
+    /** Number of weights excluding bias. */
+    int genuineWeightsCount;
 
     Layer *previousLayer = NULL;
 

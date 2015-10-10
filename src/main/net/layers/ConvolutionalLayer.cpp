@@ -46,9 +46,15 @@ void ConvolutionalLayer::setup(string confString) {
     
     outputsCount = featuresCount
             * featureWidth * featureHeight;
-    
-    weightsCount = featuresCount
+
+    genuineWeightsCount = featuresCount
             * conf.windowSize * conf.windowSize;
+    
+    if (conf.useBias) {
+        weightsCount = genuineWeightsCount + outputsCount;
+    } else {
+        weightsCount = genuineWeightsCount;
+    }
     
     kernelHeight = conf.windowSize;
     kernelWidth = conf.windowSize;
@@ -97,6 +103,27 @@ void ConvolutionalLayer::forwardCpu() {
                 }
                 
             } // end loop through destination neuron
+        }
+    }
+    
+    // apply bias in a separate loop (performs better)
+    if (conf.useBias) {
+
+        // loop through destination neuron
+        for (int f = 0; f < featuresCount; f++) { // destination feature index
+            int featureIdx = f * featureHeight * featureWidth;
+
+            for (int i = 0; i < featureHeight; i++) { // row index
+                int rowIdx = featureIdx + i * featureWidth;
+
+                for (int j = 0; j < featureWidth; j++) { // column index
+                    
+                    int dstNeuronIdx = rowIdx + j;
+                    int weightIdx = genuineWeightsCount + dstNeuronIdx;
+                    
+                    outputs[dstNeuronIdx] += weights[weightIdx];
+                }
+            }
         }
     }
 }
@@ -153,6 +180,27 @@ void ConvolutionalLayer::backwardCpu() {
             } // end loop through destination neuron
         }
     }
+    
+    // apply bias in a separate loop (performs better)
+    if (conf.useBias) {
+
+        // loop through destination neuron
+        for (int f = 0; f < featuresCount; f++) { // destination feature index
+            int featureIdx = f * featureHeight * featureWidth;
+
+            for (int i = 0; i < featureHeight; i++) { // row index
+                int rowIdx = featureIdx + i * featureWidth;
+
+                for (int j = 0; j < featureWidth; j++) { // column index
+                    
+                    int dstNeuronIdx = rowIdx + j;
+                    int weightIdx = genuineWeightsCount + dstNeuronIdx;
+                    
+                    weightDiffs[weightIdx] += lr * outputDiffs[dstNeuronIdx];
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -163,14 +211,18 @@ void ConvolutionalLayer::backwardCpu() {
  * @param weights
  */
 void ConvolutionalLayer::k_weightGemm(const data_t* input,
-        const data_t* output, data_t* weights) {
+        const data_t* outputDiffs, data_t* weightDiffs) {
     
     k_conv_im2col(input, colBuffer);
     
     k_gemm(cublasHandle, CblasNoTrans, CblasTrans, featuresCount,
             kernelDim, featureSize,
-            lr, output, colBuffer,
-            (data_t) 1., weights);
+            lr, outputDiffs, colBuffer,
+            (data_t) 1., weightDiffs);
+    
+    if (conf.useBias) {
+        k_axpy(cublasHandle, outputsCount, lr, outputDiffs, 1, weightDiffs + genuineWeightsCount, 1);
+    }
 }
 
 /**
@@ -231,6 +283,13 @@ void ConvolutionalLayer::processConfString(string confString) {
     if (!(iss >> lr)) {
         LOG()->warn("Could not read learning rate for Convolutional layer from configuration. Using default of 1.");
         lr = 1;
+    }
+    
+    iss >> sep;
+    
+    if (!(iss >> boolalpha >> conf.useBias)) {
+        LOG()->warn("Could not read bias configuration for Convolutional layer. Not using bias...");
+        conf.useBias = false;
     }
 }
 

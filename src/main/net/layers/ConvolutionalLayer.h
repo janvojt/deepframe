@@ -18,6 +18,7 @@ using namespace std;
 struct ConvolutionalConfig {
     int windowSize;
     int featureMultiplier;
+    bool useBias;
 };
 
 class ConvolutionalLayer : public Layer {

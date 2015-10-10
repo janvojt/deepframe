@@ -285,6 +285,15 @@ void k_gemm(cublasContext *handle, const CBLAS_TRANSPOSE TransA,
 #endif
 }
 
+void k_axpy(cublasContext *handle, int n, data_t alpha, const data_t *x, int incx, data_t *y, int incy) {
+        
+#ifdef USE_64BIT_PRECISION
+    CUBLAS_CHECK(cublasDaxpy(handle, n, &alpha, x, incx, y, incy));
+#else
+    CUBLAS_CHECK(cublasSaxpy(handle, n, &alpha, x, incx, y, incy));
+#endif
+}
+
 
 __global__ void MaxPoolForward(const int nthreads,
     const data_t* const inputs, const int featuresCount,
