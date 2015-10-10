@@ -120,10 +120,10 @@ void NetworkConfiguration::parseFromString(char *confString) {
     char *haystack = new char[strlen(confString)+1];
     strcpy(haystack, confString);
     char *token = strtok(haystack, ",");
-    string biasStr = this->bias ? ":true" : ":false";
+    string confStr = this->bias ? "0.3:true" : "0.3:false";
     while (token != NULL) {
         layersConf[i][0] = "FullyConnected";
-        layersConf[i][1] = token + biasStr;
+        layersConf[i][1] = token + confStr;
         i++;
         token = strtok(NULL, ",");
     }

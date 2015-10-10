@@ -144,8 +144,8 @@ void ConvolutionalLayer::backwardCpu() {
                             int weightIdx = f * conf.windowSize * conf.windowSize
                                             + k * conf.windowSize + l;
                             
-                            weightDiffs[weightIdx] += outputDiffs[dstNeuronIdx] * inputs[srcNeuronIdx];
-                            inputDiffs[srcNeuronIdx] += outputDiffs[dstNeuronIdx] * weights[weightIdx];
+                            weightDiffs[weightIdx] += lr * outputDiffs[dstNeuronIdx] * inputs[srcNeuronIdx];
+                            inputDiffs[srcNeuronIdx] += lr * outputDiffs[dstNeuronIdx] * weights[weightIdx];
                         }
                     }
                 }
@@ -169,7 +169,7 @@ void ConvolutionalLayer::k_weightGemm(const data_t* input,
     
     k_gemm(cublasHandle, CblasNoTrans, CblasTrans, featuresCount,
             kernelDim, featureSize,
-            (data_t) 1., output, colBuffer,
+            lr, output, colBuffer,
             (data_t) 1., weights);
 }
 
@@ -185,7 +185,7 @@ void ConvolutionalLayer::k_backwardGemm(const data_t* output,
     
     k_gemm(cublasHandle, CblasTrans, CblasNoTrans, kernelDim,
             featureSize, featuresCount,
-            (data_t) 1., weights, output,
+            lr, weights, output,
             (data_t) 0., colBuffer);
 
     k_conv_col2im(colBuffer, input);
@@ -220,9 +220,17 @@ void ConvolutionalLayer::processConfString(string confString) {
     if (!(iss >> conf.windowSize)) {
         LOG()->error("Could not read window size for Convolutional layer from configuration.");
     }
+    
     iss >> sep;
     if (!(iss >> conf.featureMultiplier)) {
         LOG()->error("Could not read feature multiplier for Convolutional layer from configuration.");
+    }
+    
+    iss >> sep;
+    
+    if (!(iss >> lr)) {
+        LOG()->warn("Could not read learning rate for Convolutional layer from configuration. Using default of 1.");
+        lr = 1;
     }
 }
 

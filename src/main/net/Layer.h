@@ -77,7 +77,7 @@ protected:
     
     NetworkConfiguration *netConf;
     
-    /** Learning rate is redundantly saved in layer for better performance. */
+    /** Learning rate. */
     data_t lr;
     
 };

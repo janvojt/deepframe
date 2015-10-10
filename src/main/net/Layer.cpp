@@ -26,7 +26,6 @@ void Layer::setup(Layer* previousLayer, NetworkConfiguration* netConf, string co
         this->first = false;
     }
     this->netConf = netConf;
-    this->lr = netConf->getLearningRate();
     this->setup(confString);
 }
 

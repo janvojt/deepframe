@@ -183,6 +183,14 @@ void SubsamplingLayer::processConfString(string confString) {
     if (!(iss >> conf.windowHeight)) {
         LOG()->error("Could not read window height for Subsampling layer from configuration.");
     }
+    
+    iss >> sep;
+    
+    if (!(iss >> lr)) {
+        LOG()->warn("Could not read learning rate for Subsampling layer from configuration. Using default of 1.");
+        lr = 1;
+    }
+    
     iss >> sep;
     if (!(iss >> boolalpha >> conf.useBias)) {
         LOG()->warn("Could not read bias configuration for Subsampling layer. Not using bias...");

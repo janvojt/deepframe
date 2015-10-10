@@ -216,6 +216,13 @@ void FullyConnectedLayer::processConfString(string confString) {
     
     iss >> sep;
     
+    if (!(iss >> lr)) {
+        LOG()->warn("Could not read learning rate for FullyConnected layer from configuration. Using default of 0.3.");
+        lr = .3;
+    }
+    
+    iss >> sep;
+    
     if (!(iss >> boolalpha >> conf.useBias)) {
         LOG()->warn("Could not read bias for FullyConnected layer from configuration. Not using bias...");
         conf.useBias = false;
