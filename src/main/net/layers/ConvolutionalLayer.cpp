@@ -36,7 +36,7 @@ void ConvolutionalLayer::setup(string confString) {
     
     SubsamplingLayer *subsamplingLayer = (SubsamplingLayer*) previousLayer;
     inputFeatures = subsamplingLayer->getFeaturesCount();
-    featuresCount = inputFeatures * conf.featureMultiplier;
+    featuresCount = conf.featuresCount;
 
     inputFeatureWidth = subsamplingLayer->getFeatureWidth();
     inputFeatureHeight = subsamplingLayer->getFeatureHeight();
@@ -274,7 +274,7 @@ void ConvolutionalLayer::processConfString(string confString) {
     }
     
     iss >> sep;
-    if (!(iss >> conf.featureMultiplier)) {
+    if (!(iss >> conf.featuresCount)) {
         LOG()->error("Could not read feature multiplier for Convolutional layer from configuration.");
     }
     

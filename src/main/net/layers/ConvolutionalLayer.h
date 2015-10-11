@@ -17,7 +17,7 @@ using namespace std;
 
 struct ConvolutionalConfig {
     int windowSize;
-    int featureMultiplier;
+    int featuresCount;
     bool useBias;
 };
 
