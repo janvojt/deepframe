@@ -10,3 +10,7 @@ nbproject/
 # Eclipse files
 .cproject
 .project
+
+# Temporary editor files
+*~
+.*.swp
