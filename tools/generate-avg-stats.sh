@@ -20,6 +20,8 @@ if [ -z "$CONF_DIR" ]; then
 	ML_NEURONS=$(echo $HIDDEN_NEURONS | tr " " "\n" | grep "," | tail -n1 | grep -o "[0-9]*" | head -n1)
 else
         ITER_CONF=`ls "$basedir/$CONF_DIR/"*".cfg"`
+	# find number of neurons in a layer for multilayer testing
+	ML_NEURONS=$(echo $ITER_CONF | tr " " "\n" | sed 's/^.*\///' | sed 's/\.[^.]*$//' | grep "," | tail -n1 | grep -o "[0-9]*" | head -n1)
 fi
 
 
