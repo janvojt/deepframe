@@ -120,10 +120,11 @@ void NetworkConfiguration::parseFromString(char *confString) {
     char *haystack = new char[strlen(confString)+1];
     strcpy(haystack, confString);
     char *token = strtok(haystack, ",");
-    string confStr = this->bias ? "0.3:true" : "0.3:false";
+    const string sep = ":";
+    string confStr = this->bias ? "true" : "false";
     while (token != NULL) {
         layersConf[i][0] = "FullyConnected";
-        layersConf[i][1] = token + confStr;
+        layersConf[i][1] = token + sep + std::to_string(learningRate) + sep + confStr;
         i++;
         token = strtok(NULL, ",");
     }
