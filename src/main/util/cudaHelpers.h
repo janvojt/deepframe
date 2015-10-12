@@ -163,8 +163,8 @@ void k_col2im(const data_t* data_col, const int channels,
  */
 void k_gemm(cublasContext *handle, const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
-    const float alpha, const float* A, const float* B, const float beta,
-    float* C);
+    const data_t alpha, const data_t* A, const data_t* B, const data_t beta,
+    data_t* C);
 
 /**
  * Delegates AXPY call to cuBLAS.
