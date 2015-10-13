@@ -9,17 +9,16 @@ basedir=`dirname $script`
 
 TESTDIR="$1"
 PROBLEM_TITLE="$2"
-FILE_SUFFIX="$3"
+BOXWIDTH="$3"
+FILE_SUFFIX="$4"
 TEST_OUT="$basedir/../../$TESTDIR"
 
 if [ -z "$FILE_SUFFIX" ]; then
 	TITLE_MAIN="MSE for $PROBLEM_TITLE with 1 hidden layer."
 	TITLE_X="hidden neurons"
-	BOXWIDTH=30
 else
 	TITLE_MAIN="MSE for $PROBLEM_TITLE."
 	TITLE_X="hidden layers"
-	BOXWIDTH=.4
 fi
 
 gnuplot << GNUEOS
