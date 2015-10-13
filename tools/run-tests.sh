@@ -31,7 +31,7 @@ if [ -n "$CONF_DIR" -a "(" ! -d "$basedir/$CONF_DIR" ")" ]; then
 fi
 
 # Prepare configuration
-if [ -z "$basedir/$CONF_DIR" ]; then
+if [ -z "$CONF_DIR" ]; then
 	ITER_CONF="$HIDDEN_NEURONS"
 else
 	ITER_CONF=`ls "$basedir/$CONF_DIR/"*".cfg"`
