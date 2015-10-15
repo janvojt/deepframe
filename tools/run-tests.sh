@@ -52,7 +52,7 @@ for (( i=1;i<=$ITERATIONS;i++ )); do
 	echo "Running iteration $i ..."
 
 	# Prepare configuration
-	if [ -z "$basedir/$CONF_DIR" ]; then
+	if [ -z "$CONF_DIR" ]; then
 		conf="$INPUT_NEURONS,$l,$OUTPUT_NEURONS"
 		xaxis="$l"
 	else
