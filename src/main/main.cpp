@@ -204,24 +204,43 @@ void printHelp() {
     cout << "Option      GNU long option       Meaning" << endl;
     cout << "--------------------------------------------------------------------------------" << endl;
     cout << "-h          --help                This help." << endl;
+    cout << endl;
     cout << "-b          --no-bias             Disables bias in neural network. Bias is enabled by default." << endl;
-    cout << "-l <value>  --rate <value>        Learning rate influencing the speed and quality of learning. Default value is 0.3." << endl;
+    cout << endl;
+    cout << "-l <value>  --rate <value>        Learning rate influencing the speed and quality of learning. This is a global setting used in case of MLP configured via options. The external layer configuration file overrides this setting and allows to assign a different learning rate for each layer. Default value is 0.3." << endl;
+    cout << endl;
     cout << "-a <value>  --init <value>        Minimum and maximum value network weights are initialized to. Default is -1,1." << endl;
+    cout << endl;
     cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning. Default is 0.01." << endl;
+    cout << endl;
     cout << "-k <value>  --improve-err <value> Number of epochs during which improvement of error is required to keep learning. Default is zero (=disabled)." << endl;
+    cout << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met. Default is 100,000" << endl;
+    cout << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
-    cout << "-c <value>  --lconf <value>       Specifies layer configuration for the network as a comma separated list of integers." << endl;
-    cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning." << endl;
-    cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance." << endl;
+    cout << endl;
+    cout << "-c <value>  --lconf <value>       Specifies layer configuration for the MLP network as a comma separated list of integers. Alternatively, it can contain a path to configuration in an external file. Default value is \"2,2,1\"." << endl;
+    cout << endl;
+    cout << "-s <value>  --labels <value>      File path with labeled data to be used for learning. For IDX format separate the data and labels filepath with a colon (\":\")." << endl;
+    cout << endl;
+    cout << "-t <value>  --test <value>        File path with test data to be used for evaluating networks performance. For IDX data with labels for testing dataset separate the data and labels filepath with a colon (\":\")." << endl;
+    cout << endl;
     cout << "-v <value>  --validation <value>  Size of the validation set. Patterns are taken from the training set. Default is zero." << endl;
+    cout << endl;
     cout << "-q <value>  --k-fold <value>      Number of folds to use in k-fold cross validation. Default is one (=disabled)." << endl;
+    cout << endl;
     cout << "-o          --best-fold           Uses the best network trained with k-fold validation. By default epoch limit is averaged and network is trained on all data." << endl;
+    cout << endl;
     cout << "-i          --idx                 Use IDX data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
+    cout << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
+    cout << endl;
     cout << "-j          --shuffle             Shuffles training and validation dataset do the patterns are in random order." << endl;
+    cout << endl;
     cout << "-u <value>  --use-cache <value>   Enables use of precomputed lookup table for activation function. Value specifies the size of the table." << endl;
+    cout << endl;
     cout << "-p          --use-gpu             Enables parallel implementation of the network using CUDA GPU API." << endl;
+    cout << endl;
     cout << "-d          --debug               Enable debugging messages." << endl;
 }
 
@@ -430,10 +449,10 @@ void printImageLabels(LabeledDataset *lds) {
 /* Entry point of the application. */
 int main(int argc, char *argv[]) {
     
-    LOG()->info("Compiled with %dbit precision for data types.", 8*sizeof(data_t));
-    
     // prepare network configuration
     config* conf = processOptions(argc, argv);
+    
+    LOG()->info("Compiled with %dbit precision for data types.", 8*sizeof(data_t));
 
     // Configure seed for random generator.
     if (conf->seed == 0) {
