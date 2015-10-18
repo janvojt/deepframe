@@ -40,15 +40,18 @@ void ConvolutionalLayer::setup(string confString) {
 
     inputFeatureWidth = subsamplingLayer->getFeatureWidth();
     inputFeatureHeight = subsamplingLayer->getFeatureHeight();
+    
+    kernelWidth = conf.windowWidth;
+    kernelHeight = conf.windowHeight;
 
-    featureWidth = inputFeatureWidth - conf.windowSize + 1;
-    featureHeight = inputFeatureHeight - conf.windowSize + 1;
+    featureWidth = inputFeatureWidth - kernelWidth + 1;
+    featureHeight = inputFeatureHeight - kernelHeight + 1;
     
     outputsCount = featuresCount
             * featureWidth * featureHeight;
 
     genuineWeightsCount = featuresCount
-            * conf.windowSize * conf.windowSize;
+            * kernelWidth * kernelHeight;
     
     if (conf.useBias) {
         weightsCount = genuineWeightsCount + outputsCount;
@@ -56,8 +59,6 @@ void ConvolutionalLayer::setup(string confString) {
         weightsCount = genuineWeightsCount;
     }
     
-    kernelHeight = conf.windowSize;
-    kernelWidth = conf.windowSize;
     kernelDim = inputFeatures * kernelHeight * kernelWidth;
     featureSize = featureWidth * featureHeight; // feature size
     colWidth = featureSize; // width of column buffer
@@ -88,13 +89,13 @@ void ConvolutionalLayer::forwardCpu() {
                 for (int pf = 0; pf < inputFeatures; pf++) { // source feature index
                     int srcFeatureIdx = pf * inputFeatureWidth * inputFeatureHeight;
                     
-                    for (int k = 0; k < conf.windowSize; k++) { // row index
-                        for (int l = 0; l < conf.windowSize; l++) { // column index
+                    for (int k = 0; k < kernelHeight; k++) { // row index
+                        for (int l = 0; l < kernelWidth; l++) { // column index
                             
                             int srcNeuronIdx = srcFeatureIdx + (k + i) * inputFeatureWidth + (l + j);
                             
-                            int weightIdx = f * conf.windowSize * conf.windowSize
-                                            + k * conf.windowSize + l;
+                            int weightIdx = f * kernelWidth * kernelHeight
+                                            + k * kernelWidth + l;
                             
                             outputs[dstNeuronIdx] += inputPtr[srcNeuronIdx] * weights[weightIdx];
                             
@@ -163,13 +164,13 @@ void ConvolutionalLayer::backwardCpu() {
                 for (int pf = 0; pf < inputFeatures; pf++) { // source feature index
                     int srcFeatureIdx = pf * inputFeatureWidth * inputFeatureHeight;
                     
-                    for (int k = 0; k < conf.windowSize; k++) { // row index
-                        for (int l = 0; l < conf.windowSize; l++) { // column index
+                    for (int k = 0; k < kernelHeight; k++) { // row index
+                        for (int l = 0; l < kernelWidth; l++) { // column index
                             
                             int srcNeuronIdx = srcFeatureIdx + (k + i) * inputFeatureWidth + (l + j);
                             
-                            int weightIdx = f * conf.windowSize * conf.windowSize
-                                            + k * conf.windowSize + l;
+                            int weightIdx = f * kernelWidth * kernelHeight
+                                            + k * kernelWidth + l;
                             
                             weightDiffs[weightIdx] += lr * outputDiffs[dstNeuronIdx] * inputs[srcNeuronIdx];
                             inputDiffs[srcNeuronIdx] += lr * outputDiffs[dstNeuronIdx] * weights[weightIdx];
@@ -269,8 +270,13 @@ void ConvolutionalLayer::processConfString(string confString) {
     char sep;
     
     istringstream iss (confString);
-    if (!(iss >> conf.windowSize)) {
-        LOG()->error("Could not read window size for Convolutional layer from configuration.");
+    if (!(iss >> conf.windowWidth)) {
+        LOG()->error("Could not read window width for Convolutional layer from configuration.");
+    }
+    
+    iss >> sep;
+    if (!(iss >> conf.windowHeight)) {
+        LOG()->error("Could not read window height for Convolutional layer from configuration.");
     }
     
     iss >> sep;
