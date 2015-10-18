@@ -10,6 +10,8 @@ ulimit -t unlimited
 script=`readlink -f $0`
 basedir=`dirname $script`"/.."
 
+TMPDIR="/tmp"
+
 # Process options
 USAGE="Usage: $0 configuration-file [network-overrides]"
 if [ "$#" == "0" ]; then
@@ -49,8 +51,6 @@ for l in $ITER_CONF; do
 	echo "Running configuration $l ..."
 for (( i=1;i<=$ITERATIONS;i++ )); do
 
-	echo "Running iteration $i ..."
-
 	# Prepare configuration
 	if [ -z "$CONF_DIR" ]; then
 		conf="$INPUT_NEURONS,$l,$OUTPUT_NEURONS"
@@ -60,18 +60,33 @@ for (( i=1;i<=$ITERATIONS;i++ )); do
 		xaxis=`echo "$l" | sed 's/^.*\///' | sed 's/\.[^.]*$//'`
 	fi
 
-	(/usr/bin/time -f "%U user\n%S system\n%e real\n%M max memory (kB)\n" \
-		"$EXEC" \
-		-m "$EPOCHS" \
-		-l "$LEARNING_RATE" \
-		-a "$INIT_INTERVALS" \
-		-e -1 \
-		-s "$DATASET_LABELS" \
-		-t "$DATASET_TESTS" \
-		-c "$conf" \
-		"$GPU_FLAG" \
-		$ADD_OPTS \
-		$@ \
-		) &>> "$TEST_OUT/test-$xaxis.log"
+	# Check for NaNs in results, and retry the run if we come across them.
+	FOUNDNAN="init for first run"
+	while [ "$FOUNDNAN" ]; do
+
+		echo "Running iteration $i ..."
+
+		FOUNDNAN=`/usr/bin/time -f "%U user\n%S system\n%e real\n%M max memory (kB)\n" \
+			"$EXEC" \
+			-m "$EPOCHS" \
+			-l "$LEARNING_RATE" \
+			-a "$INIT_INTERVALS" \
+			-e -1 \
+			-s "$DATASET_LABELS" \
+			-t "$DATASET_TESTS" \
+			-c "$conf" \
+			"$GPU_FLAG" \
+			$ADD_OPTS \
+			$@ \
+			2>&1 | tee "$TMPDIR/test-$xaxis.log" \
+			| sed -n '/NaN/{p;q;}' \
+			| tee -a "$TEST_OUT/test-$xaxis.log"`
+
+		# save output only if there are no NaNs
+		test ! "$FOUNDNAN" && cat "$TMPDIR/test-$xaxis.log" >> "$TEST_OUT/test-$xaxis.log"
+
+		# Clean the temp file with the output of last run
+		rm "$TMPDIR/test-$xaxis.log"
+	done
 done
 done
