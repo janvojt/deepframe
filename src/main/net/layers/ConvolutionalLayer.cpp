@@ -233,15 +233,15 @@ void ConvolutionalLayer::k_weightGemm(const data_t* input,
  * @param weights
  * @param input
  */
-void ConvolutionalLayer::k_backwardGemm(const data_t* output,
-        const data_t* weights, data_t* input) {
+void ConvolutionalLayer::k_backwardGemm(const data_t* outputDiffs,
+        const data_t* weights, data_t* inputDiffs) {
     
     k_gemm(cublasHandle, CblasTrans, CblasNoTrans, kernelDim,
             featureSize, featuresCount,
-            lr, weights, output,
+            lr, weights, outputDiffs,
             (data_t) 0., colBuffer);
 
-    k_conv_col2im(colBuffer, input);
+    k_conv_col2im(colBuffer, inputDiffs);
 }
 
 void ConvolutionalLayer::backwardGpu() {
