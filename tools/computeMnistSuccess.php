@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 
 if (!array_key_exists(1, $argv)) {
@@ -22,7 +23,7 @@ $total = 0;
 if ($fp) {
 	while (($line = fgets($fp)) !== false) {
 		if (preg_match($regex, $line, $matches)) {
-            $pattern = $matches[1];
+			$pattern = $matches[1];
 			$output = explode(", ", $matches[2]);
 			$labels = explode(", ", $matches[3]);
 			$outputMax = array_keys($output, max($output));
@@ -30,10 +31,21 @@ if ($fp) {
 
 			$total++;
 			$correct += $outputMax[0] == $labelsMax[0] ? 1 : 0;
+		} else if (preg_match("/^[0-9.]+\\suser\$/", $line, $matches)) {
+			// reached end of a single run
+			// -> print result and continue with next runs (if any)
+			echo ($correct / $total) . "\n";
+			$total = 0;
+			$correct = 0;
 		}
 	}
 	fclose($fp);
-	echo "The network guessed $correct/$total patterns correctly, which makes for " . ($correct*100/$total) . "%.\n";
+
+	if ($total > 0) {
+		// we have not printed result for some patterns
+		echo ($correct / $total) . "\n";
+	}
+
 } else {
 	echo "File '$out' cannot be open for reading.\n";
 	exit(3);

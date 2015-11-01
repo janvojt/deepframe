@@ -294,6 +294,15 @@ void k_axpy(cublasContext *handle, int n, data_t alpha, const data_t *x, int inc
 #endif
 }
 
+void k_scal(cublasContext *handle, int n, data_t alpha, data_t *x, int incx) {
+        
+#ifdef USE_64BIT_PRECISION
+    CUBLAS_CHECK(cublasDscal(handle, n, &alpha, x, incx));
+#else
+    CUBLAS_CHECK(cublasSscal(handle, n, &alpha, x, incx));
+#endif
+}
+
 
 __global__ void MaxPoolForward(const int nthreads,
     const data_t* const inputs, const int featuresCount,

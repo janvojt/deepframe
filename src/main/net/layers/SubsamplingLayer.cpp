@@ -137,7 +137,7 @@ void SubsamplingLayer::backwardCpu() {
             for (int j = 0; j < wfeatureWidth; j++) { // column index
 
                 int dstNeuronIdx = rowIdx + j;
-                inputDiffs[maxIndices[dstNeuronIdx]] = outputDiffs[dstNeuronIdx];
+                inputDiffs[maxIndices[dstNeuronIdx]] = lr * outputDiffs[dstNeuronIdx];
 
             } // end loop through destination neuron
         }
@@ -158,6 +158,10 @@ void SubsamplingLayer::backwardGpu() {
             inputFeatureHeight, inputFeatureWidth, featureHeight, featureWidth,
             conf.windowHeight, conf.windowWidth, strideHeight, strideWidth, padHeight, padWidth,
             inputDiffs);
+    
+    if (lr != 1) {
+        k_scal(cublasHandle, inputsCount, lr, inputDiffs, 1);
+    }
 }
 
 void SubsamplingLayer::backwardLastCpu(data_t* expectedOutput) {

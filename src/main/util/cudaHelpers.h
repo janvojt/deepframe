@@ -170,15 +170,27 @@ void k_gemm(cublasContext *handle, const CBLAS_TRANSPOSE TransA,
  * Delegates AXPY call to cuBLAS.
  * Y = α X + Y
  * 
- * @param handle
- * @param n
- * @param alpha
- * @param x
- * @param incx
- * @param y
- * @param incy
+ * @param handle handle to the cuBLAS library context.
+ * @param n number of elements in the vector x and y
+ * @param alpha scalar used for multiplication.
+ * @param x vector with n elements.
+ * @param incx stride between consecutive elements of x.
+ * @param y vector with n elements.
+ * @param incy stride between consecutive elements of y.
  */
 void k_axpy(cublasContext *handle, int n, data_t alpha, const data_t *x, int incx, data_t *y, int incy);
+
+/**
+ * Delegates SCAL call (multiplying vector with a scalar) to cuBLAS.
+ * X = α X
+ * 
+ * @param handle handle to the cuBLAS library context.
+ * @param n number of elements in the vector x and y
+ * @param alpha scalar used for multiplication.
+ * @param x vector with n elements.
+ * @param incx stride between consecutive elements of x.
+ */
+void k_scal(cublasContext *handle, int n, data_t alpha, data_t *x, int incx);
 
 void k_MaxPoolForward(const int nthreads,
     const data_t* const inputs, const int channels,
