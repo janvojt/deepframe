@@ -81,9 +81,6 @@ void FullyConnectedLayer::forwardGpu() {
     int inputSize = this->previousLayer->getOutputsCount();
     data_t *inputs = this->previousLayer->getOutputs();
 
-    // clear this layer just before working with it
-    cudaMemset(outputs, 0, outputsCount * sizeof(data_t));
-
 //    dumpDeviceArray('I', inputPtr, inputSize);
 //    dumpDeviceArray('i', weights, inputSize * outputsCount);
     
@@ -93,7 +90,7 @@ void FullyConnectedLayer::forwardGpu() {
             CblasTrans, CblasNoTrans,
             /*n*/outputsCount,/*m*/ 1,/*k*/ inputSize,
             (data_t) 1., weights,
-            inputs, (data_t) 1., outputs);
+            inputs, (data_t) 0., outputs);
 
     if (conf.useBias) {
         k_sumVectors(outputs, weights + inputSize * outputsCount, outputsCount);

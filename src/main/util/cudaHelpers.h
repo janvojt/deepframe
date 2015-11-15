@@ -152,14 +152,14 @@ void k_col2im(const data_t* data_col, const int channels,
  * @param handle
  * @param TransA
  * @param TransB
- * @param M
- * @param N
- * @param K
- * @param alpha
- * @param A
- * @param B
- * @param beta
- * @param C
+ * @param M number of columns of matrix op(A) and C.
+ * @param N number of rows of matrix op(B) and C.
+ * @param K number of rows of matrix op(A) and columns of op(B).
+ * @param alpha scalar used for multiplication of op(B) op(A).
+ * @param A array, where op(A) is of dimensions K x M.
+ * @param B array, where op(B) is of dimensions N x K.
+ * @param beta scalar used for multiplication of C. If beta==0, C does not have to be a valid input.
+ * @param C array of dimensions N x M.
  */
 void k_gemm(cublasContext *handle, const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,

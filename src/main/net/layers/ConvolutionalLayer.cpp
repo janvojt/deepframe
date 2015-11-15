@@ -219,7 +219,7 @@ void ConvolutionalLayer::k_weightGemm(const data_t* input,
     k_gemm(cublasHandle, CblasNoTrans, CblasTrans, featuresCount,
             kernelDim, featureSize,
             lr, outputDiffs, colBuffer,
-            (data_t) 1., weightDiffs);
+            (data_t) 0., weightDiffs);
     
     if (conf.useBias) {
         k_axpy(cublasHandle, outputsCount, lr, outputDiffs, 1, weightDiffs + genuineWeightsCount, 1);
