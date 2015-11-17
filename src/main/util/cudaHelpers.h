@@ -120,6 +120,19 @@ void k_computeSigmoid(data_t *dArray, int elements);
 void k_spreadInterval(data_t min, data_t max, data_t *dArray, int size);
 
 /**
+ * Converts an array of floats generated from uniform distribution within
+ * interval [0,1] to 1 with probability p and to 0 with probability 1-p.
+ * This method is essentially converted numbers generated from uniform
+ * distribution into numbers generated from binomial distribution with
+ * a single trial (n=1).
+ * 
+ * @param p array of probabilities of one
+ * @param dArray data randomly generated from uniform distribution
+ * @param size data size
+ */
+void k_uniformToCoinFlip(data_t *p, data_t *dArray, int size);
+
+/**
  * Delegates random number generation to appropriate cuRAND call of correct
  * data type.
  * 
@@ -191,6 +204,19 @@ void k_axpy(cublasContext *handle, int n, data_t alpha, const data_t *x, int inc
  * @param incx stride between consecutive elements of x.
  */
 void k_scal(cublasContext *handle, int n, data_t alpha, data_t *x, int incx);
+
+/**
+ * Delegates DOT call (dot product of two vectors) to cuBLAS.
+ * 
+ * @param handle handle to the cuBLAS library context.
+ * @param n number of elements in the vector x and y
+ * @param x vector with n elements.
+ * @param incx stride between consecutive elements of x.
+ * @param y vector with n elements.
+ * @param incy stride between consecutive elements of y.
+ * @param result scalar resulting from the dot product
+ */
+void k_dotProduct(cublasContext *handle, int n, const data_t *x, int incx, const data_t *y, int incy, data_t *result);
 
 void k_MaxPoolForward(const int nthreads,
     const data_t* const inputs, const int channels,

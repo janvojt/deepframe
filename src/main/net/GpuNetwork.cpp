@@ -90,6 +90,7 @@ void GpuNetwork::allocateMemory() {
     
     for (int i = 0; i<noLayers; i++) {
         this->layers[i]->cublasHandle = this->cublasHandle;
+        this->layers[i]->curandGen = this->gpuConf->getRandGen();
     }
 }
 

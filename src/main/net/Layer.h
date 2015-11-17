@@ -11,6 +11,7 @@
 #include "../common.h"
 #include <string>
 #include <cublas_v2.h>
+#include <curand.h>
 #include "NetworkConfiguration.h"
 
 using namespace std;
@@ -52,6 +53,9 @@ public:
     
     // CUDA Basic Linear Algebra Subprograms handle.
     cublasHandle_t cublasHandle;
+    
+    // Random generator for cuRAND
+    curandGenerator_t *curandGen;
     
 protected:
     

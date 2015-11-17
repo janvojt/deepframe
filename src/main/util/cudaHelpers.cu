@@ -166,6 +166,20 @@ curandStatus_t k_generateUniform(curandGenerator_t generator,
 }
 
 
+__global__
+void uniformToCoinFlip(data_t *p, data_t *dArray, int elements) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < elements) {
+        dArray[i] = (dArray[i] < p[i]) ? 1 : 0;
+    }
+}
+void k_uniformToCoinFlip(data_t *p, data_t *dArray, int size) {
+    int ts = 512;
+    int bs = (size + ts - 1) / ts;
+    uniformToCoinFlip<<<bs,ts>>>(p, dArray, size);
+}
+
+
 __global__ void im2col(const int n, const data_t* data_im,
     const int height, const int width, const int kernelHeight, const int kernelWidth,
     const int padHeight, const int padWidth,
@@ -300,6 +314,15 @@ void k_scal(cublasContext *handle, int n, data_t alpha, data_t *x, int incx) {
     CUBLAS_CHECK(cublasDscal(handle, n, &alpha, x, incx));
 #else
     CUBLAS_CHECK(cublasSscal(handle, n, &alpha, x, incx));
+#endif
+}
+
+void k_dotProduct(cublasContext *handle, int n, const data_t *x, int incx, const data_t *y, int incy, data_t *result) {
+    
+#ifdef USE_64BIT_PRECISION
+    CUBLAS_CHECK(cublasDdot(handle, n, x, incx, y, incy, result));
+#else
+    CUBLAS_CHECK(cublasSdot(handle, n, x, incx, y, incy, result));
 #endif
 }
 
