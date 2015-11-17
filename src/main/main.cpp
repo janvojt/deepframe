@@ -26,7 +26,7 @@
 #include "ds/SimpleInputDataset.h"
 #include "ds/InputDatasetParser.h"
 #include "ds/LabeledMnistParser.h"
-#include "bp/BackpropagationLearner.h"
+#include "train/BackpropagationLearner.h"
 #include "err/MseErrorComputer.h"
 #include "activationFunctions.h"
 #include "FunctionCache.h"
