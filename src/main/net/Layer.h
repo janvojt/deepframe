@@ -51,6 +51,10 @@ public:
     bool isFirst();
     bool isLast();
     
+    virtual bool isPretrainable();
+    virtual void pretrainCpu();
+    virtual void pretrainGpu();
+    
     // CUDA Basic Linear Algebra Subprograms handle.
     cublasHandle_t cublasHandle;
     

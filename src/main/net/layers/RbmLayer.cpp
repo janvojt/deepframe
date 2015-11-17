@@ -278,4 +278,8 @@ RbmConfig RbmLayer::getConfig() {
     return conf;
 }
 
+bool RbmLayer::isPretrainable() {
+    return true;
+}
+
 static LayerRegister<RbmLayer> reg("Rbm");

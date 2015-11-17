@@ -191,3 +191,10 @@ void NetworkConfiguration::setLearningRate(data_t learningRate) {
     this->learningRate = learningRate;
 }
 
+bool NetworkConfiguration::getUseGpu() {
+    return useGpu;
+}
+
+void NetworkConfiguration::setUseGpu(bool useGpu) {
+    this->useGpu = useGpu;
+}

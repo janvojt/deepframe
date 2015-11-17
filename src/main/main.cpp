@@ -27,6 +27,7 @@
 #include "ds/InputDatasetParser.h"
 #include "ds/LabeledMnistParser.h"
 #include "train/BackpropagationLearner.h"
+#include "train/NetworkPretrainer.h"
 #include "err/MseErrorComputer.h"
 #include "activationFunctions.h"
 #include "FunctionCache.h"
@@ -49,7 +50,7 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbl:a:e:k:m:f:ic:s:t:v:q:r:ju:pd";
+const char* optsList = "hbl:a:e:k:m:n:f:ic:s:t:v:q:r:ju:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
@@ -59,6 +60,7 @@ const struct option optsLong[] = {
     {"init", required_argument, 0, 'a'},
     {"mse", required_argument, 0, 'e'},
     {"max-epochs", required_argument, 0, 'm'},
+    {"pretrain", required_argument, 0, 'n'},
     {"improve-err", required_argument, 0, 'k'},
     {"func", required_argument, 0, 'f'},
     {"lconf", required_argument, 0, 'c'},
@@ -90,6 +92,8 @@ struct config {
     bool bias = true;
     /* epoch limit */
     long maxEpochs = 100000;
+    /* number of pretraining epochs */
+    long pretrainEpochs = 0;
     /* Layer configuration. */
     char* layerConf = NULL;
     /* File path with labeled data. */
@@ -217,6 +221,8 @@ void printHelp() {
     cout << endl;
     cout << "-m <value>  --max-epochs <value>  Sets a maximum limit for number of epochs. Learning is stopped even if MSE has not been met. Default is 100,000" << endl;
     cout << endl;
+    cout << "-n <value>  --pretrain <value>    Configures the number of pretraining epochs for Deep Belief Network. Default is zero (no pretraining)." << endl;
+    cout << endl;
     cout << "-f <value>  --func <value>        Specifies the activation function to be used. Use 's' for sigmoid, 'h' for hyperbolic tangent. Sigmoid is the default." << endl;
     cout << endl;
     cout << "-c <value>  --lconf <value>       Specifies layer configuration for the MLP network as a comma separated list of integers. Alternatively, it can contain a path to configuration in an external file. Default value is \"2,2,1\"." << endl;
@@ -283,6 +289,9 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 'm' :
                 conf->maxEpochs = atol(optarg);
+                break;
+            case 'n' :
+                conf->pretrainEpochs = atol(optarg);
                 break;
             case 'c' :
                 conf->layerConf = new char[strlen(optarg)+1];
@@ -464,6 +473,7 @@ int main(int argc, char *argv[]) {
     // construct the network
     Network *net;
     BackpropagationLearner *bp;
+    NetworkPretrainer *pretrainer;
     
     // probe GPU and fetch specs
     GpuConfiguration *gpuConf;
@@ -473,6 +483,8 @@ int main(int argc, char *argv[]) {
         if (gpuConf == NULL) {
             LOG()->warn("Falling back to CPU as GPU probe was unsuccessful.");
             useGpu = false;
+        } else {
+            netConf->setUseGpu(true);
         }
     }
     
@@ -480,11 +492,13 @@ int main(int argc, char *argv[]) {
     if (useGpu) {
         LOG()->info("Using GPU for computing the network runs.");
         GpuNetwork *gpuNet = new GpuNetwork(netConf, gpuConf);
+        pretrainer = new NetworkPretrainer(gpuNet);
         bp = new BackpropagationLearner(gpuNet);
         net = gpuNet;
     } else {
         LOG()->info("Using CPU for computing the network runs.");
         CpuNetwork *cpuNet = new CpuNetwork(netConf);
+        pretrainer = new NetworkPretrainer(cpuNet);
         bp = new BackpropagationLearner(cpuNet);
         net = cpuNet;
     }
@@ -535,7 +549,8 @@ int main(int argc, char *argv[]) {
 //    printImageLabels((LabeledDataset *)lds);
 //    return 0;
     
-    // configure BP learner
+    // configure learners
+    pretrainer->setPretrainEpochs(conf->pretrainEpochs);
     bp->setTargetMse(conf->mse);
     bp->setErrorComputer(new MseErrorComputer());
     bp->setEpochLimit(conf->maxEpochs);
@@ -558,8 +573,12 @@ int main(int argc, char *argv[]) {
             LabeledDataset *t = (LabeledDataset *) df->getTrainingDataset(i);
             LabeledDataset *v = (LabeledDataset *) df->getValidationDataset(i);
             
+            // reinitialize network and its params (weights, bias)
             net->reinit();
-            TrainingResult *res = bp->train(t, v, 0);
+            
+            // train the network
+            pretrainer->pretrain(t);
+            TrainingResult *res = bp->train(t, v, i);
             totalEpochs += res->getEpochs();
             
             if (conf->useBestFold && res->getValidationError() < bestError) {
@@ -580,6 +599,7 @@ int main(int argc, char *argv[]) {
             delete net;
             net = bestNet;
         } else {
+            pretrainer->pretrain(lds);
             bp->setEpochLimit(totalEpochs / conf->kFold);
             bp->train(lds, vds, 0);
         }
@@ -588,11 +608,13 @@ int main(int argc, char *argv[]) {
         
         LOG()->info("Picking the last %d samples from the training dataset to be used for validation.");
         vds = lds->takeAway(conf->validationSize);
+        pretrainer->pretrain(lds);
         bp->train(lds, vds, 0);
         
     } else {
         
         vds = (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
+        pretrainer->pretrain(lds);
         bp->train(lds, vds, 0);
     }
     
@@ -604,6 +626,7 @@ int main(int argc, char *argv[]) {
         delete df;
     }
     
+    delete pretrainer;
     delete bp;
     delete lds;
     delete tds;

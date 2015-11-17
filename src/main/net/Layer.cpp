@@ -75,3 +75,15 @@ bool Layer::isFirst() {
 bool Layer::isLast() {
     return last;
 }
+
+bool Layer::isPretrainable() {
+    return false;
+}
+
+void Layer::pretrainCpu() {
+    LOG()->error("Tried to pretrain a layer which is not pretrainable.");
+}
+
+void Layer::pretrainGpu() {
+    LOG()->error("Tried to pretrain a layer which is not pretrainable.");
+}

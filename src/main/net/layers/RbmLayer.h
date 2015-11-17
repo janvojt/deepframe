@@ -35,9 +35,10 @@ public:
     void backwardCpu();
     void backwardGpu();
     
-    void pretrainCpu();
-    void pretrainGpu();
-    
+    virtual bool isPretrainable();
+    virtual void pretrainCpu();
+    virtual void pretrainGpu();
+
     virtual void backwardLastCpu(data_t* expectedOutput);
     virtual void backwardLastGpu(data_t* expectedOutput);
     

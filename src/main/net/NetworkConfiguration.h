@@ -58,6 +58,12 @@ public:
     
     void setLearningRate(data_t learningRate);
     
+    /** Returns whether GPU should be used for computations. */
+    bool getUseGpu();
+    
+    /** Configures whether GPU should be used for computations. */
+    void setUseGpu(bool useGpu);
+    
     // Pointer to activation function normalizing the neurons potential.
     // Input potential is preserved and the normalized value
     // is put into the target array. It is also possible to provide
@@ -105,6 +111,9 @@ private:
     
     /** Learning rate used in backpropagation. */
     data_t learningRate = 1;
+    
+    /** Are we using GPU? */
+    bool useGpu = false;
 };
 
 #endif	/* NETWORKCONFIGURATION_H */
