@@ -48,6 +48,9 @@ void RbmLayer::setup(string confString) {
     // arrays for storing sampled potentials
     checkCudaErrors(cudaMalloc(&svPotentials, inputSize * sizeof(data_t)));
     checkCudaErrors(cudaMalloc(&shPotentials, outputsCount * sizeof(data_t)));
+    
+    int memCount = outputsCount > inputSize ? outputsCount : inputSize;
+    checkCudaErrors(cudaMalloc(&randomData, memCount * sizeof(data_t)));
 }
 
 void RbmLayer::forwardCpu() {
@@ -123,7 +126,7 @@ void RbmLayer::pretrainCpu() {
 void RbmLayer::pretrainGpu() {
     
     data_t *inputs =  previousLayer->getOutputs();
-
+    
     // single forward run will compute original results
     // needed to compute the differentials
     forwardGpu();
@@ -133,6 +136,9 @@ void RbmLayer::pretrainGpu() {
         int memSize = inputSize * sizeof(data_t);
         checkCudaErrors(cudaMemcpy(sInputs, inputs, memSize, cudaMemcpyDeviceToDevice));
         sample_vh_gpu();
+    } else if (samplesInitialized) {
+        int memSize = outputsCount * sizeof(data_t);
+        checkCudaErrors(cudaMemcpy(sOutputs, outputs, memSize, cudaMemcpyDeviceToDevice));
     }
     
     // perform CD-k
@@ -175,17 +181,17 @@ void RbmLayer::pretrainGpu() {
 void RbmLayer::sample_vh_gpu() {
     
     propagateForwardGpu(sInputs, shPotentials, sOutputs);
-    
-    k_generateUniform(*curandGen, sOutputs, outputsCount);
-    k_uniformToCoinFlip(sOutputs, sOutputs, outputsCount);
+
+    k_generateUniform(*curandGen, randomData, outputsCount);
+    k_uniformToCoinFlip(sOutputs, randomData, outputsCount);
 }
 
 void RbmLayer::sample_hv_gpu() {
     
     propagateBackwardGpu(sOutputs, svPotentials, sInputs);
     
-    k_generateUniform(*curandGen, sInputs, inputSize);
-    k_uniformToCoinFlip(sInputs, sInputs, inputSize);
+    k_generateUniform(*curandGen, randomData, inputSize);
+    k_uniformToCoinFlip(sInputs, randomData, inputSize);
 }
 
 void RbmLayer::gibbs_hvh(int steps) {

@@ -170,7 +170,7 @@ __global__
 void uniformToCoinFlip(data_t *p, data_t *dArray, int elements) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     if (i < elements) {
-        dArray[i] = (dArray[i] < p[i]) ? 1 : 0;
+        p[i] = (dArray[i] < p[i]) ? 1 : 0;
     }
 }
 void k_uniformToCoinFlip(data_t *p, data_t *dArray, int size) {

@@ -85,6 +85,10 @@ private:
     data_t *ohPotentials;
     /** Sampled potentials for hidden neurons. */
     data_t *shPotentials;
+    
+    data_t *randomData;
+    
+    bool samplesInitialized = false;
 };
 
 #endif	/* RBMLAYER_H */
