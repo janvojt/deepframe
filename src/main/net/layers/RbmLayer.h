@@ -89,6 +89,9 @@ private:
     data_t *randomData;
     
     bool samplesInitialized = false;
+    
+    /** store for computing parallel array reduction */
+    data_t *tempReduce;
 };
 
 #endif	/* RBMLAYER_H */

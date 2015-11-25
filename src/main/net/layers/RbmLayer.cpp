@@ -51,6 +51,9 @@ void RbmLayer::setup(string confString) {
     
     int memCount = outputsCount > inputSize ? outputsCount : inputSize;
     checkCudaErrors(cudaMalloc(&randomData, memCount * sizeof(data_t)));
+    
+    // store for computing parallel array reduction
+    checkCudaErrors(cudaMalloc(&tempReduce, outputsCount * sizeof(data_t)));
 }
 
 void RbmLayer::forwardCpu() {
@@ -89,6 +92,7 @@ void RbmLayer::propagateForwardGpu(data_t* visibles, data_t* potentials, data_t*
         k_sumVectors(potentials, hbias, outputsCount);
     }
     
+    // TODO rework sigmoid so it can do out-place computation
     int memSize = outputsCount * sizeof(data_t);
     checkCudaErrors(cudaMemcpy(hiddens, potentials, memSize, cudaMemcpyDeviceToDevice));
     k_computeSigmoid(hiddens, outputsCount);
@@ -132,13 +136,10 @@ void RbmLayer::pretrainGpu() {
     forwardGpu();
     
     // Reset the parameters sampled from previous training
-    if (!conf.isPersistent) {
+    if (!conf.isPersistent || !samplesInitialized) {
         int memSize = inputSize * sizeof(data_t);
         checkCudaErrors(cudaMemcpy(sInputs, inputs, memSize, cudaMemcpyDeviceToDevice));
         sample_vh_gpu();
-    } else if (samplesInitialized) {
-        int memSize = outputsCount * sizeof(data_t);
-        checkCudaErrors(cudaMemcpy(sOutputs, outputs, memSize, cudaMemcpyDeviceToDevice));
     }
     
     // perform CD-k
@@ -212,25 +213,35 @@ void RbmLayer::gibbs_vhv(int steps) {
 
 data_t RbmLayer::freeEnergy() {
     
-    data_t *inputs = previousLayer->getOutputs();
     data_t *vbias = weights + inputSize * outputsCount;
 
     data_t vbiasTerm = 0;
-    k_dotProduct(cublasHandle, inputSize, inputs, 1, vbias, 1, &vbiasTerm);
+    k_dotProduct(cublasHandle, inputSize, sInputs, 1, vbias, 1, &vbiasTerm);
     
-    // TODO implement kernel for hidden term
+    data_t hiddenTerm = k_logPlusExpReduce(1., shPotentials, tempReduce, outputsCount);
     
-    return /*-hiddenTerm*/ - vbiasTerm;
+    return -hiddenTerm - vbiasTerm;
 }
 
 void RbmLayer::costUpdates() {
     
+    data_t *inputs = previousLayer->getOutputs();
+    
+    // Reset the parameters sampled from previous training
+    if (!conf.isPersistent || !samplesInitialized) {
+        int memSize = inputSize * sizeof(data_t);
+        checkCudaErrors(cudaMemcpy(sInputs, inputs, memSize, cudaMemcpyDeviceToDevice));
+        sample_vh_gpu();
+    } else {
+        // TODO ???
+    }
+    
     data_t oEnergy = freeEnergy();
     
-    sample_vh_gpu();
     gibbs_hvh(conf.gibbsSteps);
     
     data_t cost = oEnergy - freeEnergy();
+    // TODO what to do with cost?
 }
 
 

@@ -232,5 +232,17 @@ void k_MaxPoolBackward(const int nthreads, const data_t* const outputDiffs,
     const int kernel_w, const int stride_h, const int stride_w, const int pad_h,
     const int pad_w, data_t* const inputDiffs);
 
+/**
+ * Parallel implementation of summing an array of floats.
+ * 
+ * @param in input array to sum up
+ * @param out temporary data store for meta-results (passing avoids memory reallocations)
+ * @param n size of the input array
+ * @return the sum
+ */
+data_t k_sumReduce(data_t *in, data_t *out, unsigned long n);
+
+data_t k_logPlusExpReduce(data_t a, data_t *in, data_t *out, unsigned long n);
+
 #endif	/* CUDAHELPERS_H */
 

@@ -427,3 +427,80 @@ void k_MaxPoolBackward(const int nthreads, const data_t* const outputDiffs,
     kernelWidth, stride_h, strideWidth, padHeight,
     padWidth, inputDiffs);
 }
+
+__global__ void reduce0(data_t *g_idata, data_t *g_odata, int size) {
+
+    // TODO replace implementation with better performing reduce7
+    // see https://docs.nvidia.com/cuda/samples/6_Advanced/reduction/doc/reduction.pdf
+
+    extern __shared__ data_t sdata[];
+
+    unsigned int tid = threadIdx.x;
+    unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+    sdata[tid] = 0;
+    if (i < size)
+        sdata[tid] = g_idata[i];
+    __syncthreads();
+
+    for (unsigned int s = 1; s < blockDim.x; s *= 2) {
+        if (tid % (2 * s) == 0) {
+            sdata[tid] += sdata[tid + s];
+        }
+        __syncthreads();
+    }
+
+    if (tid == 0) g_odata[blockIdx.x] = sdata[0];
+}
+
+data_t k_sumReduce(data_t *in, data_t *out, unsigned long n) {
+    
+    const unsigned int ts = 256;
+    int bs = (n + ts - 1) / ts;
+    
+    // TODO allow scaling above ts^2
+    // see http://stackoverflow.com/questions/18023287/cuda-how-can-i-run-the-parallel-reduction-code-for-summation-that-is-described
+    reduce0<<<bs, ts, ts*sizeof(data_t)>>>(in, out, n);
+    reduce0<<< 1, ts, ts*sizeof(data_t)>>>(out, in, bs);
+    
+    data_t res = 0;
+    checkCudaErrors(cudaMemcpy(&res, in, sizeof(data_t), cudaMemcpyDeviceToHost));
+
+    return res;
+}
+
+__global__ void logPlusExpReduce0(data_t a, data_t *g_idata, data_t *g_odata, int size){
+
+   extern __shared__ data_t sdata[];
+
+   unsigned int tid = threadIdx.x;
+   unsigned int i = blockIdx.x*blockDim.x + threadIdx.x;
+   sdata[tid] = 0;
+   if(i<size)
+     sdata[tid] = log(a + exp(g_idata[i]));
+   __syncthreads();
+
+  for(unsigned int s=1; s < blockDim.x; s *= 2) {
+        if (tid % (2*s) == 0) {
+         sdata[tid] += sdata[tid + s];
+        }
+        __syncthreads();
+     }
+
+   if (tid == 0) g_odata[blockIdx.x] = sdata[0];
+}
+
+data_t k_logPlusExpReduce(data_t a, data_t *in, data_t *out, unsigned long n) {
+    
+    const unsigned int ts = 256;
+    int bs = (n + ts - 1) / ts;
+    
+    // TODO allow scaling above ts^2
+    // see http://stackoverflow.com/questions/18023287/cuda-how-can-i-run-the-parallel-reduction-code-for-summation-that-is-described
+    logPlusExpReduce0<<<bs, ts, ts*sizeof(data_t)>>>(a, in, out, n);
+    reduce0<<< 1, ts, ts*sizeof(data_t)>>>(out, in, bs);
+    
+    data_t res = 0;
+    checkCudaErrors(cudaMemcpy(&res, in, sizeof(data_t), cudaMemcpyDeviceToHost));
+
+    return res;
+}
