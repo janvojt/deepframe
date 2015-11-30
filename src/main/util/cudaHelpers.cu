@@ -452,18 +452,21 @@ __global__ void reduce0(data_t *g_idata, data_t *g_odata, int size) {
     if (tid == 0) g_odata[blockIdx.x] = sdata[0];
 }
 
-data_t k_sumReduce(data_t *in, data_t *out, unsigned long n) {
+data_t k_sumReduce(data_t *in, data_t *temp, unsigned long n) {
     
     const unsigned int ts = 256;
     int bs = (n + ts - 1) / ts;
     
     // TODO allow scaling above ts^2
     // see http://stackoverflow.com/questions/18023287/cuda-how-can-i-run-the-parallel-reduction-code-for-summation-that-is-described
-    reduce0<<<bs, ts, ts*sizeof(data_t)>>>(in, out, n);
-    reduce0<<< 1, ts, ts*sizeof(data_t)>>>(out, in, bs);
+    reduce0<<<bs, ts, ts*sizeof(data_t)>>>(in, temp, n);
+    
+    data_t *out;
+    checkCudaErrors(cudaMalloc(&out, bs * sizeof(data_t)));
+    reduce0<<< 1, ts, ts*sizeof(data_t)>>>(temp, out, bs);
     
     data_t res = 0;
-    checkCudaErrors(cudaMemcpy(&res, in, sizeof(data_t), cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(&res, out, sizeof(data_t), cudaMemcpyDeviceToHost));
 
     return res;
 }
@@ -489,18 +492,63 @@ __global__ void logPlusExpReduce0(data_t a, data_t *g_idata, data_t *g_odata, in
    if (tid == 0) g_odata[blockIdx.x] = sdata[0];
 }
 
-data_t k_logPlusExpReduce(data_t a, data_t *in, data_t *out, unsigned long n) {
+data_t k_logPlusExpReduce(data_t a, data_t *in, data_t *temp, unsigned long n) {
     
     const unsigned int ts = 256;
     int bs = (n + ts - 1) / ts;
     
     // TODO allow scaling above ts^2
     // see http://stackoverflow.com/questions/18023287/cuda-how-can-i-run-the-parallel-reduction-code-for-summation-that-is-described
-    logPlusExpReduce0<<<bs, ts, ts*sizeof(data_t)>>>(a, in, out, n);
-    reduce0<<< 1, ts, ts*sizeof(data_t)>>>(out, in, bs);
+    logPlusExpReduce0<<<bs, ts, ts*sizeof(data_t)>>>(a, in, temp, n);
+    
+    data_t *out;
+    checkCudaErrors(cudaMalloc(&out, bs * sizeof(data_t)));
+    reduce0<<< 1, ts, ts*sizeof(data_t)>>>(temp, out, bs);
     
     data_t res = 0;
-    checkCudaErrors(cudaMemcpy(&res, in, sizeof(data_t), cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(&res, out, sizeof(data_t), cudaMemcpyDeviceToHost));
+
+    return res;
+}
+
+__global__ void crossEntropyReduce0(data_t *v, data_t *pv, data_t *g_odata, int size) {
+
+    extern __shared__ data_t sdata[];
+
+    unsigned int tid = threadIdx.x;
+    unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+    sdata[tid] = 0;
+    if (i < size) {
+        data_t sig = 1/(1+exp(-pv[i]));
+        sdata[tid] = v[i] * log(sig) + (1-v[i]) * log(1-sig);
+    }
+    __syncthreads();
+
+    for (unsigned int s = 1; s < blockDim.x; s *= 2) {
+        if (tid % (2 * s) == 0) {
+            sdata[tid] += sdata[tid + s];
+        }
+        __syncthreads();
+    }
+
+    if (tid == 0) g_odata[blockIdx.x] = sdata[0];
+}
+
+data_t k_crossEntropyReduce(data_t *visibles, data_t *potentials, data_t *temp, unsigned long n) {
+
+    const unsigned int ts = 256;
+    int bs = (n + ts - 1) / ts;
+
+    // TODO allow scaling above ts^2
+    // see http://stackoverflow.com/questions/18023287/cuda-how-can-i-run-the-parallel-reduction-code-for-summation-that-is-described
+    crossEntropyReduce0<<<bs, ts, ts * sizeof (data_t)>>>(visibles, potentials, temp, n);
+    
+    data_t *out;
+    checkCudaErrors(cudaMalloc(&out, bs * sizeof(data_t)));
+    reduce0 <<< 1, ts, ts * sizeof (data_t)>>>(temp, out, bs);
+
+    data_t res = 0;
+    checkCudaErrors(cudaMemcpy(&res, out, sizeof (data_t), cudaMemcpyDeviceToHost));
 
     return res;
 }

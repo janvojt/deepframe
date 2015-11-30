@@ -77,7 +77,50 @@ TEST(APlusExpReduceTest, ExpOnes) {
     
     // make approximate verification,
     // as float operations are not associative on devices
-    data_t accuracy = 10/arraySize;
-    EXPECT_GT(a, ceil(actual*accuracy));
-    EXPECT_EQ(ceil(expected*accuracy), ceil(actual*accuracy));
+    data_t accuracy = 10.;
+    EXPECT_GT(ceil(actual/accuracy), a);
+    EXPECT_EQ(ceil(expected/accuracy), ceil(actual/accuracy));
+}
+
+/**
+ * Test v*log(sig(pv)) + (1-v)*log(1-sig(pv)) computation.
+ */
+TEST(CrossEntropyReduceTest, Compute) {
+    
+    const unsigned long arraySize = 10000;
+    const unsigned int arrayMemSize = arraySize * sizeof(data_t);
+    
+    data_t *hVisiblesArray = new data_t[arraySize];
+    data_t *hPotentialsArray = new data_t[arraySize];
+    
+    data_t *dVisiblesArray = NULL;
+    data_t *dPotentialsArray = NULL;
+    data_t *dTempArray = NULL;
+    
+    // allocate memory on device
+    checkCudaErrors(cudaMalloc(&dVisiblesArray, 3 * arrayMemSize));
+    dPotentialsArray = dVisiblesArray + arraySize;
+    dTempArray = dPotentialsArray + arraySize;
+    
+    // fill on host and copy to device
+    std::fill_n(hVisiblesArray, arraySize, .6);
+    checkCudaErrors(cudaMemcpy(dVisiblesArray, hVisiblesArray, arrayMemSize, cudaMemcpyHostToDevice));
+    std::fill_n(hPotentialsArray, arraySize, .8);
+    checkCudaErrors(cudaMemcpy(dPotentialsArray, hPotentialsArray, arrayMemSize, cudaMemcpyHostToDevice));
+    
+    // sum on host
+    data_t expected = 0;
+    for (int i = 0; i<arraySize; i++) {
+        data_t sig = 1 / (1+exp(-hPotentialsArray[i]));
+        expected += hVisiblesArray[i] * log(sig) + (1-hVisiblesArray[i]) * log(1-sig);
+    }
+    
+    // sum on device
+    data_t actual = k_crossEntropyReduce(dVisiblesArray, dPotentialsArray, dTempArray, arraySize);
+    
+    // make approximate verification,
+    // as float operations are not associative on devices
+    data_t accuracy = 10.;
+    EXPECT_LT(ceil(actual/accuracy), 1.);
+    EXPECT_EQ(ceil(expected/accuracy), ceil(actual/accuracy));
 }

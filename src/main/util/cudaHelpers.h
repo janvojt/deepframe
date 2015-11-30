@@ -242,7 +242,27 @@ void k_MaxPoolBackward(const int nthreads, const data_t* const outputDiffs,
  */
 data_t k_sumReduce(data_t *in, data_t *out, unsigned long n);
 
+/**
+ * Parallel implementation summing log(a + e^x).
+ * 
+ * @param a addition inside log
+ * @param in input array (x)
+ * @param out temporary array for partial results
+ * @param n input size
+ * @return the sum of logs
+ */
 data_t k_logPlusExpReduce(data_t a, data_t *in, data_t *out, unsigned long n);
+
+/**
+ * Computes cross-entropy error v*log(sig(pv)) + (1-v)*log(1-sig(pv)).
+ * 
+ * @param visibles states of visible neurons
+ * @param potentials potentials for visible neurons
+ * @param temp temporary store for partial results
+ * @param n number of neurons/potentials
+ * @return cross-entropy
+ */
+data_t k_crossEntropyReduce(data_t *visibles, data_t *potentials, data_t *temp, unsigned long n);
 
 #endif	/* CUDAHELPERS_H */
 
