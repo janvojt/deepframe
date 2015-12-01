@@ -112,8 +112,15 @@ void k_computeHiddenLocalGradient(
         data_t *thisInput, data_t *weights,
         data_t *thisLocalGradient, data_t *nextLocalGradient);
 
-// Compute the sigmoid function on device array.
-void k_computeSigmoid(data_t *dArray, int elements);
+/**
+ * Computes the sigmoid function on given input array and stores the result in
+ * the output array. The input and output can actually point to the same memory.
+ * 
+ * @param inArray input array
+ * @param outArray output array with the results
+ * @param elements size of arrays
+ */
+void k_computeSigmoid(data_t *inArray, data_t *outArray, int elements);
 
 // Assumes array of double values between 0 and 1 in dArray and 
 // spreads this to given interval.

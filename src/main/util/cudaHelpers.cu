@@ -128,16 +128,16 @@ void k_computeHiddenLocalGradient(
 
 
 __global__
-void computeSigmoid(data_t *dArray, int elements) {
+void computeSigmoid(data_t *inArray, data_t *outArray, int elements) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     if (i < elements) {
-        dArray[i] = 1.0 / (1.0 + exp(-dArray[i]));
+        outArray[i] = 1.0 / (1.0 + exp(-inArray[i]));
     }
 }
-void k_computeSigmoid(data_t *dArray, int elements) {
+void k_computeSigmoid(data_t *inArray, data_t *outArray, int elements) {
     int ts = 512;
     int bs = (elements + ts - 1) / ts;
-	computeSigmoid<<<bs,ts>>>(dArray, elements);
+	computeSigmoid<<<bs,ts>>>(inArray, outArray, elements);
 }
 
 

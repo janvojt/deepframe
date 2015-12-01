@@ -124,3 +124,46 @@ TEST(CrossEntropyReduceTest, Compute) {
     EXPECT_LT(ceil(actual/accuracy), 1.);
     EXPECT_EQ(ceil(expected/accuracy), ceil(actual/accuracy));
 }
+
+/**
+ * Test sigmoid(x) computation.
+ */
+TEST(SigmoidTest, SigmoidHalfs) {
+    
+    const int segments = 4;
+    const unsigned long segmentSize = 1000;
+    const unsigned long arraySize = segmentSize * segments;
+    const unsigned int arrayMemSize = arraySize * sizeof(data_t);
+    
+    const data_t a = 1.;
+    
+    data_t *hArray = new data_t[arraySize];
+    data_t *verifyArray = new data_t[arraySize];
+    data_t *inArray = NULL;
+    data_t *outArray = NULL;
+    
+    // allocate memory on device
+    checkCudaErrors(cudaMalloc(&inArray, 2 * arrayMemSize));
+    outArray = inArray + arraySize;
+    
+    // fill on host and copy to device
+    data_t val = .1;
+    for (int i = 0; i<segments; i++) {
+        std::fill_n(hArray + i*segmentSize, segmentSize, val);
+        val += .2;
+    }
+    checkCudaErrors(cudaMemcpy(inArray, hArray, arrayMemSize, cudaMemcpyHostToDevice));
+    
+    // compute on device
+    k_computeSigmoid(inArray, outArray, arraySize);
+    
+    // copy device results to host
+    checkCudaErrors(cudaMemcpy(verifyArray, outArray, arrayMemSize, cudaMemcpyDeviceToHost));
+    
+    // compute on host and verify
+    data_t accuracy = .001;
+    for (int i = 0; i<arraySize; i++) {
+        hArray[i] = 1/(1+exp(-hArray[i]));
+        EXPECT_EQ(ceil(hArray[i]/accuracy), ceil(verifyArray[i]/accuracy));
+    }
+}

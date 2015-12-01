@@ -92,10 +92,7 @@ void RbmLayer::propagateForwardGpu(data_t* visibles, data_t* potentials, data_t*
         k_sumVectors(potentials, hbias, outputsCount);
     }
     
-    // TODO rework sigmoid so it can do out-place computation
-    int memSize = outputsCount * sizeof(data_t);
-    checkCudaErrors(cudaMemcpy(hiddens, potentials, memSize, cudaMemcpyDeviceToDevice));
-    k_computeSigmoid(hiddens, outputsCount);
+    k_computeSigmoid(potentials, hiddens, outputsCount);
 }
 
 void RbmLayer::propagateBackwardCpu(data_t* hiddens, data_t* potentials, data_t* visibles) {
@@ -118,9 +115,7 @@ void RbmLayer::propagateBackwardGpu(data_t* hiddens, data_t* potentials, data_t*
         k_sumVectors(potentials, vbias, inputSize);
     }
     
-    int memSize = inputSize * sizeof(data_t);
-    checkCudaErrors(cudaMemcpy(visibles, potentials, memSize, cudaMemcpyDeviceToDevice));
-    k_computeSigmoid(visibles, inputSize);
+    k_computeSigmoid(potentials, visibles, inputSize);
 }
 
 void RbmLayer::pretrainCpu() {

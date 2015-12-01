@@ -96,7 +96,7 @@ void FullyConnectedLayer::forwardGpu() {
         k_sumVectors(outputs, weights + inputSize * outputsCount, outputsCount);
     }
     
-    k_computeSigmoid(outputs, outputsCount);
+    k_computeSigmoid(outputs, outputs, outputsCount);
 //    dumpDeviceArray('O', outputs, outputsCount);
 }
 
