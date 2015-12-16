@@ -90,6 +90,13 @@ protected:
     
     virtual void allocateMemory() = 0;
     
+    /**
+     * Performs any input preprocessing necessary for given network type.
+     * 
+     * @param input network input pattern
+     */
+    void processInput(data_t *input);
+    
     // Network configuration.
     NetworkConfiguration *conf;
     // Number of layers in the network.

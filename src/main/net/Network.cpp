@@ -74,6 +74,15 @@ void Network::setup() {
     }
 }
 
+void Network::processInput(data_t* input) {
+    if (conf->getLayerType(0) =="Rbm") {
+        int inputSize = getInputNeurons();
+        for (int i = 0; i<inputSize; i++) {
+            input[i] = (input[i] > .5) ? 1. : 0.;
+        }
+    }
+}
+
 void Network::addLayer(Layer* layer) {
     if (layerCursor < noLayers) {
         weightsCount += layer->getWeightsCount();
