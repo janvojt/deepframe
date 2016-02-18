@@ -40,4 +40,8 @@ for l in $ITER_CONF; do
 		| egrep "Training\\s.*\\sMSE\\sof\\s[0-9]*[.][0-9]*" \
 		| egrep -o "[0-9]+[.][0-9]+" \
 		> "$STATS_OUT/mse-$xaxis.csv"
+
+        php "$basedir/tools/computeMnistSuccess.php" "$TEST_OUT/test-$xaxis.log" \
+                > "$STATS_OUT/acc-$xaxis.csv"
+
 done

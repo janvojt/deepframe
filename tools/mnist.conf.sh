@@ -28,5 +28,5 @@ GPU_FLAG="-p"
 ADD_OPTS="-i"
 
 # Testing configuration
-MEASURES="mse time memory"
+MEASURES="mse time memory acc"
 TESTDIR="test-output/mnist/m$EPOCHS-l$LEARNING_RATE-a$INIT_INTERVALS$GPU_FLAG"
