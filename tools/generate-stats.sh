@@ -41,7 +41,7 @@ for l in $ITER_CONF; do
 		| egrep -o "[0-9]+[.][0-9]+" \
 		> "$STATS_OUT/mse-$xaxis.csv"
 
-        php "$basedir/tools/computeMnistSuccess.php" "$TEST_OUT/test-$xaxis.log" \
+        php "$basedir/tools/computeAccuracy.php" "$TEST_OUT/test-$xaxis.log" \
                 > "$STATS_OUT/acc-$xaxis.csv"
 
 done
