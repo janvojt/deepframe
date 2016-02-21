@@ -69,6 +69,7 @@ for (( i=1;i<=$ITERATIONS;i++ )); do
 		FOUNDNAN=`/usr/bin/time -f "%U user\n%S system\n%e real\n%M max memory (kB)\n" \
 			"$EXEC" \
 			-m "$EPOCHS" \
+			-n 100 \
 			-l "$LEARNING_RATE" \
 			-a "$INIT_INTERVALS" \
 			-e -1 \
