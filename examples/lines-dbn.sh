@@ -6,6 +6,6 @@ basedir=`dirname $script`
 cd "$basedir/.."
 
 ulimit -t unlimited
-time ./bin/ffwdnet -m 10000 -n 100 -l 1 -a-0.3,0.3 \
+time ./bin/ffwdnet -m 1000 -n 5000 -a-1,1 \
  -t resources/lines-test.dat -s resources/lines-labels.dat \
  -c examples/lines-dbn.cfg $@
