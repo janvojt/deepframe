@@ -73,7 +73,7 @@ void RbmLayer::backwardGpu() {
 }
 
 void RbmLayer::propagateForwardCpu(data_t* visibles, data_t* potentials, data_t* hiddens) {
-
+    LOG()->error("RBM layer does not implement CPU support in this version.");
 }
 
 void RbmLayer::propagateForwardGpu(data_t* visibles, data_t* potentials, data_t* hiddens) {
@@ -96,7 +96,7 @@ void RbmLayer::propagateForwardGpu(data_t* visibles, data_t* potentials, data_t*
 }
 
 void RbmLayer::propagateBackwardCpu(data_t* hiddens, data_t* potentials, data_t* visibles) {
-
+    LOG()->error("RBM layer does not implement CPU support in this version.");
 }
 
 void RbmLayer::propagateBackwardGpu(data_t* hiddens, data_t* potentials, data_t* visibles) {
@@ -119,7 +119,7 @@ void RbmLayer::propagateBackwardGpu(data_t* hiddens, data_t* potentials, data_t*
 }
 
 void RbmLayer::pretrainCpu() {
-
+    LOG()->error("Pretraining RBM layer on CPU is not supported in this version. Please pretrain on GPU.");
 }
 
 void RbmLayer::pretrainGpu() {
