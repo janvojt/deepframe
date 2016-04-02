@@ -65,11 +65,15 @@ void RbmLayer::forwardGpu() {
 }
 
 void RbmLayer::backwardCpu() {
-    LOG()->error("Backward run on CPU is not yet implemented for RBM layer.");
+    // DO NOTHING
+    // There is no need to backpropagate, because the RBM layers are learning
+    // only in the pretraining phase. See #pretrain().
 }
 
 void RbmLayer::backwardGpu() {
-    propagateBackwardGpu(outputs, ovPotentials, sInputs);
+    // DO NOTHING
+    // There is no need to backpropagate, because the RBM layers are learning
+    // only in the pretraining phase. See #pretrain().
 }
 
 void RbmLayer::propagateForwardCpu(data_t* visibles, data_t* potentials, data_t* hiddens) {
