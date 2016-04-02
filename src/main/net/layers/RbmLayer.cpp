@@ -259,12 +259,12 @@ void RbmLayer::processConfString(string confString) {
     
     iss >> sep;
     
-    if (!(iss >> boolalpha >> conf.isPersistent)) {
-        LOG()->warn("Could not read whether to use CD or PCD for RBM layer from configuration. Using CD...");
-        conf.isPersistent = false;
-    }
-    
-    iss >> sep;
+//    if (!(iss >> boolalpha >> conf.isPersistent)) {
+//        LOG()->warn("Could not read whether to use CD or PCD for RBM layer from configuration. Using CD...");
+//        conf.isPersistent = false;
+//    }
+//    
+//    iss >> sep;
     
     if (!(iss >> conf.gibbsSteps)) {
         LOG()->error("Could not read number of Gibbs steps for RBM layer, using 1.");
