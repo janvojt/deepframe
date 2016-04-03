@@ -8,10 +8,10 @@
 # Title will be included in graphs
 PROBLEM_TITLE="MNIST"
 
-
 # Network architecture configuration
-## We want to use file configurations for the networks.
-CONF_DIR="examples/dbn-mnist-test"
+HIDDEN_NEURONS="196 392 588 784 980 1176 1372 1568 1764 1960 2156 2352 784,784 784,784,784 784,784,784,784 784,784,784,784,784 784,784,784,784,784,784"
+INPUT_NEURONS="784"
+OUTPUT_NEURONS="10"
 
 # Specify dataset locations within resources
 DATASET_LABELS="resources/mnist/train-images-idx3-ubyte"\
@@ -21,12 +21,12 @@ DATASET_TESTS="resources/mnist/t10k-images-idx3-ubyte"\
 
 # Learner configuration
 EPOCHS="1"
-ITERATIONS="5"
+ITERATIONS="10"
 INIT_INTERVALS="-0.3,0.3"
-LEARNING_RATE="0.1"
+LEARNING_RATE="0.2"
 GPU_FLAG="-p"
 ADD_OPTS="-i"
 
 # Testing configuration
 MEASURES="mse time memory acc"
-TESTDIR="test-output/mnist/dbn/m$EPOCHS$GPU_FLAG"
+TESTDIR="test-output/mnist/mlp/float/m$EPOCHS-l$LEARNING_RATE-a$INIT_INTERVALS$GPU_FLAG"

@@ -29,4 +29,4 @@ ADD_OPTS="-i"
 
 # Testing configuration
 MEASURES="mse time memory acc"
-TESTDIR="test-output/mnist/m$EPOCHS$GPU_FLAG"
+TESTDIR="test-output/mnist/cnn/float/m$EPOCHS$GPU_FLAG"
