@@ -20,6 +20,7 @@ $regex = '/^Output\sfor\spattern\s([0-9]+).*\[\s([^\]]*)\s\].*\[\s([^\]]*)\s\]/'
 
 $correct = 0;
 $total = 0;
+$firstRun = true;
 if ($fp) {
 	while (($line = fgets($fp)) !== false) {
 		if (preg_match($regex, $line, $matches)) {
@@ -31,7 +32,15 @@ if ($fp) {
 
 			$total++;
 			$correct += $outputMax[0] == $labelsMax[0] ? 1 : 0;
-		} else if (preg_match("/^[0-9.]+\\suser\$/", $line, $matches)) {
+		} else if (preg_match("/Compiled with [0-9.]+bit precision/", $line, $matches)) {
+
+			// if this is first run,
+			// we still need to collect results
+			if ($firstRun) {
+				$firstRun = false;
+				continue;
+			}
+
 			// reached end of a single run
 			// -> print result and continue with next runs (if any)
 			echo ($correct / $total) . "\n";
