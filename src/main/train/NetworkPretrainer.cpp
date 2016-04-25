@@ -50,7 +50,7 @@ void NetworkPretrainer::pretrain(LabeledDataset *trainingSet) {
                         if (useGpu) {
                             l->forwardGpu();
                         } else {
-                            l->forwardGpu();
+                            l->forwardCpu();
                         }
                     }
 
