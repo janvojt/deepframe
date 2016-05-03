@@ -11,6 +11,7 @@
 #include <string>
 #include <stdlib.h>
 #include <iostream>
+#include <random>
 
 #include "../util/cpuDebugHelpers.h"
 #include "../common.h"
@@ -65,8 +66,19 @@ void CpuNetwork::reinit() {
     data_t min = this->conf->getInitMin();
     data_t max = this->conf->getInitMax();
     data_t interval = max - min;
-    for (int i = 0; i < this->weightsCount; i++) {
-        this->weights[i] = ((data_t) (rand()) / RAND_MAX * interval) + min;
+    
+    if (interval < 0) {
+        // we are using Gaussian distribution with the given standard deviation
+        std::default_random_engine gen;
+        std::normal_distribution<data_t> dist(0., conf->getInitMin());
+        for (int i = 0; i < this->weightsCount; i++) {
+            this->weights[i] = dist(gen);
+        }
+    } else {
+        // we are using uniform distribution with the given interval
+        for (int i = 0; i < this->weightsCount; i++) {
+            this->weights[i] = ((data_t) (rand()) / RAND_MAX * interval) + min;
+        }
     }
 }
 

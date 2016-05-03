@@ -69,6 +69,48 @@ inline void gpuCublasAssert(cublasStatus_t code, const char *file, int line, boo
     }
 };
 
+#define CURAND_CHECK(condition) { \
+gpuCurandAssert(condition, __FILE__, __LINE__); \
+}
+
+inline void gpuCurandAssert(curandStatus_t code, const char *file, int line, bool abort = true) {
+    if (code != CURAND_STATUS_SUCCESS) {
+        const char *errorMsg;
+        switch (code) {
+            case CURAND_STATUS_SUCCESS:
+                errorMsg = "No errors.";
+            case CURAND_STATUS_VERSION_MISMATCH:
+                errorMsg = "Header file and linked library version do not match.";
+            case CURAND_STATUS_NOT_INITIALIZED:
+                errorMsg = "Generator not initialized.";
+            case CURAND_STATUS_ALLOCATION_FAILED:
+                errorMsg = "Memory allocation failed.";
+            case CURAND_STATUS_TYPE_ERROR:
+                errorMsg = "Generator is wrong type.";
+            case CURAND_STATUS_OUT_OF_RANGE:
+                errorMsg = "Argument out of range.";
+            case CURAND_STATUS_LENGTH_NOT_MULTIPLE:
+                errorMsg = "Length requested is not a multiple of dimension.";
+            case CURAND_STATUS_DOUBLE_PRECISION_REQUIRED:
+                errorMsg = "GPU does not have double precision required by MRG32k3a.";
+            case CURAND_STATUS_LAUNCH_FAILURE:
+                errorMsg = "Kernel launch failure.";
+            case CURAND_STATUS_PREEXISTING_FAILURE:
+                errorMsg = "Preexisting failure on library entry";
+            case CURAND_STATUS_INITIALIZATION_FAILED:
+                errorMsg = "Initialization of CUDA failed.";
+            case CURAND_STATUS_ARCH_MISMATCH:
+                errorMsg = "Architecture mismatch, GPU does not support requested feature.";
+            case CURAND_STATUS_INTERNAL_ERROR:
+                errorMsg = "Internal library error.";
+            default:
+                errorMsg = "Unknown cuRand status";
+        }
+        fprintf(stderr, "CUBLAS: GPUassert: %s (%s:%d, error code:%d)\n", errorMsg, file, line, code);
+        if (abort) exit(code);
+    }
+};
+
 #define checkCudaErrors(ans) { gpuAssert(ans, __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {
@@ -141,7 +183,8 @@ void k_uniformToCoinFlip(data_t *p, data_t *dArray, int size);
 
 /**
  * Delegates random number generation to appropriate cuRAND call of correct
- * data type.
+ * data type. The numbers are generated from uniform distribution from the
+ * interval between 0.0 (excluding) and 1.0 (including).
  * 
  * @param generator
  * @param outputPtr
@@ -151,6 +194,25 @@ void k_uniformToCoinFlip(data_t *p, data_t *dArray, int size);
 curandStatus_t k_generateUniform(curandGenerator_t generator,
         data_t *outputPtr,
         size_t num);
+
+/**
+ * Delegates random number generation to appropriate cuRAND call of correct
+ * data type. The numbers are generated from Gaussian distribution with the
+ * given mean and standard deviation.
+ * 
+ * @param generator
+ * @param outputPtr
+ * @param num
+ * @param mean
+ * @param stddev
+ * @return 
+ */
+curandStatus_t k_generateNormal(curandGenerator_t generator,
+        data_t *outputPtr,
+        size_t num,
+        data_t mean,
+        data_t stddev);
+
 
 void k_im2col(const data_t* data_im, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,

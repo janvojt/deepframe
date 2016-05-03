@@ -165,6 +165,19 @@ curandStatus_t k_generateUniform(curandGenerator_t generator,
 #endif
 }
 
+curandStatus_t k_generateNormal(curandGenerator_t generator,
+        data_t *outputPtr,
+        size_t num,
+        data_t mean,
+        data_t stddev) {
+    
+#ifdef USE_64BIT_PRECISION
+    return curandGenerateNormalDouble(generator, outputPtr, num, mean, stddev);
+#else
+    return curandGenerateNormal(generator, outputPtr, num, mean, stddev);
+#endif
+}
+
 
 __global__
 void uniformToCoinFlip(data_t *p, data_t *dArray, int elements) {

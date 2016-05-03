@@ -70,10 +70,20 @@ void GpuNetwork::merge(Network** nets, int size) {
 }
 
 void GpuNetwork::reinit() {
-    LOG()->info("Randomly initializing weights within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
-    k_generateUniform(*this->gpuConf->getRandGen(), this->weights, this->weightsCount);
-    k_spreadInterval(this->conf->getInitMin(), this->conf->getInitMax(), this->weights, this->weightsCount);
-//    dumpDeviceArray('r', this->weights, this->weightsCount);
+    if (conf->getInitMax() < conf->getInitMin()) {
+        // cuRAND needs to generate random array of even length
+        int size  = weightsCount;
+        if (weightsCount % 2 == 1) {
+            size++;
+        }
+        LOG()->info("Randomly initializing weights from Gaussian distribution with standard deviation of %f.", conf->getInitMin());
+        CURAND_CHECK(k_generateNormal(*gpuConf->getRandGen(), weights, size, 0., conf->getInitMin()));
+    } else {
+        LOG()->info("Randomly initializing weights within the interval (%f,%f).", conf->getInitMin(), conf->getInitMax());
+        CURAND_CHECK(k_generateUniform(*gpuConf->getRandGen(), weights, weightsCount));
+        k_spreadInterval(conf->getInitMin(), conf->getInitMax(), weights, weightsCount);
+    }
+//    dumpDeviceArray("weights after random init", this->weights, this->weightsCount);
 }
 
 void GpuNetwork::allocateMemory() {
@@ -82,8 +92,11 @@ void GpuNetwork::allocateMemory() {
     
     checkCudaErrors(cudaMalloc(&this->inputs, sizeof(data_t) * this->inputsCount));
     checkCudaErrors(cudaMalloc(&this->outputDiffs, sizeof(data_t) * this->inputsCount));
-    checkCudaErrors(cudaMalloc(&this->weights, sizeof(data_t) * this->weightsCount));
-    checkCudaErrors(cudaMalloc(&this->weightDiffs, sizeof(data_t) * this->weightsCount));
+    
+    // allocate an extra weight, because some CUDA APIs
+    // require even array lengths
+    checkCudaErrors(cudaMalloc(&this->weights, sizeof(data_t) * (this->weightsCount + 1)));
+    checkCudaErrors(cudaMalloc(&this->weightDiffs, sizeof(data_t) * (this->weightsCount + 1)));
     
     this->memExpectedOutput = this->getOutputNeurons() * sizeof(data_t);
     checkCudaErrors(cudaMalloc(&this->expectedOutput, this->memExpectedOutput));

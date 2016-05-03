@@ -215,7 +215,7 @@ void printHelp() {
     cout << endl;
     cout << "-l <value>  --rate <value>        Learning rate influencing the speed and quality of learning. This is a global setting used in case of MLP configured via options. The external layer configuration file overrides this setting and allows to assign a different learning rate for each layer. Default value is 0.3." << endl;
     cout << endl;
-    cout << "-a <value>  --init <value>        Minimum and maximum value network weights are initialized to. Default is -1,1." << endl;
+    cout << "-a <value>  --init <value>        In case of uniform distribution, minimum and maximum value network weights are initialized to. In case of Gaussian distribution, the standard deviation. Default is uniform distribution with interval (-1,1)." << endl;
     cout << endl;
     cout << "-e <value>  --mse <value>         Target Mean Square Error to determine when to finish the learning. Default is 0.01." << endl;
     cout << endl;

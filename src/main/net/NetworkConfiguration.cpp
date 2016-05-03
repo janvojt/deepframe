@@ -81,6 +81,7 @@ void NetworkConfiguration::parseInitInterval(const char* intervalConf) {
 }
 
 void NetworkConfiguration::parseInitInterval(const char* intervalConf, const char *format) {
+    
     data_t v = 0;
     char *haystack = new char[strlen(intervalConf)+1];
     strcpy(haystack, intervalConf);
@@ -88,8 +89,20 @@ void NetworkConfiguration::parseInitInterval(const char* intervalConf, const cha
     sscanf(token, format, &v);
     this->initMin = v;
     token = strtok(NULL, ",");
-    sscanf(token, format, &v);
-    this->initMax = v;
+
+    if (token == NULL) {
+        // only a single decimal is given
+        // -> we will use Gaussian distribution, store the standard deviation in
+        //    initMin and disable initMax by setting to -1.
+        this->initMax = -1;
+    } else {
+        // interval is given
+        // -> we will initialize weights from uniform distribution with given
+        //    interval
+        sscanf(token, format, &v);
+        this->initMax = v;
+    }
+    
     delete[] haystack;
 }
 
