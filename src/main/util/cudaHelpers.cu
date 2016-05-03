@@ -193,6 +193,20 @@ void k_uniformToCoinFlip(data_t *p, data_t *dArray, int size) {
 }
 
 
+__global__
+void flattenToCoinFlip(data_t *p, int elements) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < elements) {
+        p[i] = (.5 < p[i]) ? 1 : 0;
+    }
+}
+void k_flattenToCoinFlip(data_t *p, int size) {
+    int ts = 512;
+    int bs = (size + ts - 1) / ts;
+    flattenToCoinFlip<<<bs,ts>>>(p, size);
+}
+
+
 __global__ void im2col(const int n, const data_t* data_im,
     const int height, const int width, const int kernelHeight, const int kernelWidth,
     const int padHeight, const int padWidth,

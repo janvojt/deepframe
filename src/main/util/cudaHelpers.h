@@ -181,6 +181,9 @@ void k_spreadInterval(data_t min, data_t max, data_t *dArray, int size);
  */
 void k_uniformToCoinFlip(data_t *p, data_t *dArray, int size);
 
+
+void k_flattenToCoinFlip(data_t *p, int size);
+
 /**
  * Delegates random number generation to appropriate cuRAND call of correct
  * data type. The numbers are generated from uniform distribution from the

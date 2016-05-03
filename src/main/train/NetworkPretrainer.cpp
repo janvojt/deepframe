@@ -9,6 +9,7 @@
 
 #include "../common.h"
 #include "../log/LoggerFactory.h"
+#include "../util/cudaHelpers.h"
 #include "log4cpp/Category.hh"
 
 NetworkPretrainer::NetworkPretrainer(Network *network) {
@@ -56,8 +57,13 @@ void NetworkPretrainer::pretrain(LabeledDataset *trainingSet) {
 
                     // pretrain the layer
                     if (useGpu) {
+                        Layer* prevLayer = net->getLayer(i-1);
+                        k_flattenToCoinFlip(prevLayer->getOutputs(), prevLayer->getOutputsCount());
                         layer->pretrainGpu();
                     } else {
+                        // TODO implement below on CPU
+//                        Layer* prevLayer = net->getLayer(i-1);
+//                        k_flattenToCoinFlip(prevLayer->getOutputs(), prevLayer->getOutputsCount());
                         layer->pretrainCpu();
                     }
                 }
