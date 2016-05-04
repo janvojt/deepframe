@@ -481,7 +481,7 @@ int main(int argc, char *argv[]) {
 //        return 0;
         delete p;
     } else {
-        InputDatasetParser *p = new InputDatasetParser(conf->testData, netConf);
+        LabeledDatasetParser *p = new LabeledDatasetParser(conf->testData, netConf);
         tds = p->parse();
         delete p;
     }

@@ -57,8 +57,8 @@ void NetworkPretrainer::pretrain(LabeledDataset *trainingSet) {
 
                     // pretrain the layer
                     if (useGpu) {
-                        Layer* prevLayer = net->getLayer(i-1);
-                        k_flattenToCoinFlip(prevLayer->getOutputs(), prevLayer->getOutputsCount());
+//                        Layer* prevLayer = net->getLayer(i-1);
+//                        k_flattenToCoinFlip(prevLayer->getOutputs(), prevLayer->getOutputsCount());
                         layer->pretrainGpu();
                     } else {
                         // TODO implement below on CPU

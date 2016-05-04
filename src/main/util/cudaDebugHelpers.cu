@@ -47,18 +47,48 @@ void dumpDeviceArray(const char *flag, const data_t *dm, const int size) {
     }
 }
 
-void paint2Dimage(const char *flag, Layer* layer) {
+void compareDeviceArrays(const char *flag, const data_t *dm1, const data_t *dm2, const int size) {
     if (LOG()->isDebugEnabled()) {
-        std::cout << flag << std::endl;
+        
+        std::cout << "Comparing device memory (" << flag << "): " << std::endl;
+
+        data_t *hdm1 = new data_t[size*2];
+        data_t *hdm2 = hdm1 + size;
+        checkCudaErrors(cudaMemcpy(hdm1, dm1, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
+        checkCudaErrors(cudaMemcpy(hdm2, dm2, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
+
+        int max = size > 100 ? 100 : size;
+        for (int i = 0; i<max; i+=2) {
+            data_t percent = hdm2[i] / hdm1[i] * 100;
+            std::cout << "v1: " << hdm1[i] << "\t\tv2: " << hdm2[i] << "\t\tpercent: " << percent << std::endl;
+        }
+        std::cout << "-----------------------------" << std::endl;
+
+        delete[] hdm1;
+    }
+}
+
+void paint2DimageL(const char *flag, Layer* layer) {
+    if (LOG()->isDebugEnabled()) {
         
         data_t *dm = layer->getOutputs();
         int size = layer->getOutputsCount();
+        
+        paint2Dimage(flag, dm, size);
+    }
+}
+
+void paint2Dimage(const char* flag, data_t *data, int size) {
+    if (LOG()->isDebugEnabled()) {
+        
+        std::cout << flag << std::endl;
+        
         int x = sqrt(size);
         int y = x;
         
         data_t *hdm = new data_t[size];
-        checkCudaErrors(cudaMemcpy(hdm, dm, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
-
+        checkCudaErrors(cudaMemcpy(hdm, data, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
+        
         for (int i = 0; i<x; i++) {
             char sep = ' ';
             std::cout << sep;
@@ -67,9 +97,11 @@ void paint2Dimage(const char *flag, Layer* layer) {
                 if (d<.5) {
                     std::cout << " ";
                 } else if (d<.9) {
-                    std::cout << "0";
-                } else {
+                    std::cout << "<";
+                } else if (d<=1.) {
                     std::cout << "#";
+                } else {
+                    std::cout << "&";
                 }
             }
             std::cout << std::endl;
@@ -78,6 +110,58 @@ void paint2Dimage(const char *flag, Layer* layer) {
         std::cout << "-----------------------------" << std::endl;
 
         delete[] hdm;
+    }
+}
+
+void compare2Dimages(const char* flag, data_t *data1, data_t *data2, int size) {
+    if (LOG()->isDebugEnabled()) {
+        
+        std::cout << flag << std::endl;
+        
+        int x = sqrt(size);
+        int y = x;
+        
+        data_t *hdm1 = new data_t[size * 2];
+        data_t *hdm2 = hdm1 + size;
+        checkCudaErrors(cudaMemcpy(hdm1, data1, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
+        checkCudaErrors(cudaMemcpy(hdm2, data2, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
+        
+        for (int i = 0; i<x; i++) {
+            char sep = ' ';
+            std::cout << sep;
+            for (int j = 0; j<y; j++) {
+                data_t d = hdm1[i*x+j];
+                if (d<.5) {
+                    std::cout << " ";
+                } else if (d<.9) {
+                    std::cout << "<";
+                } else if (d<=1.) {
+                    std::cout << "#";
+                } else {
+                    std::cout << "&";
+                }
+            }
+            
+            std::cout << "        ";
+            
+            for (int j = 0; j<y; j++) {
+                data_t d = hdm2[i*x+j];
+                if (d<.5) {
+                    std::cout << " ";
+                } else if (d<.9) {
+                    std::cout << "<";
+                } else if (d<=1.) {
+                    std::cout << "#";
+                } else {
+                    std::cout << "&";
+                }
+            }
+            std::cout << std::endl;
+        }
+        
+        std::cout << "-------------------------------------------" << std::endl;
+
+        delete[] hdm1;
     }
 }
 

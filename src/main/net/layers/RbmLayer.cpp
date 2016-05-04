@@ -9,6 +9,7 @@
 #include "../../common.h"
 #include "../LayerFactory.h"
 #include "../../util/cudaHelpers.h"
+#include "../../util/cudaDebugHelpers.h"
 
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -129,10 +130,14 @@ void RbmLayer::pretrainCpu() {
 void RbmLayer::pretrainGpu() {
     
     data_t *inputs =  previousLayer->getOutputs();
+//    paint2DimageL("original input", previousLayer);
     
     // single forward run will compute original results
     // needed to compute the differentials
     forwardGpu();
+
+    k_generateUniform(*curandGen, randomData, outputsCount);
+    k_uniformToCoinFlip(outputs, randomData, outputsCount);
     
     // Reset the parameters sampled from previous training
     if (!conf.isPersistent || !samplesInitialized) {
@@ -144,6 +149,13 @@ void RbmLayer::pretrainGpu() {
     
     // perform CD-k
     gibbs_hvh(conf.gibbsSteps);
+
+    compare2Dimages("ORIGINAL vs. SAMPLED INPUT", inputs, sInputs, inputSize);
+    
+//    paint2Dimage("original input", inputs, inputSize);
+//    paint2Dimage("sampled input", sInputs, inputSize);
+//    paint2Dimage("original output", outputs, outputsCount);
+//    paint2Dimage("sampled output", sOutputs, outputsCount);
     
     // COMPUTE THE DIFFERENTIALS
     
@@ -174,8 +186,12 @@ void RbmLayer::pretrainGpu() {
         k_axpy(cublasHandle, outputsCount, (data_t) -lr, sOutputs, 1, hdiffs, 1);
     }
     
+    compareDeviceArrays("weight updates", weights, weightDiffs, weightsCount);
+//    dumpDeviceArray("weightDiffs", weightDiffs, weightsCount);
+    
     // adjust RBM parameters according to computed diffs
     k_sumVectors(weights, weightDiffs, weightsCount);
+//    dumpDeviceArray("weights", weights, weightsCount);
 }
 
 
@@ -183,16 +199,17 @@ void RbmLayer::sample_vh_gpu() {
     
     propagateForwardGpu(sInputs, shPotentials, sOutputs);
 
-    k_generateUniform(*curandGen, randomData, outputsCount);
-    k_uniformToCoinFlip(sOutputs, randomData, outputsCount);
+//    k_generateUniform(*curandGen, randomData, outputsCount);
+//    k_uniformToCoinFlip(sOutputs, randomData, outputsCount);
 }
 
 void RbmLayer::sample_hv_gpu() {
     
     propagateBackwardGpu(sOutputs, svPotentials, sInputs);
     
-    k_generateUniform(*curandGen, randomData, inputSize);
-    k_uniformToCoinFlip(sInputs, randomData, inputSize);
+    // Do not sample visible states, use probabilities instead?
+//    k_generateUniform(*curandGen, randomData, inputSize);
+//    k_uniformToCoinFlip(sInputs, randomData, inputSize);
 }
 
 void RbmLayer::gibbs_hvh(int steps) {
@@ -201,6 +218,12 @@ void RbmLayer::gibbs_hvh(int steps) {
         sample_hv_gpu();
         sample_vh_gpu();
     }
+    
+    // The last update should use the probabilities,
+    // not the states themselves. This will eliminate
+    // the sampling noise during the learning.
+//    sample_hv_gpu();
+//    propagateForwardGpu(sInputs, shPotentials, sOutputs);
 }
 
 void RbmLayer::gibbs_vhv(int steps) {
