@@ -57,8 +57,8 @@ void compareDeviceArrays(const char *flag, const data_t *dm1, const data_t *dm2,
         checkCudaErrors(cudaMemcpy(hdm1, dm1, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
         checkCudaErrors(cudaMemcpy(hdm2, dm2, sizeof(data_t) * size, cudaMemcpyDeviceToHost));
 
-        int max = size > 100 ? 100 : size;
-        for (int i = 0; i<max; i+=2) {
+//        int max = size > 100 ? 100 : size;
+        for (int i = 0; i<size; i+=1000) {
             data_t percent = hdm2[i] / hdm1[i] * 100;
             std::cout << "v1: " << hdm1[i] << "\t\tv2: " << hdm2[i] << "\t\tpercent: " << percent << std::endl;
         }

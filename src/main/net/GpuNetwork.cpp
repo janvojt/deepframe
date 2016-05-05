@@ -109,7 +109,7 @@ void GpuNetwork::allocateMemory() {
 
 void GpuNetwork::setInput(data_t* input) {
 //    compare('b', dInputs, inputs, getInputOffset(noLayers));
-//    processInput(input);
+    processInput(input);
     int memSize = sizeof(data_t) * this->getInputNeurons();
     std::memcpy(this->input, input, memSize);
     checkCudaErrors(cudaMemcpy(this->inputs, input, memSize, cudaMemcpyHostToDevice));

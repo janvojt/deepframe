@@ -60,6 +60,8 @@ public:
     
     // Random generator for cuRAND
     curandGenerator_t *curandGen;
+
+    data_t *randomData;
     
 protected:
     

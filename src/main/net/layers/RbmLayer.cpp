@@ -199,8 +199,8 @@ void RbmLayer::sample_vh_gpu() {
     
     propagateForwardGpu(sInputs, shPotentials, sOutputs);
 
-//    k_generateUniform(*curandGen, randomData, outputsCount);
-//    k_uniformToCoinFlip(sOutputs, randomData, outputsCount);
+    k_generateUniform(*curandGen, randomData, outputsCount);
+    k_uniformToCoinFlip(sOutputs, randomData, outputsCount);
 }
 
 void RbmLayer::sample_hv_gpu() {
@@ -208,13 +208,13 @@ void RbmLayer::sample_hv_gpu() {
     propagateBackwardGpu(sOutputs, svPotentials, sInputs);
     
     // Do not sample visible states, use probabilities instead?
-//    k_generateUniform(*curandGen, randomData, inputSize);
-//    k_uniformToCoinFlip(sInputs, randomData, inputSize);
+    k_generateUniform(*curandGen, randomData, inputSize);
+    k_uniformToCoinFlip(sInputs, randomData, inputSize);
 }
 
 void RbmLayer::gibbs_hvh(int steps) {
     
-    for (int i = 0; i<steps; i++) {
+    for (int i = 1; i<steps; i++) {
         sample_hv_gpu();
         sample_vh_gpu();
     }
@@ -222,8 +222,8 @@ void RbmLayer::gibbs_hvh(int steps) {
     // The last update should use the probabilities,
     // not the states themselves. This will eliminate
     // the sampling noise during the learning.
-//    sample_hv_gpu();
-//    propagateForwardGpu(sInputs, shPotentials, sOutputs);
+    sample_hv_gpu();
+    propagateForwardGpu(sInputs, shPotentials, sOutputs);
 }
 
 void RbmLayer::gibbs_vhv(int steps) {
