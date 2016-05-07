@@ -10,6 +10,7 @@
 #include "common.h"
 
 #include "util/cudaHelpers.h"
+#include "util/cudaDebugHelpers.h"
 
 /**
  * Test binary data set creation.
@@ -166,4 +167,76 @@ TEST(SigmoidTest, SigmoidHalfs) {
         hArray[i] = 1/(1+exp(-hArray[i]));
         EXPECT_EQ(ceil(hArray[i]/accuracy), ceil(verifyArray[i]/accuracy));
     }
+}
+
+/**
+ * Test matrix-vector multiplication.
+ */
+TEST(GemmTest, GemmMatrixMatrix) {
+    
+    const int Arows = 2;
+    const int Acols = 3;
+    const int Brows = 3;
+    const int Bcols = 2;
+    const int Crows = Arows;
+    const int Ccols = Bcols;
+    
+    const int Asize = Arows * Acols;
+    const int Bsize = Brows * Bcols;
+    const int Csize = Crows * Ccols;
+    
+    const int AmemSize = Asize * sizeof(data_t);
+    const int BmemSize = Bsize * sizeof(data_t);
+    const int CmemSize = Csize * sizeof(data_t);
+    const int memSize = AmemSize + BmemSize + CmemSize;
+    
+    data_t *hA = new data_t[Asize];
+    data_t *hB = new data_t[Bsize];
+    data_t *hC = new data_t[Csize];
+    
+    data_t *dA = NULL;
+    checkCudaErrors(cudaMalloc(&dA, memSize));
+    data_t *dB = dA + Asize;
+    data_t *dC = dB + Bsize;
+    
+    // fill data on host and copy to device
+    // we will do column primary, as that is what BLAS uses
+    for (int i = 0; i<Acols; i++) {
+        for (int j = 0; j<Arows; j++) {
+            int idx = i*Arows + j;
+            hA[idx] = j*Acols + i + 1;
+        }
+    }
+    for (int i = 0; i<Bcols; i++) {
+        for (int j = 0; j<Brows; j++) {
+            int idx = i*Brows + j;
+            hB[idx] = j*Bcols + i + 1;
+        }
+    }
+    checkCudaErrors(cudaMemcpy(dA, hA, AmemSize, cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(dB, hB, BmemSize, cudaMemcpyHostToDevice));
+    
+    dumpDeviceArray("A", dA, Asize);
+    dumpDeviceArray("B", dB, Bsize);
+
+    // cuBLAS init
+    cublasHandle_t cublasHandle;
+    cublasCreate(&cublasHandle);
+    
+    // multiply the matrices
+    k_gemm(cublasHandle,
+            CblasNoTrans, CblasNoTrans,
+            Bcols, Arows, Brows,
+            (data_t) 1., dB,
+            dA, (data_t) 0., dC);
+    
+    checkCudaErrors(cudaMemcpy(hC, dC, CmemSize, cudaMemcpyDeviceToHost));
+    
+    dumpDeviceArray("C", dC, Csize);
+    
+    // verify result
+    EXPECT_EQ(hC[0], 22);
+    EXPECT_EQ(hC[1], 49);
+    EXPECT_EQ(hC[2], 28);
+    EXPECT_EQ(hC[3], 64);
 }

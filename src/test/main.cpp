@@ -24,7 +24,6 @@ public:
      * Environment setup called before any test case is run.
      */
     virtual void SetUp() {
-        LOG()->setPriority(log4cpp::Priority::ERROR);
     }
     
     /**
@@ -40,6 +39,12 @@ public:
 int main(int argc, char **argv) {
 
     Environment *env = new Environment();
+    
+    if (argc > 1) {
+        LOG()->setPriority(log4cpp::Priority::DEBUG);
+    } else {
+        LOG()->setPriority(log4cpp::Priority::ERROR);
+    }
     
     ::testing::InitGoogleTest(&argc, argv);
     ::testing::AddGlobalTestEnvironment(env);
