@@ -22,9 +22,10 @@ public:
     GpuNetwork(const GpuNetwork& orig);
     virtual ~GpuNetwork();
     
-    /** Creates a network clone.
-        
-        @return network clone with copied weights, potentials, bias, etc.
+    /**
+     * Creates a network clone.
+     *   
+     * @return network clone with copied weights, potentials, bias, etc.
      */
     GpuNetwork *clone();
     
@@ -36,28 +37,41 @@ public:
      */
     void merge(Network **nets, int size);
     
-    /** Reinitializes network so it forgets everything it learnt.
-
-        This means random reinitialization of weights and bias.
+    /**
+     * Reinitializes network so it forgets everything it learnt.
+     * This means random reinitialization of weights and bias.
      */
     void reinit();
     
-    // Sets the input values for the network.
-    // Size of given input array should be equal to the number of input neurons.
+    /**
+     * Sets the input values for the network.
+     * Size of given input array should be equal to the number of input neurons.
+     */
     void setInput(data_t *input);
-    // Returns pointer to the beginning of the input array.
+    
+    /** Returns pointer to the beginning of the input array. */
     data_t *getInput();
-    // Returns pointer to the beginning of the output array.
+    /** Returns pointer to the beginning of the output array. */
     data_t *getOutput();
 
     virtual void setExpectedOutput(data_t* output);
     
+    /**
+     * Performs the forward run on the network. Used in training and testing.
+     */
     virtual void forward();
 
+    /**
+     * Performs the backward run on the network. Used in training.
+     */
     virtual void backward();
     
 protected:
 
+    /**
+     * Allocates additional memory needed by the network.
+     * Launched in the network initialization phase.
+     */
     void allocateMemory();
     
 private:
@@ -92,12 +106,11 @@ private:
     /** Memory size required to store #expectedOutput. */
     int memExpectedOutput;
     
-    // Holds GPU configuration and device properties.
+    /** Holds GPU configuration and device properties. */
     GpuConfiguration *gpuConf;
-    // CUDA Basic Linear Algebra Subprograms handle.
-    cublasHandle_t cublasHandle;
     
-    void computeOutputDiffs();
+    /** CUDA Basic Linear Algebra Subprograms handle. */
+    cublasHandle_t cublasHandle;
 };
 
 #endif	/* GPUNETWORK_H */

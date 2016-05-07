@@ -25,6 +25,11 @@ public:
     void setPretrainEpochs(long epochs);
     long getPretrainEpochs();
     
+    /**
+     * Pretrains the network on the given training set.
+     * 
+     * @param trainingSet
+     */
     void pretrain(LabeledDataset *trainingSet);
     
 private:

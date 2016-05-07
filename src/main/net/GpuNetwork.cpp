@@ -145,6 +145,8 @@ void GpuNetwork::forward() {
         LOG()->debug("Computing forward run on GPU for layer %d.", i);
         this->layers[i]->forwardGpu();
     }
+    
+    // mark output as out of sync
     outputSynced = false;
 }
 
@@ -164,8 +166,4 @@ void GpuNetwork::backward() {
     
     // update all weights
     k_sumVectors(weights, weightDiffs, weightsCount);
-}
-
-void GpuNetwork::computeOutputDiffs() {
-    
 }

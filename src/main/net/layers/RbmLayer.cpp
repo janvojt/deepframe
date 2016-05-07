@@ -9,7 +9,7 @@
 #include "../../common.h"
 #include "../LayerFactory.h"
 #include "../../util/cudaHelpers.h"
-#include "../../util/cudaDebugHelpers.h"
+//#include "../../util/cudaDebugHelpers.h"
 
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
@@ -52,9 +52,6 @@ void RbmLayer::setup(string confString) {
     
     int memCount = outputsCount > inputSize ? outputsCount : inputSize;
     checkCudaErrors(cudaMalloc(&randomData, memCount * sizeof(data_t)));
-    
-    // store for computing parallel array reduction
-    checkCudaErrors(cudaMalloc(&tempReduce, outputsCount * sizeof(data_t)));
 }
 
 void RbmLayer::forwardCpu() {
@@ -85,14 +82,14 @@ void RbmLayer::propagateForwardGpu(data_t* visibles, data_t* potentials, data_t*
     
     data_t *hbias = weights + inputSize * outputsCount + inputSize;
     
-    //note cuBLAS is column primary!
-    //need to transpose the order
+    // propagate potentials from visible to hidden neurons
     k_gemm(this->cublasHandle,
             CblasNoTrans, CblasNoTrans,
             /*n*/outputsCount,/*m*/ 1,/*k*/ inputSize,
             (data_t) 1., weights,
             visibles, (data_t) 0., potentials);
 
+    // apply bias
     if (conf.useBias) {
         k_sumVectors(potentials, hbias, outputsCount);
     }
@@ -106,17 +103,16 @@ void RbmLayer::propagateBackwardCpu(data_t* hiddens, data_t* potentials, data_t*
 
 void RbmLayer::propagateBackwardGpu(data_t* hiddens, data_t* potentials, data_t* visibles) {
     
-    data_t *vbias = weights + inputSize * outputsCount;
-    
-    //note cuBLAS is column primary!
-    //need to transpose the order
+    // propagate potentials from hidden back to visible neurons
     k_gemm(this->cublasHandle,
             CblasTrans, CblasNoTrans,
             /*n*/inputSize,/*m*/ 1,/*k*/ outputsCount,
             (data_t) 1., weights,
             hiddens, (data_t) 0., potentials);
 
+    // apply bias
     if (conf.useBias) {
+        data_t *vbias = weights + inputSize * outputsCount;
         k_sumVectors(potentials, vbias, inputSize);
     }
     
@@ -130,12 +126,12 @@ void RbmLayer::pretrainCpu() {
 void RbmLayer::pretrainGpu() {
     
     data_t *inputs =  previousLayer->getOutputs();
-//    paint2DimageL("original input", previousLayer);
     
     // single forward run will compute original results
     // needed to compute the differentials
     forwardGpu();
 
+    // sample binary states from potentials
     k_generateUniform(*curandGen, randomData, outputsCount);
     k_uniformToCoinFlip(outputs, randomData, outputsCount);
     
@@ -148,17 +144,11 @@ void RbmLayer::pretrainGpu() {
     // perform CD-k
     gibbs_hvh(conf.gibbsSteps);
 
-    compare2Dimages("ORIGINAL vs. SAMPLED INPUT", inputs, sInputs, inputSize);
-    
-//    paint2Dimage("original input", inputs, inputSize);
-//    paint2Dimage("sampled input", sInputs, inputSize);
-//    paint2Dimage("original output", outputs, outputsCount);
-//    paint2Dimage("sampled output", sOutputs, outputsCount);
-    
     // COMPUTE THE DIFFERENTIALS
     
     // First we will compute the matrix for sampled data,
     // then for real data and subtract the sampled matrix.
+    // Note that weights matrix is stored as column-primary.
     k_gemm(cublasHandle, CblasNoTrans, CblasNoTrans,
             outputsCount, inputSize, 1,
             lr, sOutputs, sInputs, (data_t) 0., weightDiffs);
@@ -167,6 +157,7 @@ void RbmLayer::pretrainGpu() {
             outputsCount, inputSize, 1,
             lr, outputs, inputs, (data_t) -1., weightDiffs);
     
+    // compute differentials for bias
     if (conf.useBias) {
         
         data_t *vdiffs = weightDiffs + genuineWeightsCount;
@@ -184,12 +175,8 @@ void RbmLayer::pretrainGpu() {
         k_axpy(cublasHandle, outputsCount, (data_t) -lr, sOutputs, 1, hdiffs, 1);
     }
     
-    compareDeviceArrays("weight updates", weights, weightDiffs, weightsCount);
-//    dumpDeviceArray("weightDiffs", weightDiffs, weightsCount);
-    
     // adjust RBM parameters according to computed diffs
     k_sumVectors(weights, weightDiffs, weightsCount);
-//    dumpDeviceArray("weights", weights, weightsCount);
 }
 
 
@@ -212,6 +199,8 @@ void RbmLayer::sample_hv_gpu(data_t *outputs, data_t *potentials, data_t *inputs
 
 void RbmLayer::gibbs_hvh(int steps) {
     
+    // start from 1, since the last step is computed
+    // separately using probabilities instead of binary states
     for (int i = 1; i<steps; i++) {
         sample_hv_gpu(sOutputs, svPotentials, sInputs);
         sample_vh_gpu(sInputs, shPotentials, sOutputs);
@@ -223,46 +212,6 @@ void RbmLayer::gibbs_hvh(int steps) {
     sample_hv_gpu(sOutputs, svPotentials, sInputs);
     propagateForwardGpu(sInputs, shPotentials, sOutputs);
 }
-
-void RbmLayer::gibbs_vhv(int steps) {
-    
-    for (int i = 0; i<steps; i++) {
-        sample_vh_gpu(sInputs, shPotentials, sOutputs);
-        sample_hv_gpu(sOutputs, svPotentials, sInputs);
-    }
-}
-
-data_t RbmLayer::freeEnergy(data_t *inputs, data_t *potentials) {
-    
-    data_t *vbias = weights + inputSize * outputsCount;
-
-    data_t vbiasTerm = 0;
-    k_dotProduct(cublasHandle, inputSize, inputs, 1, vbias, 1, &vbiasTerm);
-    
-    data_t hiddenTerm = k_logPlusExpReduce(1., potentials, tempReduce, outputsCount);
-    
-    return -hiddenTerm - vbiasTerm;
-}
-
-void RbmLayer::costUpdates() {
-    
-    data_t *inputs = previousLayer->getOutputs();
-    
-    // Reset the parameters sampled from previous training
-    if (!conf.isPersistent || !samplesInitialized) {
-        sample_vh_gpu(inputs, shPotentials, sOutputs);
-    } else {
-        // TODO ???
-    }
-    
-    data_t oEnergy = freeEnergy(inputs, shPotentials);
-    
-    gibbs_hvh(conf.gibbsSteps);
-    
-    data_t cost = oEnergy - freeEnergy(sInputs, shPotentials);
-    // TODO what to do with cost?
-}
-
 
 void RbmLayer::backwardLastCpu(data_t* expectedOutput) {
     LOG()->error("Backpropagation based on expected output is not implemented in RBM layer. This error happens when RBM layer is the last network layer.");

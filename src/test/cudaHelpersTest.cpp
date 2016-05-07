@@ -129,7 +129,7 @@ TEST(CrossEntropyReduceTest, Compute) {
 /**
  * Test sigmoid(x) computation.
  */
-TEST(SigmoidTest, SigmoidHalfs) {
+TEST(SigmoidTest, SigmoidHalves) {
     
     const int segments = 4;
     const unsigned long segmentSize = 1000;
