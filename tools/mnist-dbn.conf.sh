@@ -22,11 +22,11 @@ DATASET_TESTS="resources/mnist/t10k-images-idx3-ubyte"\
 # Learner configuration
 EPOCHS="1"
 ITERATIONS="5"
-INIT_INTERVALS="-0.3,0.3"
-LEARNING_RATE="0.1"
+INIT_INTERVALS="0.01"
+LEARNING_RATE="0.01"
 GPU_FLAG="-p"
 ADD_OPTS="-i"
 
 # Testing configuration
 MEASURES="mse time memory acc"
-TESTDIR="test-output/mnist/dbn/float/m$EPOCHS$GPU_FLAG"
+TESTDIR="test-output/gc/mnist/dbn/float/m$EPOCHS-n1$GPU_FLAG"
