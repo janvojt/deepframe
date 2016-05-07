@@ -88,7 +88,7 @@ void RbmLayer::propagateForwardGpu(data_t* visibles, data_t* potentials, data_t*
     //note cuBLAS is column primary!
     //need to transpose the order
     k_gemm(this->cublasHandle,
-            CblasTrans, CblasNoTrans,
+            CblasNoTrans, CblasNoTrans,
             /*n*/outputsCount,/*m*/ 1,/*k*/ inputSize,
             (data_t) 1., weights,
             visibles, (data_t) 0., potentials);
