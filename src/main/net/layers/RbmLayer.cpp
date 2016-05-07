@@ -142,9 +142,7 @@ void RbmLayer::pretrainGpu() {
     // Reset the parameters sampled from previous training
     if (!conf.isPersistent || !samplesInitialized) {
         samplesInitialized = true;
-        int memSize = inputSize * sizeof(data_t);
-        checkCudaErrors(cudaMemcpy(sInputs, inputs, memSize, cudaMemcpyDeviceToDevice));
-        sample_vh_gpu();
+        sample_vh_gpu(inputs, shPotentials, sOutputs);
     }
     
     // perform CD-k
@@ -195,53 +193,53 @@ void RbmLayer::pretrainGpu() {
 }
 
 
-void RbmLayer::sample_vh_gpu() {
+void RbmLayer::sample_vh_gpu(data_t *inputs, data_t *potentials, data_t *outputs) {
     
-    propagateForwardGpu(sInputs, shPotentials, sOutputs);
+    propagateForwardGpu(inputs, potentials, outputs);
 
     k_generateUniform(*curandGen, randomData, outputsCount);
-    k_uniformToCoinFlip(sOutputs, randomData, outputsCount);
+    k_uniformToCoinFlip(outputs, randomData, outputsCount);
 }
 
-void RbmLayer::sample_hv_gpu() {
+void RbmLayer::sample_hv_gpu(data_t *outputs, data_t *potentials, data_t *inputs) {
     
-    propagateBackwardGpu(sOutputs, svPotentials, sInputs);
+    propagateBackwardGpu(outputs, potentials, inputs);
     
     // Do not sample visible states, use probabilities instead?
     k_generateUniform(*curandGen, randomData, inputSize);
-    k_uniformToCoinFlip(sInputs, randomData, inputSize);
+    k_uniformToCoinFlip(inputs, randomData, inputSize);
 }
 
 void RbmLayer::gibbs_hvh(int steps) {
     
     for (int i = 1; i<steps; i++) {
-        sample_hv_gpu();
-        sample_vh_gpu();
+        sample_hv_gpu(sOutputs, svPotentials, sInputs);
+        sample_vh_gpu(sInputs, shPotentials, sOutputs);
     }
     
     // The last update should use the probabilities,
     // not the states themselves. This will eliminate
     // the sampling noise during the learning.
-    sample_hv_gpu();
+    sample_hv_gpu(sOutputs, svPotentials, sInputs);
     propagateForwardGpu(sInputs, shPotentials, sOutputs);
 }
 
 void RbmLayer::gibbs_vhv(int steps) {
     
     for (int i = 0; i<steps; i++) {
-        sample_vh_gpu();
-        sample_hv_gpu();
+        sample_vh_gpu(sInputs, shPotentials, sOutputs);
+        sample_hv_gpu(sOutputs, svPotentials, sInputs);
     }
 }
 
-data_t RbmLayer::freeEnergy() {
+data_t RbmLayer::freeEnergy(data_t *inputs, data_t *potentials) {
     
     data_t *vbias = weights + inputSize * outputsCount;
 
     data_t vbiasTerm = 0;
-    k_dotProduct(cublasHandle, inputSize, sInputs, 1, vbias, 1, &vbiasTerm);
+    k_dotProduct(cublasHandle, inputSize, inputs, 1, vbias, 1, &vbiasTerm);
     
-    data_t hiddenTerm = k_logPlusExpReduce(1., shPotentials, tempReduce, outputsCount);
+    data_t hiddenTerm = k_logPlusExpReduce(1., potentials, tempReduce, outputsCount);
     
     return -hiddenTerm - vbiasTerm;
 }
@@ -252,18 +250,16 @@ void RbmLayer::costUpdates() {
     
     // Reset the parameters sampled from previous training
     if (!conf.isPersistent || !samplesInitialized) {
-        int memSize = inputSize * sizeof(data_t);
-        checkCudaErrors(cudaMemcpy(sInputs, inputs, memSize, cudaMemcpyDeviceToDevice));
-        sample_vh_gpu();
+        sample_vh_gpu(inputs, shPotentials, sOutputs);
     } else {
         // TODO ???
     }
     
-    data_t oEnergy = freeEnergy();
+    data_t oEnergy = freeEnergy(inputs, shPotentials);
     
     gibbs_hvh(conf.gibbsSteps);
     
-    data_t cost = oEnergy - freeEnergy();
+    data_t cost = oEnergy - freeEnergy(sInputs, shPotentials);
     // TODO what to do with cost?
 }
 

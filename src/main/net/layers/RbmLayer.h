@@ -56,13 +56,13 @@ private:
     void propagateBackwardCpu(data_t *hiddens, data_t *potentials, data_t *visibles);
     void propagateBackwardGpu(data_t *hiddens, data_t *potentials, data_t *visibles);
     
-    void sample_vh_gpu();
-    void sample_hv_gpu();
+    void sample_vh_gpu(data_t *inputs, data_t *potentials, data_t *outputs);
+    void sample_hv_gpu(data_t *outputs, data_t *potentials, data_t *inputs);
     
     void gibbs_hvh(int steps);
     void gibbs_vhv(int steps);
     
-    data_t freeEnergy();
+    data_t freeEnergy(data_t *inputs, data_t *potentials);
     void costUpdates();
     
     void processConfString(string confString);
