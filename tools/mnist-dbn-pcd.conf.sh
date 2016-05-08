@@ -11,7 +11,7 @@ PROBLEM_TITLE="MNIST"
 
 # Network architecture configuration
 ## We want to use file configurations for the networks.
-CONF_DIR="examples/dbn-mnist-l1-pcd-test"
+CONF_DIR="examples/dbn-mnist-pcd-test"
 
 # Specify dataset locations within resources
 DATASET_LABELS="resources/mnist/train-images-idx3-ubyte"\
@@ -22,8 +22,8 @@ DATASET_TESTS="resources/mnist/t10k-images-idx3-ubyte"\
 # Learner configuration
 EPOCHS="1"
 ITERATIONS="5"
-INIT_INTERVALS="-0.3,0.3"
-LEARNING_RATE="0.1"
+INIT_INTERVALS="0.01"
+LEARNING_RATE="0.01"
 GPU_FLAG="-p"
 ADD_OPTS="-i"
 
