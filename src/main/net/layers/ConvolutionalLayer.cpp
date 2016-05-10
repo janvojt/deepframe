@@ -204,13 +204,6 @@ void ConvolutionalLayer::backwardCpu() {
     }
 }
 
-/**
- * W = I * O + W
- * 
- * @param input
- * @param output
- * @param weights
- */
 void ConvolutionalLayer::k_weightGemm(const data_t* input,
         const data_t* outputDiffs, data_t* weightDiffs) {
     
@@ -226,13 +219,6 @@ void ConvolutionalLayer::k_weightGemm(const data_t* input,
     }
 }
 
-/**
- * I = O * W + I
- * 
- * @param output
- * @param weights
- * @param input
- */
 void ConvolutionalLayer::k_backwardGemm(const data_t* outputDiffs,
         const data_t* weights, data_t* inputDiffs) {
     

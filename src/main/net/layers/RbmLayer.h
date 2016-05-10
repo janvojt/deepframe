@@ -12,6 +12,7 @@
 #include "../../common.h"
 #include <string>
 
+/** Holds the configuration for RBM layer. */
 struct RbmConfig {
     
     /** number of hidden neurons */
@@ -24,6 +25,9 @@ struct RbmConfig {
     int gibbsSteps;
 };
 
+/**
+ * Represents RBM layer as a building block of Deep Belief Network.
+ */
 class RbmLayer : public Layer {
 public:
     RbmLayer();
