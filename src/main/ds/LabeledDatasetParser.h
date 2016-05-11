@@ -17,7 +17,14 @@ public:
     LabeledDatasetParser(char *filepath, NetworkConfiguration *netConf);
     LabeledDatasetParser(const LabeledDatasetParser& orig);
     virtual ~LabeledDatasetParser();
+    
+    /**
+     * Parses the labeled dataset into memory.
+     * 
+     * @return the dataset in memory
+     */
     LabeledDataset *parse();
+    
 private:
     NetworkConfiguration *netConf;
     char *filepath;

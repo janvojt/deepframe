@@ -3,6 +3,8 @@
  * Author: janvojt
  * 
  * Created on November 29, 2014, 12:58 PM
+ * 
+ * This file contains a set of CUDA kernels used for parallel computations.
  */
 
 #include "cudaDebugHelpers.h"

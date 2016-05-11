@@ -82,17 +82,18 @@ private:
     // Checks whether there was sufficient error improvement during last epochs.
     bool isErrorImprovement(data_t error, int epoch);
     
-    /** Computes error on given dataset.
-    
-        @param ds Dataset with labels to run through the neural network
-        and calculate error on.
-    
-        @return error computed by #errorComputer.
+    /**
+     * Computes error on given dataset.
+     * 
+     * @param ds Dataset with labels to run through the neural network
+     *  and calculate error on.
+     * @return error computed by #errorComputer.
      */
     data_t computeError(LabeledDataset *ds);
     
     /**
      * Log given output array values.
+     * 
      * @param message introductory text of logged message
      * @param output array of values to log
      * @param outputsCount size of the array

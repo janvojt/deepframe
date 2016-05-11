@@ -18,6 +18,12 @@
  */
 class NetworkPretrainer {
 public:
+    
+    /**
+     * Initializes the pretrainer.
+     * 
+     * @param network neural network to be pretrained
+     */
     NetworkPretrainer(Network *network);
     NetworkPretrainer(const NetworkPretrainer& orig);
     virtual ~NetworkPretrainer();
@@ -33,12 +39,16 @@ public:
     void pretrain(LabeledDataset *trainingSet);
     
 private:
+    
+    /** The neural network to pretrain. */
     Network *net = NULL;
     
     NetworkConfiguration *netConf = NULL;
     
+    /** Number of pretraining epochs. */
     long epochs = 0;
     
+    /** Use GPU or CPU? */
     bool useGpu = false;
 };
 

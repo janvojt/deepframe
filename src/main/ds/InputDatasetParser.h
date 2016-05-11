@@ -16,7 +16,14 @@ public:
     InputDatasetParser(char* filepath, NetworkConfiguration* netConf);
     InputDatasetParser(const InputDatasetParser& orig);
     virtual ~InputDatasetParser();
+    
+    /**
+     * Parses the input dataset from a file into memory.
+     * 
+     * @return the dataset in memory
+     */
     InputDataset *parse();
+    
 private:
     NetworkConfiguration *netConf;
     char *filepath;

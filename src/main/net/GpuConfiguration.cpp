@@ -21,7 +21,7 @@ GpuConfiguration::~GpuConfiguration() {
 
 GpuConfiguration *GpuConfiguration::create() {
 
-    // By default, we use device 0, otherwise we override the device ID based on what is provided at the command line
+    // By default, we use device 0
     int devID = 0;
     cudaSetDevice(devID);
 

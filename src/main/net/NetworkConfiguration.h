@@ -19,6 +19,7 @@ public:
     NetworkConfiguration();
     NetworkConfiguration(const NetworkConfiguration& orig);
     virtual ~NetworkConfiguration();
+    
     // Returns number of layers in the network
     // including input and output layer.
     int getLayers();

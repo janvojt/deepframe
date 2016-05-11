@@ -169,7 +169,7 @@ void FullyConnectedLayer::backwardGpu() {
             weightDiffs);
 //    dumpDeviceArray('w', nextWeightDiffs, outputsCount * nextNeurons);
         
-    // COMPUTE BIAS DERIVATIVES for layer l
+    // COMPUTE BIAS DERIVATIVES for this layer
     if (conf.useBias) {
         k_computeBiasDerivative(
                 lr, outputDiffs,
@@ -179,10 +179,9 @@ void FullyConnectedLayer::backwardGpu() {
     }
     
         
-    // COMPUTE LOCAL GRADIENTS for previous layer
     if (!previousLayer->isFirst()) {
 
-        // COMPUTE LOCAL GRADIENTS for this layer
+        // COMPUTE LOCAL GRADIENTS for previous layer
         data_t* prevOutputDiffs = previousLayer->getOutputDiffs();
         k_computeHiddenLocalGradient(
                 prevOutputsCount, outputsCount,
