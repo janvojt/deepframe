@@ -206,7 +206,7 @@ LabeledDataset* createXorDataset() {
 }
 
 void printHelp() {
-    cout << "Usage: ffwdnet [OPTIONS]" << endl << endl;
+    cout << "Usage: deepframe [OPTIONS]" << endl << endl;
     cout << "Option      GNU long option       Meaning" << endl;
     cout << "--------------------------------------------------------------------------------" << endl;
     cout << "-h          --help                This help." << endl;

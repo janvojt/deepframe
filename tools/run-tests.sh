@@ -42,7 +42,7 @@ fi
 # Run the tests
 TEST_OUT="$TESTDIR"
 RESOURCES_DIR="resources"
-EXEC="bin/ffwdnet"
+EXEC="bin/deepframe"
 
 cd "$basedir"
 mkdir -p "$TEST_OUT"

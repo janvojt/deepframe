@@ -10,11 +10,11 @@ NVCC=$(CUDA_HOME)/bin/nvcc -ccbin $(CXX)
 SRCDIR=src/main
 BUILDDIR=build/main
 TARGETDIR=bin
-TARGET=$(TARGETDIR)/ffwdnet
+TARGET=$(TARGETDIR)/deepframe
 
 TESTDIR=src/test
 TESTBUILDDIR=build/test
-TESTTARGET=$(TARGETDIR)/ffwdnet-test
+TESTTARGET=$(TARGETDIR)/deepframe-test
 
 SRCEXT=cpp
 CUDAEXT=cu
