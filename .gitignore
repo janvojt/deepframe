@@ -14,3 +14,10 @@ nbproject/
 # Temporary editor files
 *~
 .*.swp
+
+# IDEA files
+.idea/
+*.iml
+
+# Generated data files
+resources/mnist-01/*-ubyte
