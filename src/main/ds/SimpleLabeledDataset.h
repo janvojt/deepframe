@@ -8,7 +8,7 @@
 #ifndef SIMPLELABELEDDATASET_H
 #define	SIMPLELABELEDDATASET_H
 
-#include "LabeledDataset.h"
+#include "InMemoryLabeledDataset.h"
 #include "../common.h"
 
 
@@ -23,7 +23,7 @@
  * @param outputDimension size of a single label
  * @param size dataset size
  */
-class SimpleLabeledDataset : LabeledDataset {
+class SimpleLabeledDataset : InMemoryLabeledDataset {
 public:
     // Constructor correctly initializes the dataset
     // according to input and output label dimensions and dataset size.

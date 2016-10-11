@@ -8,7 +8,7 @@
 #ifndef LABELEDDATASETPARSER_H
 #define	LABELEDDATASETPARSER_H
 
-#include "LabeledDataset.h"
+#include "InMemoryLabeledDataset.h"
 
 #include "../net/NetworkConfiguration.h"
 
@@ -23,7 +23,7 @@ public:
      * 
      * @return the dataset in memory
      */
-    LabeledDataset *parse();
+    InMemoryLabeledDataset *parse();
     
 private:
     NetworkConfiguration *netConf;

@@ -8,11 +8,11 @@
 #ifndef FOLDTRAININGDATASET_H
 #define	FOLDTRAININGDATASET_H
 
-#include "../LabeledDataset.h"
+#include "../InMemoryLabeledDataset.h"
 #include "../../common.h"
 
 /** Training dataset for k-fold cross validation. */
-class FoldTrainingDataset : LabeledDataset {
+class FoldTrainingDataset : InMemoryLabeledDataset {
     
 public:
     
@@ -22,7 +22,7 @@ public:
         @param k number of folds
         @param valIdx specifies which fold is fixed for validation
      */
-    FoldTrainingDataset(LabeledDataset **folds, int k, int valIdx);
+    FoldTrainingDataset(InMemoryLabeledDataset **folds, int k, int valIdx);
     
     /** Copy constructor.
         
@@ -78,7 +78,7 @@ public:
     void shuffle();
     
     /** Unsupported operation. */
-    LabeledDataset *takeAway(int size);
+    InMemoryLabeledDataset *takeAway(int size);
 
 private:
 
@@ -93,7 +93,7 @@ private:
     int noFolds;
     
     /** Array with dataset folds. */
-    LabeledDataset **folds;
+    InMemoryLabeledDataset **folds;
     
     /** Pointer to the current training dataset fold. */
     int foldIdx;

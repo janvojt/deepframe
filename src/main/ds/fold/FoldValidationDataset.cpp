@@ -14,7 +14,7 @@
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-FoldValidationDataset::FoldValidationDataset(LabeledDataset **folds, int k, int valIdx) {
+FoldValidationDataset::FoldValidationDataset(InMemoryLabeledDataset **folds, int k, int valIdx) {
     assert(valIdx >= 0 && valIdx < k);
     noFolds = k;
     this->folds = folds;
@@ -30,7 +30,7 @@ FoldValidationDataset::FoldValidationDataset(const FoldValidationDataset& orig) 
 FoldValidationDataset::~FoldValidationDataset() {
 }
 
-LabeledDataset* FoldValidationDataset::clone() {
+InMemoryLabeledDataset* FoldValidationDataset::clone() {
     return new FoldValidationDataset(*this);
 }
 
@@ -62,7 +62,7 @@ void FoldValidationDataset::shuffle() {
     LOG()->error("Shuffling folded dataset is not supported. Please shuffle before folding.");
 }
 
-LabeledDataset* FoldValidationDataset::takeAway(int size) {
+InMemoryLabeledDataset* FoldValidationDataset::takeAway(int size) {
     LOG()->error("Taking away from folded dataset is not supported. Please take away before folding.");
     return NULL;
 }

@@ -35,7 +35,7 @@ LabeledMnistParser::LabeledMnistParser(const LabeledMnistParser& orig) {
 LabeledMnistParser::~LabeledMnistParser() {
 }
 
-LabeledDataset* LabeledMnistParser::parse(char *filePath) {
+InMemoryLabeledDataset* LabeledMnistParser::parse(char *filePath) {
     
     IdxParser *parser = new IdxParser();
     
@@ -47,27 +47,27 @@ LabeledDataset* LabeledMnistParser::parse(char *filePath) {
     LOG()->info("Parsing IDX file '%s' to build the dataset with input patterns.", dataPath);
     IdxData *data = parser->parse(dataPath);
     if (data == NULL) {
-        return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
+        return (InMemoryLabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     
     LOG()->info("Parsing IDX file '%s' to build the dataset with labels.", labelPath);
     IdxData *labels = parser->parse(labelPath);
     if (labels == NULL) {
-        return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
+        return (InMemoryLabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     
     // validate input IDX data
     if (data->getNoDimensions() != INPUT_DIMENSIONS) {
         LOG()->error("IDX file with the input patterns has unexpected number of dimensions (actual %d, expected %d).", data->getNoDimensions(), INPUT_DIMENSIONS);
-        return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
+        return (InMemoryLabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     if (labels->getNoDimensions() != LABEL_DIMENSIONS) {
         LOG()->error("IDX file with the labels has unexpected number of dimensions (actual %d, expected %d).", labels->getNoDimensions(), LABEL_DIMENSIONS);
-        return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
+        return (InMemoryLabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     if (data->getDimensionSize(0) < labels->getDimensionSize(0)) {
         LOG()->error("IDX files with input patterns and labels have inconsistent dataset sizes (%d vs. %d).", data->getDimensionSize(0), labels->getDimensionSize(0));
-        return (LabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
+        return (InMemoryLabeledDataset *) new SimpleLabeledDataset(0, 0, 0);
     }
     
     // create the dataset consumable by feed-forward network
@@ -108,5 +108,5 @@ LabeledDataset* LabeledMnistParser::parse(char *filePath) {
     
     delete parser;
     
-    return (LabeledDataset *) ds;
+    return (InMemoryLabeledDataset *) ds;
 }

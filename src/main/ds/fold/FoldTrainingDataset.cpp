@@ -9,14 +9,14 @@
 
 #include "FoldTrainingDataset.h"
 #include "../InputDataset.h"
-#include "../LabeledDataset.h"
+#include "../InMemoryLabeledDataset.h"
 
 #include "../../common.h"
 
 #include "../../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
 
-FoldTrainingDataset::FoldTrainingDataset(LabeledDataset **folds, int k, int valIdx) {
+FoldTrainingDataset::FoldTrainingDataset(InMemoryLabeledDataset **folds, int k, int valIdx) {
     assert(valIdx >= 0 && valIdx < k);
     noFolds = k;
     this->folds = folds;
@@ -84,7 +84,7 @@ void FoldTrainingDataset::shuffle() {
     LOG()->error("Shuffling folded dataset is not supported. Please shuffle before folding.");
 }
 
-LabeledDataset* FoldTrainingDataset::takeAway(int size) {
+InMemoryLabeledDataset* FoldTrainingDataset::takeAway(int size) {
     LOG()->error("Taking away from folded dataset is not supported. Please take away before folding.");
     return NULL;
 }

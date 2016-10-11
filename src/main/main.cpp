@@ -507,7 +507,7 @@ int main(int argc, char *argv[]) {
     // Shuffle labeled data
     if (conf->shuffle) {
         LOG()->info("Randomly shuffling the training dataset.");
-        lds->shuffle();
+        ((InMemoryLabeledDataset *)lds)->shuffle();
     }
     
 //    printImageLabels((LabeledDataset *)lds);
@@ -526,7 +526,7 @@ int main(int argc, char *argv[]) {
     if (conf->kFold > 1) {
         
         LOG()->info("Training with %d-fold cross validation.", conf->kFold);
-        df = new FoldDatasetFactory(lds, conf->kFold);
+        df = new FoldDatasetFactory(((InMemoryLabeledDataset *)lds), conf->kFold);
         data_t bestError = 2.0; // start with impossibly bad error
         data_t bestValIdx = 0;
         Network *bestNet = NULL;
@@ -571,7 +571,7 @@ int main(int argc, char *argv[]) {
     } else if (conf->validationSize > 0) {
         
         LOG()->info("Picking the last %d samples from the training dataset to be used for validation.");
-        vds = lds->takeAway(conf->validationSize);
+        vds = ((InMemoryLabeledDataset *)lds)->takeAway(conf->validationSize);
         pretrainer->pretrain(lds);
         bp->train(lds, vds, 0);
         

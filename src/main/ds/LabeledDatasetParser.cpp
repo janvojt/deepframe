@@ -26,7 +26,7 @@ LabeledDatasetParser::LabeledDatasetParser(const LabeledDatasetParser& orig) {
 LabeledDatasetParser::~LabeledDatasetParser() {
 }
 
-LabeledDataset* LabeledDatasetParser::parse() {
+InMemoryLabeledDataset* LabeledDatasetParser::parse() {
     
     std::ifstream fp(filepath);
     LOG()->info("Parsing file '%s' for labeled dataset.", filepath);
@@ -109,5 +109,5 @@ LabeledDataset* LabeledDatasetParser::parse() {
     
     fp.close();
 
-    return (LabeledDataset *) ds;
+    return (InMemoryLabeledDataset *) ds;
 }

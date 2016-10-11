@@ -8,7 +8,7 @@
 #ifndef FOLDDATASETFACTORY_H
 #define	FOLDDATASETFACTORY_H
 
-#include "../LabeledDataset.h"
+#include "../InMemoryLabeledDataset.h"
 #include "FoldTrainingDataset.h"
 #include "FoldValidationDataset.h"
 
@@ -27,7 +27,7 @@ public:
         @param ds original labeled dataset (without folds)
         @param k number of folds
      */
-    FoldDatasetFactory(LabeledDataset *ds, int k);
+    FoldDatasetFactory(InMemoryLabeledDataset *ds, int k);
     
     /** Copy contructor.
      
@@ -56,7 +56,7 @@ private:
     /** Number of folds in the dataset. */
     int noFolds;
     /** Array of dataset folds, over which validation is rotated. */
-    LabeledDataset **folds;
+    InMemoryLabeledDataset **folds;
 };
 
 #endif	/* FOLDDATASETFACTORY_H */

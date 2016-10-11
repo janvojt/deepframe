@@ -11,13 +11,13 @@
 #include "FoldValidationDataset.h"
 #include "../../common.h"
 
-FoldDatasetFactory::FoldDatasetFactory(LabeledDataset *ds, int k) {
+FoldDatasetFactory::FoldDatasetFactory(InMemoryLabeledDataset *ds, int k) {
     
     noFolds = k;
     
-    LabeledDataset *copy = ds->clone();
+    InMemoryLabeledDataset *copy = ds->clone();
     
-    folds = new LabeledDataset*[k];
+    folds = new InMemoryLabeledDataset*[k];
     int foldSize = copy->getSize() / k;
     for (int i = k-1; i>=0; i--) {
         folds[i] = copy->takeAway(foldSize);

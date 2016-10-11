@@ -8,7 +8,7 @@
 #ifndef LABELEDIDXPARSER_H
 #define	LABELEDIDXPARSER_H
 
-#include "LabeledDataset.h"
+#include "InMemoryLabeledDataset.h"
 
 class LabeledMnistParser {
 public:
@@ -22,7 +22,7 @@ public:
      * @param filePath
      * @return the dataset in memory
      */
-    LabeledDataset *parse(char *filePath);
+    InMemoryLabeledDataset *parse(char *filePath);
     
 private:
 };
