@@ -40,6 +40,7 @@
 #include "net/layers/FullyConnectedLayer.h"
 
 #include "util/cpuDebugHelpers.h"
+#include "ds/float/FloatDataset.h"
 
 // getopts constants
 #define no_argument 0
@@ -52,7 +53,7 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbl:a:e:k:m:n:f:ic:s:t:v:q:r:ju:pd";
+const char* optsList = "hbl:a:e:k:m:n:f:igc:s:t:v:q:r:ju:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
@@ -71,6 +72,7 @@ const struct option optsLong[] = {
     {"validation", required_argument, 0, 'v'},
     {"k-fold", required_argument, 0, 'q'},
     {"idx", no_argument, 0, 'i'},
+    {"float", no_argument, 0, 'g'},
     {"random-seed", required_argument, 0, 'r'},
     {"shuffle", no_argument, 0, 'j'},
     {"use-cache", optional_argument, 0, 'u'},
@@ -110,6 +112,8 @@ struct config {
     int kFold = 1;
     /* Use IDX data format when parsing input files? */
     bool useIdx = false;
+    /* Use FLOAT data format when parsing input files? */
+    bool useFloatDataset = false;
     /* Seed for random generator. */
     int seed = 0;
     /* Determines whether training datasets should be shuffled. */
@@ -241,6 +245,8 @@ void printHelp() {
     cout << endl;
     cout << "-i          --idx                 Use IDX data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
     cout << endl;
+    cout << "-g          --float               Use FLOAT data format when parsing files with datasets. Human readable CSV-like format is the default." << endl;
+    cout << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << endl;
     cout << "-j          --shuffle             Shuffles training and validation dataset do the patterns are in random order." << endl;
@@ -318,10 +324,23 @@ config* processOptions(int argc, char *argv[]) {
                 conf->kFold = atoi(optarg);
                 break;
             case 'o' :
-                conf->useBestFold = true;
+                if (conf->useFloatDataset) {
+                    LOG()->warn("Float datasets work with unknown dataset size and hence do not support k-fold validation. Ignoring k-fold validation...");
+                } else {
+                    conf->useBestFold = true;
+                }
                 break;
             case 'i' :
                 conf->useIdx = true;
+                conf->useFloatDataset = false;
+                break;
+            case 'g' :
+                conf->useFloatDataset = true;
+                conf->useIdx = false;
+                if (conf->useBestFold) {
+                    conf->useBestFold = false;
+                    LOG()->warn("Float datasets work with unknown dataset size and hence do not support k-fold validation. Ignoring k-fold validation...");
+                }
                 break;
             case 'r' :
                 conf->seed = atoi(optarg);
@@ -480,6 +499,8 @@ int main(int argc, char *argv[]) {
 //        printImageLabels((LabeledDataset *)tds);
 //        return 0;
         delete p;
+    } else if (conf->useFloatDataset) {
+        tds = new FloatDataset(conf->testData);
     } else {
         LabeledDatasetParser *p = new LabeledDatasetParser(conf->testData, netConf);
         tds = p->parse();
@@ -498,6 +519,8 @@ int main(int argc, char *argv[]) {
         LabeledMnistParser *p = new LabeledMnistParser();
         lds = p->parse(conf->labeledData);
         delete p;
+    } else if (conf->useFloatDataset) {
+        lds = new FloatDataset(conf->labeledData);
     } else {
         LabeledDatasetParser *p = new LabeledDatasetParser(conf->labeledData, netConf);
         lds = p->parse();
@@ -508,6 +531,7 @@ int main(int argc, char *argv[]) {
     if (conf->shuffle) {
         LOG()->info("Randomly shuffling the training dataset.");
         ((InMemoryLabeledDataset *)lds)->shuffle();
+        LOG()->info("Random shuffling was successful.");
     }
     
 //    printImageLabels((LabeledDataset *)lds);
