@@ -55,7 +55,33 @@ void RbmLayer::setup(string confString) {
 }
 
 void RbmLayer::forwardCpu() {
-    LOG()->error("Forward run on CPU is not yet implemented for RBM layer.");
+
+    int inputSize = this->previousLayer->getOutputsCount();
+    data_t *inputPtr = this->previousLayer->getOutputs();
+
+    // Clear output neurons
+    std::fill_n(outputs, conf.outputSize, 0);
+
+    data_t *weightPtr = this->weights;
+    for (int i = 0; i<inputSize; i++) {
+        for (int j = 0; j<conf.outputSize; j++) {
+            outputs[j] += inputPtr[i] * *weightPtr;
+            weightPtr++;
+        }
+    }
+
+    // Apply bias
+    if (conf.useBias) {
+        for (int i = 0; i<conf.outputSize; i++) {
+            outputs[i] += *weightPtr;
+//            LOG()->debug("Input %d after applying bias: %f.", i, outputPtr[i]);
+            weightPtr++;
+        }
+    }
+
+    // Run through activation function
+    netConf->activationFnc(outputs, outputs, conf.outputSize);
+//    dumpHostArray('O', outputPtr, outputsCount);
 }
 
 void RbmLayer::forwardGpu() {
