@@ -16,6 +16,7 @@
 #include <typeinfo>
 
 #include "net/NetworkConfiguration.h"
+#include "net/NetworkSerializer.h"
 #include "net/Network.h"
 #include "net/CpuNetwork.h"
 #include "net/GpuNetwork.h"
@@ -53,7 +54,7 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbl:a:e:k:m:n:f:igc:s:t:v:q:r:ju:pd";
+const char* optsList = "hbl:a:e:k:m:n:f:igc:s:t:v:q:r:w:x:ju:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
@@ -74,6 +75,8 @@ const struct option optsLong[] = {
     {"idx", no_argument, 0, 'i'},
     {"float", no_argument, 0, 'g'},
     {"random-seed", required_argument, 0, 'r'},
+    {"export", required_argument, 0, 'w'},
+    {"import", required_argument, 0, 'x'},
     {"shuffle", no_argument, 0, 'j'},
     {"use-cache", optional_argument, 0, 'u'},
     {"use-gpu", no_argument, 0, 'p'},
@@ -116,6 +119,10 @@ struct config {
     bool useFloatDataset = false;
     /* Seed for random generator. */
     int seed = 0;
+    /* Path to the file where the network parameters should be exported. */
+    char *exportFile = NULL;
+    /* Path to the file from which the network parameters should be imported. */
+    char *importFile = NULL;
     /* Determines whether training datasets should be shuffled. */
     bool shuffle = false;
     /* activation function to use */
@@ -249,6 +256,10 @@ void printHelp() {
     cout << endl;
     cout << "-r <value>  --random-seed <value> Specifies value to be used for seeding random generator." << endl;
     cout << endl;
+    cout << "-w <value>  --export <value>      Exports the learnt network parameters into the given file." << endl;
+    cout << endl;
+    cout << "-x <value>  --import <value>      Imports the learnt network parameters from the given file." << endl;
+    cout << endl;
     cout << "-j          --shuffle             Shuffles training and validation dataset do the patterns are in random order." << endl;
     cout << endl;
     cout << "-u <value>  --use-cache <value>   Enables use of precomputed lookup table for activation function. Value specifies the size of the table." << endl;
@@ -347,6 +358,16 @@ config* processOptions(int argc, char *argv[]) {
                 break;
             case 'j' :
                 conf->shuffle = true;
+                break;
+            case 'w' :
+                if (strlen(optarg) > 0) {
+                    conf->exportFile = optarg;
+                }
+                break;
+            case 'x' :
+                if (strlen(optarg) > 0) {
+                    conf->importFile = optarg;
+                }
                 break;
             case 'f' :
                 switch (optarg[0]) {
@@ -605,7 +626,13 @@ int main(int argc, char *argv[]) {
         pretrainer->pretrain(lds);
         bp->train(lds, vds, 0);
     }
-    
+
+    if (conf->exportFile != NULL) {
+        NetworkSerializer *ns = new NetworkSerializer();
+        ns->save(net, conf->exportFile);
+        delete ns;
+    }
+
     // Run (hopefully) learnt network.
     runTest(net, tds);
     

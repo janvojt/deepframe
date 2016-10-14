@@ -10,6 +10,8 @@
 #include <cstring>
 #include <string>
 #include <stdlib.h>
+#include <iostream>
+#include <fstream>
 
 #include "GpuConfiguration.h"
 
@@ -17,6 +19,8 @@
 
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
+
+using namespace std;
 
 GpuNetwork::GpuNetwork(NetworkConfiguration *netConf, GpuConfiguration *gpuConf) : Network(netConf) {
     cublasCreate(&this->cublasHandle);
@@ -70,7 +74,23 @@ void GpuNetwork::merge(Network** nets, int size) {
 }
 
 void GpuNetwork::reinit() {
-    if (conf->getInitMax() < conf->getInitMin()) {
+    if (conf->getImportFile() != NULL) {
+        // import network parameters fromm file
+        ifstream fp(conf->getImportFile(), ios::in|ios::binary);
+        if (fp.is_open()) {
+            // parse dimension sizes
+            data_t *w = new data_t[weightsCount];
+            for (int i = 0; i<weightsCount; i++, w++) {
+                fp.read((char *) w, sizeof(data_t));
+            }
+            fp.close();
+            int memSize = weightsCount * sizeof(data_t);
+            checkCudaErrors(cudaMemcpy(weights, w, memSize, cudaMemcpyHostToDevice));
+            delete[] w;
+        } else {
+            LOG()->error("Cannot open file '%s' for reading network parameters.", conf->getImportFile());
+        }
+    } else if (conf->getInitMax() < conf->getInitMin()) {
         // cuRAND needs to generate random array of even length
         int size  = weightsCount;
         if (weightsCount % 2 == 1) {

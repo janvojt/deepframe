@@ -64,6 +64,10 @@ public:
     
     /** Configures whether GPU should be used for computations. */
     void setUseGpu(bool useGpu);
+
+    /** Path to the file from which the network parameters should be imported. */
+    char *getImportFile();
+    void setImportFile(char *exportFile);
     
     // Pointer to activation function normalizing the neurons potential.
     // Input potential is preserved and the normalized value
@@ -115,6 +119,9 @@ private:
     
     /** Are we using GPU? */
     bool useGpu = false;
+
+    /** File for importing network configuration instead of random initialization. */
+    char *importFile = NULL;
 };
 
 #endif	/* NETWORKCONFIGURATION_H */

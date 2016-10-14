@@ -11,6 +11,7 @@
 #include <string>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 #include <random>
 
 #include "../util/cpuDebugHelpers.h"
@@ -19,6 +20,8 @@
 
 #include "../log/LoggerFactory.h"
 #include "log4cpp/Category.hh"
+
+using namespace std;
 
 CpuNetwork::CpuNetwork(NetworkConfiguration *conf) : Network(conf) {
 }
@@ -62,11 +65,28 @@ void CpuNetwork::merge(Network** nets, int size) {
 }
 
 void CpuNetwork::reinit() {
-    LOG()->info("Randomly initializing weights within the interval (%f,%f).", this->conf->getInitMin(), this->conf->getInitMax());
-    data_t min = this->conf->getInitMin();
-    data_t max = this->conf->getInitMax();
+
+    if (conf->getImportFile() != NULL) {
+        LOG()->info("Importing network parameters from file '%s'.", conf->getImportFile());
+        ifstream fp(conf->getImportFile(), ios::in|ios::binary);
+        if (fp.is_open()) {
+            // parse dimension sizes
+            data_t *w = weights;
+            for (int i = 0; i<weightsCount; i++, w++) {
+                fp.read((char *) w, sizeof(data_t));
+            }
+            fp.close();
+        } else {
+            LOG()->error("Cannot open file '%s' for reading network parameters.", conf->getImportFile());
+        }
+        return;
+    }
+
+    LOG()->info("Randomly initializing weights within the interval (%f,%f).", conf->getInitMin(), conf->getInitMax());
+    data_t min = conf->getInitMin();
+    data_t max = conf->getInitMax();
     data_t interval = max - min;
-    
+
     if (interval < 0) {
         // we are using Gaussian distribution with the given standard deviation
         std::default_random_engine gen;

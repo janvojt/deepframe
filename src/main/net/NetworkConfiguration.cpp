@@ -204,6 +204,14 @@ void NetworkConfiguration::setLearningRate(data_t learningRate) {
     this->learningRate = learningRate;
 }
 
+char *NetworkConfiguration::getImportFile() {
+    return importFile;
+}
+
+void NetworkConfiguration::setImportFile(char *importFile) {
+     this->importFile = importFile;
+}
+
 bool NetworkConfiguration::getUseGpu() {
     return useGpu;
 }
