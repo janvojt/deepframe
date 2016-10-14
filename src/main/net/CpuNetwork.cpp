@@ -152,3 +152,23 @@ data_t *CpuNetwork::getOutput() {
 void CpuNetwork::setExpectedOutput(data_t* output) {
     expectedOutput = output;
 }
+
+void CpuNetwork::save(char *filePath) {
+
+    // open IDX file with the dataset
+    ofstream fp(filePath, ios::out|ios::binary);
+
+    if (fp.is_open()) {
+
+        // write weights
+        for (int i = 0; i<weightsCount; i++) {
+            fp.write((char *) weights+i, sizeof(data_t));
+        }
+
+        fp.close();
+
+        LOG()->info("Serialized network parameters in file '%s'.", filePath);
+    } else {
+        LOG()->error("Cannot open file '%s' for writing.", filePath);
+    }
+}

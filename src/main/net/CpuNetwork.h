@@ -52,7 +52,9 @@ public:
     virtual void forward();
 
     virtual void backward();
-    
+
+    virtual void save(char *filePath);
+
 protected:
 
     void allocateMemory();

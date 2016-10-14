@@ -187,3 +187,29 @@ void GpuNetwork::backward() {
     // update all weights
     k_sumVectors(weights, weightDiffs, weightsCount);
 }
+
+void GpuNetwork::save(char *filePath) {
+
+    // open IDX file with the dataset
+    ofstream fp(filePath, ios::out|ios::binary);
+
+    if (fp.is_open()) {
+
+        // copy weights to host
+        int memSize = weightsCount * sizeof(data_t);
+        data_t *w = new data_t[weightsCount];
+        checkCudaErrors(cudaMemcpy(w, weights, memSize, cudaMemcpyDeviceToHost));
+
+        // write weights
+        for (int i = 0; i<weightsCount; i++) {
+            fp.write((char *) (w+i), sizeof(data_t));
+        }
+
+        fp.close();
+        delete[] w;
+
+        LOG()->info("Serialized network parameters in file '%s'.", filePath);
+    } else {
+        LOG()->error("Cannot open file '%s' for writing.", filePath);
+    }
+}

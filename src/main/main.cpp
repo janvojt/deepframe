@@ -16,7 +16,6 @@
 #include <typeinfo>
 
 #include "net/NetworkConfiguration.h"
-#include "net/NetworkSerializer.h"
 #include "net/Network.h"
 #include "net/CpuNetwork.h"
 #include "net/GpuNetwork.h"
@@ -441,6 +440,7 @@ NetworkConfiguration *createNetworkConfiguration(config* conf) {
     netConf->parseInitInterval(conf->initInterval);
     netConf->setLearningRate(conf->lr);
     netConf->parseLayerConf(conf->layerConf);
+    netConf->setImportFile(conf->importFile);
     
     return netConf;
 }
@@ -628,9 +628,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (conf->exportFile != NULL) {
-        NetworkSerializer *ns = new NetworkSerializer();
-        ns->save(net, conf->exportFile);
-        delete ns;
+        net->save(conf->exportFile);
     }
 
     // Run (hopefully) learnt network.

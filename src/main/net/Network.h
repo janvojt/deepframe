@@ -132,6 +132,13 @@ public:
      * @return the layer
      */
     Layer *getLayer(int index);
+
+    /**
+     * Exports network parameters into external file.
+     *
+     * @param filPath
+     */
+    virtual void save(char *filePath) = 0;
     
 protected:
     

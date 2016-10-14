@@ -65,6 +65,8 @@ public:
      * Performs the backward run on the network. Used in training.
      */
     virtual void backward();
+
+    virtual void save(char *filePath);
     
 protected:
 
