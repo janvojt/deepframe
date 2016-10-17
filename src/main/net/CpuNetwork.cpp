@@ -162,7 +162,7 @@ void CpuNetwork::save(char *filePath) {
 
         // write weights
         for (int i = 0; i<weightsCount; i++) {
-            fp.write((char *) weights+i, sizeof(data_t));
+            fp.write((char *) (weights+i), sizeof(data_t));
         }
 
         fp.close();
