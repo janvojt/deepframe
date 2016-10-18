@@ -1,6 +1,6 @@
 # CUDA only supports g++ <=4.8 at the time
-EFNET_CXX?=/usr/bin/g++ # Make seems to define its own CXX, so we use custom
-CXX=$(EFNET_CXX) # This is the main compiler
+DEEPFRAME_CXX?=/usr/bin/g++ # Make seems to define its own CXX, so we use custom
+CXX=$(DEEPFRAME_CXX) # This is the main compiler
 #CXX=clang --analyze # and comment out the linker last line for sanity
 
 # Location of the CUDA Toolkit
