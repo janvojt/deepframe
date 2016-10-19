@@ -53,7 +53,7 @@ using namespace std;
 const int MAX_PRINT_ARRAY_SIZE = 8;
 
 /* Application short options. */
-const char* optsList = "hbl:a:e:k:m:n:f:igc:s:t:v:q:r:w:x:ju:pd";
+const char* optsList = "hbl:a:e:k:m:n:f:igc:s:t:v:q:r:w:x:yju:pd";
 
 /* Application long options. */
 const struct option optsLong[] = {
@@ -122,6 +122,8 @@ struct config {
     char *exportFile = NULL;
     /* Path to the file from which the network parameters should be imported. */
     char *importFile = NULL;
+    /* Designates whether the test dataset contains pattern labels. */
+    bool testLabels = false;
     /* Determines whether training datasets should be shuffled. */
     bool shuffle = false;
     /* activation function to use */
@@ -165,7 +167,7 @@ void printInout(Network *net) {
 }
 
 /* Runs the given test dataset through given network and prints results. */
-void runTest(Network *net, InputDataset *ds) {
+void runTest(Network *net, InputDataset *ds, bool printLabels) {
     
     ds->reset();
     if (ds->getInputDimension() <= MAX_PRINT_ARRAY_SIZE) {
@@ -174,33 +176,41 @@ void runTest(Network *net, InputDataset *ds) {
             net->forward();
             printInout(net);
         }
-    } else {
+    } else if (printLabels) {
 
-        const SimpleLabeledDataset *LABELED_DATASET_CLASS = new SimpleLabeledDataset(0,0,0);
         LabeledDataset *lds = (LabeledDataset *) ds;
         ErrorComputer *ec = new MseErrorComputer();
-        int i = 0;
 
+        int i = 0;
         while (lds->hasNext()) {
             data_t *pattern = lds->next();
             i++;
             data_t *label = pattern + lds->getInputDimension();
             net->setInput(pattern);
             net->forward();
-            if (typeid(*ds)==typeid(*LABELED_DATASET_CLASS)) {
-                data_t error = ec->compute(net, label);
-                cout << "Output for pattern " << i << ": ";
-                printArray(net->getOutput(), net->getOutputNeurons());
-                cout << ", label: ";
-                printArray(label, net->getOutputNeurons());
-                cout << ", MSE error: " << error << endl;
-            } else {
-                cout << "Output for pattern " << i << ": ";
-                printArray(net->getOutput(), net->getOutputNeurons());
-                cout << "." << endl;
-            }
-        }
 
+            data_t error = ec->compute(net, label);
+            cout << "Output for pattern " << i << ": ";
+            printArray(net->getOutput(), net->getOutputNeurons());
+            cout << ", label: ";
+            printArray(label, net->getOutputNeurons());
+            cout << ", MSE error: " << error << endl;
+        }
+        
+    } else {
+        
+        int i = 0;
+        while (ds->hasNext()) {
+            
+            data_t *pattern = ds->next();
+            i++;
+            net->setInput(pattern);
+            net->forward();
+            
+            cout << "Output for pattern " << i << ": ";
+            printArray(net->getOutput(), net->getOutputNeurons());
+            cout << "." << endl;
+        }
     }
 }
 
@@ -258,6 +268,8 @@ void printHelp() {
     cout << "-w <value>  --export <value>      Exports the learnt network parameters into the given file." << endl;
     cout << endl;
     cout << "-x <value>  --import <value>      Imports the learnt network parameters from the given file." << endl;
+    cout << endl;
+    cout << "-y          --test-labels         Use this flag to designate that the test dataset contains labels. This will cause printing of the labels from the test run." << endl;
     cout << endl;
     cout << "-j          --shuffle             Shuffles training and validation dataset do the patterns are in random order." << endl;
     cout << endl;
@@ -367,6 +379,9 @@ config* processOptions(int argc, char *argv[]) {
                 if (strlen(optarg) > 0) {
                     conf->importFile = optarg;
                 }
+                break;
+            case 'y' :
+                conf->testLabels = true;
                 break;
             case 'f' :
                 switch (optarg[0]) {
@@ -528,9 +543,6 @@ int main(int argc, char *argv[]) {
         delete p;
     }
 
-    // Run before learning (just to see what we get without learning)
-//    runTest(net, tds);
-    
     // Prepare training dataset.
     // If none was provided in options use XOR dataset by default.
     LabeledDataset *lds;
@@ -632,7 +644,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Run (hopefully) learnt network.
-    runTest(net, tds);
+    runTest(net, tds, conf->testLabels);
     
     // Release dynamically allocated memory
     if (conf->kFold > 1) {
