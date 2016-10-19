@@ -75,16 +75,14 @@ void GpuNetwork::merge(Network** nets, int size) {
 
 void GpuNetwork::reinit() {
     if (conf->getImportFile() != NULL) {
-        // import network parameters fromm file
+        LOG()->info("Importing network parameters from file '%s'.", conf->getImportFile());
         ifstream fp(conf->getImportFile(), ios::in|ios::binary);
         if (fp.is_open()) {
             // parse dimension sizes
             data_t *w = new data_t[weightsCount];
-            for (int i = 0; i<weightsCount; i++, w++) {
-                fp.read((char *) w, sizeof(data_t));
-            }
-            fp.close();
             int memSize = weightsCount * sizeof(data_t);
+            fp.read((char *) w, memSize);
+            fp.close();
             checkCudaErrors(cudaMemcpy(weights, w, memSize, cudaMemcpyHostToDevice));
             delete[] w;
         } else {

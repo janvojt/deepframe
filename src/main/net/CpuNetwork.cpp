@@ -72,9 +72,7 @@ void CpuNetwork::reinit() {
         if (fp.is_open()) {
             // parse dimension sizes
             data_t *w = weights;
-            for (int i = 0; i<weightsCount; i++, w++) {
-                fp.read((char *) w, sizeof(data_t));
-            }
+            fp.read((char *) w, sizeof(data_t) * weightsCount);
             fp.close();
         } else {
             LOG()->error("Cannot open file '%s' for reading network parameters.", conf->getImportFile());
