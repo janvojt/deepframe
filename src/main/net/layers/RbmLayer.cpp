@@ -21,10 +21,21 @@ RbmLayer::RbmLayer(const RbmLayer& orig) {
 }
 
 RbmLayer::~RbmLayer() {
+    
+    if (!isLayerSetup) {
+        return;
+    }
+    
+    if (netConf->getUseGpu()) {
+        // TODO free memory held by CUDA
+    } else {
+        delete[] ohPotentials;
+    }
 }
 
 void RbmLayer::setup(string confString) {
     
+    isLayerSetup = true;
     processConfString(confString);
     
     outputsCount = conf.outputSize;
@@ -38,50 +49,28 @@ void RbmLayer::setup(string confString) {
         weightsCount = genuineWeightsCount;
     }
     
-    // arrays for storing sampled input and output
-    checkCudaErrors(cudaMalloc(&sInputs, inputSize * sizeof(data_t)));
-    checkCudaErrors(cudaMalloc(&sOutputs, outputsCount * sizeof(data_t)));
-    
-    // arrays for storing original potentials
-    checkCudaErrors(cudaMalloc(&ovPotentials, inputSize * sizeof(data_t)));
-    checkCudaErrors(cudaMalloc(&ohPotentials, outputsCount * sizeof(data_t)));
-    
-    // arrays for storing sampled potentials
-    checkCudaErrors(cudaMalloc(&svPotentials, inputSize * sizeof(data_t)));
-    checkCudaErrors(cudaMalloc(&shPotentials, outputsCount * sizeof(data_t)));
-    
-    int memCount = outputsCount > inputSize ? outputsCount : inputSize;
-    checkCudaErrors(cudaMalloc(&randomData, memCount * sizeof(data_t)));
+    if (netConf->getUseGpu()) {
+        // arrays for storing sampled input and output
+        checkCudaErrors(cudaMalloc(&sInputs, inputSize * sizeof(data_t)));
+        checkCudaErrors(cudaMalloc(&sOutputs, outputsCount * sizeof(data_t)));
+
+        // arrays for storing original potentials
+        checkCudaErrors(cudaMalloc(&ovPotentials, inputSize * sizeof(data_t)));
+        checkCudaErrors(cudaMalloc(&ohPotentials, outputsCount * sizeof(data_t)));
+
+        // arrays for storing sampled potentials
+        checkCudaErrors(cudaMalloc(&svPotentials, inputSize * sizeof(data_t)));
+        checkCudaErrors(cudaMalloc(&shPotentials, outputsCount * sizeof(data_t)));
+
+        int memCount = outputsCount > inputSize ? outputsCount : inputSize;
+        checkCudaErrors(cudaMalloc(&randomData, memCount * sizeof(data_t)));
+    } else {
+        ohPotentials = new data_t[outputsCount];
+    }
 }
 
 void RbmLayer::forwardCpu() {
-
-    int inputSize = this->previousLayer->getOutputsCount();
-    data_t *inputPtr = this->previousLayer->getOutputs();
-
-    // Clear output neurons
-    std::fill_n(outputs, conf.outputSize, 0);
-
-    data_t *weightPtr = this->weights;
-    for (int i = 0; i<inputSize; i++) {
-        for (int j = 0; j<conf.outputSize; j++) {
-            outputs[j] += inputPtr[i] * *weightPtr;
-            weightPtr++;
-        }
-    }
-
-    // Apply bias
-    if (conf.useBias) {
-        for (int i = 0; i<conf.outputSize; i++) {
-            outputs[i] += *weightPtr;
-//            LOG()->debug("Input %d after applying bias: %f.", i, outputPtr[i]);
-            weightPtr++;
-        }
-    }
-
-    // Run through activation function
-    netConf->activationFnc(outputs, outputs, conf.outputSize);
-//    dumpHostArray('O', outputPtr, outputsCount);
+    propagateForwardCpu(previousLayer->getOutputs(), ohPotentials, outputs);
 }
 
 void RbmLayer::forwardGpu() {
@@ -101,7 +90,28 @@ void RbmLayer::backwardGpu() {
 }
 
 void RbmLayer::propagateForwardCpu(data_t* visibles, data_t* potentials, data_t* hiddens) {
-    LOG()->error("RBM layer does not implement CPU support in this version.");
+
+    // Clear output neurons
+    std::fill_n(potentials, outputsCount, 0);
+
+    for (int i = 0; i<inputSize; i++) {
+        for (int j = 0; j<outputsCount; j++) {
+            int idx = i + j * inputSize;
+            potentials[j] += visibles[i] * weights[idx];
+        }
+    }
+
+    // Apply bias
+    data_t *hbias = weights + inputSize * outputsCount + inputSize;
+    if (conf.useBias) {
+        for (int i = 0; i<outputsCount; i++) {
+            potentials[i] += hbias[i];
+        }
+    }
+
+    // Run through activation function
+    netConf->activationFnc(potentials, hiddens, outputsCount);
+//    dumpHostArray('O', outputPtr, outputsCount);
 }
 
 void RbmLayer::propagateForwardGpu(data_t* visibles, data_t* potentials, data_t* hiddens) {

@@ -196,6 +196,12 @@ private:
      * samples before starting pretraining.
      */
     bool samplesInitialized = false;
+    
+    /**
+     * Tells whether the layer has been set up by allocating memory
+     * and by possibly performing other essential initialization tasks.
+     */
+    bool isLayerSetup = false;
 };
 
 #endif	/* RBMLAYER_H */

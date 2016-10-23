@@ -56,7 +56,9 @@ void SubsamplingLayer::setup(string confString) {
         weightsCount = featuresCount;
         
         maxIndices = new int[outputsCount];
-        checkCudaErrors(cudaMalloc(&d_maxIndices, outputsCount * sizeof(int)));
+        if (netConf->getUseGpu()) {
+            checkCudaErrors(cudaMalloc(&d_maxIndices, outputsCount * sizeof(int)));
+        }
         
         strideHeight = conf.windowHeight;
         strideWidth = conf.windowWidth;

@@ -65,7 +65,9 @@ void ConvolutionalLayer::setup(string confString) {
     colHeight = kernelDim; // height of column buffer
     colSize = colWidth * colHeight;
     
-    checkCudaErrors(cudaMalloc(&colBuffer, colSize * sizeof(data_t)));
+    if (netConf->getUseGpu()) {
+        checkCudaErrors(cudaMalloc(&colBuffer, colSize * sizeof(data_t)));
+    }
 }
 
 void ConvolutionalLayer::forwardCpu() {
